@@ -5,28 +5,37 @@ using UnityEngine;
 
 public class WaveSystemView : EntityView
 {
+    [Header("Options")]
+    [SerializeField]
+    private float _orthographicSpawnMargin = 1f;
+
+    [Header("Requirements")]
     [SerializeField]
     private Camera _gameCamera;
 
     [SerializeField]
-    private float _orthographicSpawnMargin = 1f;
-
     private EnemyViewFactory _enemyViewFactory;
+
     private WaveSystemModel _waveSystemModel;
+    private Coroutine _currentCoroutine;
 
-    public void StartWaveSystem(int startWave = 0)
-    {
-        SpawnWave(startWave);
-    }
-
-    protected void Awake()
-    {
-        _enemyViewFactory = new EnemyViewFactory();
-    }
+    #region LifeCycle
 
     protected override void OnViewReady()
     {
         _waveSystemModel = MVCUtil.GetModel<WaveSystemModel>(this);
+    }
+
+    protected override void OnViewDestroy()
+    {
+        StopCoroutine(_currentCoroutine);
+    }
+
+    #endregion
+
+    public void StartWaveSystem(int startWave = 0)
+    {
+        SpawnWave(startWave);
     }
 
     private void SpawnNextWave()
@@ -61,7 +70,7 @@ public class WaveSystemView : EntityView
     {
         float spawnDistY = _gameCamera.orthographicSize + _orthographicSpawnMargin;
         float spawnDistX = spawnDistY * Screen.width / Screen.height;
-        for (int i = 0; i < waveSection.Enemies.Length * 100; i++)
+        for (int i = 0; i < waveSection.Enemies.Length; i++)
         {
             float distanceVarienceValue = UnityEngine.Random.value * 2f;
             bool fullX = UnityEngine.Random.value > 0.5f;
@@ -73,11 +82,45 @@ public class WaveSystemView : EntityView
             y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
             Vector2 spawnPos = new Vector2(x, y);
 
-            // Test Object Spawn
-            GameObject go = new GameObject("Test Enemy");
-            go.transform.position = spawnPos;
+            EnemyView enemyView = _enemyViewFactory.CreateEnemyView(waveSection.Enemies[i]);
+            enemyView.transform.position = spawnPos;
         }
 
-        endOfWaveSectionCallback(waveSectionIndex);
+        if (waveSection.TimeToFightEnemiesInSeconds == WaveSystemModel.TIME_TO_FIGHT_UNTIL_ALL_EXTINCT)
+        {
+            // Wait for all the enemies to be killed or removed from play.
+            _currentCoroutine = StartCoroutine(WaitForSectionExtiction(waveSection.Enemies, waveSectionIndex, endOfWaveSectionCallback));
+        }
+        else
+        {
+            // Wait for amount of time until next section is started.
+            _currentCoroutine = StartCoroutine(WaitToEndSection(waveSection.TimeToFightEnemiesInSeconds, waveSectionIndex, endOfWaveSectionCallback));
+        }
+    }
+
+    private IEnumerator WaitForSectionExtiction(EnemyModel[] sectionEnemies, int sectionIndex, Action<int> endCallback)
+    {
+        List<EnemyModel> trackingEnemies = new List<EnemyModel>(sectionEnemies);
+        while(trackingEnemies.Count > 0)
+        {
+            for(int i = trackingEnemies.Count - 1; i >= 0; i--)
+            {
+                EnemyModel e = trackingEnemies[i];
+                if(e.IsDead || e.IsDestroyed)
+                {
+                    trackingEnemies.RemoveAt(i);
+                }
+            }
+
+            yield return null;
+        }
+
+        endCallback(sectionIndex);
+    }
+
+    private IEnumerator WaitToEndSection(float secondsToWait, int sectionIndex, Action<int> endCallback)
+    {
+        yield return new WaitForSeconds(secondsToWait);
+        endCallback(sectionIndex);
     }
 }

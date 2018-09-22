@@ -21,7 +21,7 @@ public class EntityManager
 
     private List<EntityModel> _entities = new List<EntityModel>();
 
-    public Controller<M, V> CreateEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
+    public Controller<M, V> LinkAndRegisterEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
     {
         Controller<M, V> controller = Controller<M, V>.Link(model, view);
         model.DestroyEvent += OnDestroyEvent;

@@ -15,9 +15,9 @@
         WaveSectionObject section = new WaveSectionObject();
         section.Enemies = new EnemyModel[]
         {
-            new EnemyModel("First"),
-            new EnemyModel("Second"),
-            new EnemyModel("The Number after two"),
+            new EnemyModel(EnemyModel.EnemyCharacterType.Normal, 1, "First"),
+            new EnemyModel(EnemyModel.EnemyCharacterType.Double, 1, "Second"),
+            new EnemyModel(EnemyModel.EnemyCharacterType.Normal, 2, "The Number after two"),
         };
 
         section.TimeToFightEnemiesInSeconds = TIME_TO_FIGHT_UNTIL_ALL_EXTINCT;

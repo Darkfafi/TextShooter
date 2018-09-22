@@ -11,6 +11,11 @@ public abstract class EntityModel : IModel
 {
     public event Action<EntityModel> DestroyEvent;
 
+    public bool IsDestroyed
+    {
+        get; private set;
+    }
+
     public Controller Controller
     {
         get; private set;
@@ -19,6 +24,7 @@ public abstract class EntityModel : IModel
     public void Destroy()
     {
         OnEntityDestroy();
+        IsDestroyed = true;
         if (DestroyEvent != null)
         {
             DestroyEvent(this);
@@ -28,6 +34,7 @@ public abstract class EntityModel : IModel
     public void SetupModel(Controller controller)
     {
         Controller = controller;
+        IsDestroyed = false;
         OnEntityReady();
     }
 

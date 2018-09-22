@@ -4,17 +4,19 @@ using UnityEngine.UI;
 
 public class IntroGameStateView : MonoBehaviourGameStateView
 {
-    [SerializeField]
-    private Camera _cameraForIntro;
-
-    [SerializeField]
-    private Image _overlayImage;
-
+    [Header("Options")]
     [SerializeField]
     private float _startCameraZoom;
 
     [SerializeField]
     private float _introDurationInSeconds = 3f;
+
+    [Header("Requirements")]
+    [SerializeField]
+    private Camera _cameraForIntro;
+
+    [SerializeField]
+    private Image _overlayImage;
 
     private float _originalGameZoom;
 

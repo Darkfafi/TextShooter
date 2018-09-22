@@ -20,6 +20,6 @@ public class GameView : EntityView
         gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
         // Create GameModel & GameView as Entity, making them part of the global system
-        EntityManager.Instance.CreateEntity(gm, this);
+        EntityManager.Instance.LinkAndRegisterEntity(gm, this);
     }
 }
