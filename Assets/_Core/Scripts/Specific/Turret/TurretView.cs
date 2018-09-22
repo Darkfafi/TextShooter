@@ -24,7 +24,8 @@ public class TurretView : EntityView
 
     protected void Update()
     {
-        TurretFocus();
+        if(_model != null)
+            TurretFocus();
     }
 
     private void TurretFocus()

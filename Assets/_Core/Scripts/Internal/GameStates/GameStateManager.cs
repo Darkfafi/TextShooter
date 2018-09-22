@@ -48,7 +48,7 @@ public class GameStateManager
 
         GameState gs = Activator.CreateInstance(gameStateType) as GameState;
         _currentGameState = gs;
-        _currentGameState.SetupState();
+        _currentGameState.SetupState(this);
 
         if (_viewToGameState.TryGetValue(gameStateType, out _currentView))
         {

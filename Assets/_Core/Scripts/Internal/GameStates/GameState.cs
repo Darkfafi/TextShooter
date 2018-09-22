@@ -4,8 +4,11 @@ using UnityEngine;
 
 public abstract class GameState
 {
-    public void SetupState()
+    protected GameStateManager GameStateManager { get; private set; }
+
+    public void SetupState(GameStateManager gameStateManager)
     {
+        GameStateManager = gameStateManager;
         OnSetupState();
     }
 
