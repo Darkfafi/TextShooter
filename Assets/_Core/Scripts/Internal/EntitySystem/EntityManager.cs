@@ -21,7 +21,7 @@ public class EntityManager
 
     private List<EntityModel> _entities = new List<EntityModel>();
 
-    public Controller<M, V> CreateEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView<M> 
+    public Controller<M, V> CreateEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
     {
         Controller<M, V> controller = Controller<M, V>.Create(model, view);
         model.DestroyEvent += OnDestroyEvent;
@@ -95,7 +95,6 @@ public class EntityManager
     public ReadOnlyCollection<T> GetEntities<T>(Func<T, bool> filterCondition) where T : EntityModel
     {
         List<T> result = new List<T>();
-        Type t = typeof(T);
         for (int i = 0, count = _entities.Count; i < count; i++)
         {
             T e = _entities[i] as T;

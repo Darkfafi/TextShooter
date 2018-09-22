@@ -1,4 +1,4 @@
-﻿public class Controller<M, V> : Controller where M : class, IModel where V : class, IView<M>
+﻿public class Controller<M, V> : Controller where M : class, IModel where V : class, IView
 {
     public static Controller<M, V> Create(M model, V view)
     {
@@ -38,7 +38,7 @@ public class Controller
         CoreModel = model;
         CoreView = view;
         CoreModel.SetupModel(this);
-        CoreView.LinkModel(CoreModel);
+        CoreView.SetupView(this);
     }
 
     public IModel CoreModel
@@ -60,8 +60,7 @@ public class Controller
 
         if(CoreView != null)
         {
-            CoreView.LinkModel(null);
-            CoreView.Destroy();
+            CoreView.DestroyView();
         }
 
         CoreModel = null;

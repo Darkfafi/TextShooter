@@ -12,9 +12,10 @@ public abstract class EntityModel : IModel
         get; private set;
     }
 
-    public virtual void Destroy()
+    public void Destroy()
     {
-        if(DestroyEvent != null)
+        OnEntityDestroy();
+        if (DestroyEvent != null)
         {
             DestroyEvent(this);
         }
@@ -23,5 +24,9 @@ public abstract class EntityModel : IModel
     public void SetupModel(Controller controller)
     {
         Controller = controller;
+        OnEntityReady();
     }
+
+    protected virtual void OnEntityReady() { }
+    protected virtual void OnEntityDestroy() { }
 }

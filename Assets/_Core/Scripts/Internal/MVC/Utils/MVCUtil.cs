@@ -4,7 +4,7 @@
     {
         return GetView<T>(model.Controller);
     }
-    public static T GetView<T, M>(M model) where T : class, IView<M> where M : class, IModel
+    public static T GetView<T, M>(M model) where T : class, IView where M : class, IModel
     {
         return GetView<T>(model.Controller);
     }
@@ -14,14 +14,14 @@
         return controller.CoreView as T;
     }
 
-    public static T GetView<T, M>(Controller controller) where T : class, IView<M> where M : class, IModel
+    public static T GetView<T, M>(Controller controller) where T : class, IView where M : class, IModel
     {
         return controller.CoreView as T;
     }
 
     public static T GetModel<T>(IView view) where T : class, IModel
     {
-        return view.CoreModel as T;
+        return view.Controller.CoreModel as T;
     }
 
     public static T GetModel<T>(Controller controller) where T : class, IModel

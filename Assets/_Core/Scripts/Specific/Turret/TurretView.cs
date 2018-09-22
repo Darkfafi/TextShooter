@@ -1,25 +1,25 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class TurretView : EntityView<TurretModel>
+public class TurretView : EntityView
 {
     [SerializeField]
     private GameObject _turretTurningPoint;
 
-    public override bool LinkModel(IModel model)
+    private TurretModel _model;
+
+    protected override void OnViewReady()
     {
-        if(Model != null)
-        {
-            Model.TargetSetEvent -= OnTargetSetEvent;
-        }
+        _model = MVCUtil.GetModel<TurretModel>(Controller);
+        _model.TargetSetEvent += OnTargetSetEvent;
+    }
 
-        if(base.LinkModel(model))
+    public override void DestroyView()
+    {
+        if (_model != null)
         {
-            Model.TargetSetEvent += OnTargetSetEvent;
-            return true;
+            _model.TargetSetEvent -= OnTargetSetEvent;
+            _model = null;
         }
-
-        return false;
     }
 
     protected void Update()
@@ -29,13 +29,12 @@ public class TurretView : EntityView<TurretModel>
 
     private void TurretFocus()
     {
-        if(Model.CurrentTarget == null)
+        if(_model.CurrentTarget == null)
         {
             return;
         }
-
-        MonoBehaviour targetView1 = Model.CurrentTarget.Controller.CoreView as MonoBehaviour;
-        EntityView targetView = MVCUtil.GetView<EntityView>(Model.CurrentTarget);
+        
+        EntityView targetView = MVCUtil.GetView<EntityView>(_model.CurrentTarget);
 
         float x = targetView.transform.position.x - _turretTurningPoint.transform.position.x;
         float y = targetView.transform.position.y - _turretTurningPoint.transform.position.y;
