@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class WaveSystemView : EntityView
 {
+    [SerializeField]
+    private Camera _gameCamera;
+
+    [SerializeField]
+    private float _orthographicSpawnMargin = 1f;
+
     private EnemyViewFactory _enemyViewFactory;
     private WaveSystemModel _waveSystemModel;
 
@@ -53,7 +59,25 @@ public class WaveSystemView : EntityView
 
     private void SpawnWaveSection(WaveSystemModel.WaveSectionObject waveSection, int waveSectionIndex, Action<int> endOfWaveSectionCallback)
     {
-        Debug.Log("TODO: SPAWN SECTION LOGICS HERE");
+        float spawnDistY = _gameCamera.orthographicSize + _orthographicSpawnMargin;
+        float spawnDistX = spawnDistY * Screen.width / Screen.height;
+        for (int i = 0; i < waveSection.Enemies.Length * 100; i++)
+        {
+            float distanceVarienceValue = UnityEngine.Random.value * 2f;
+            bool fullX = UnityEngine.Random.value > 0.5f;
+            int xMult = UnityEngine.Random.value > 0.5f ? 1 : -1;
+            int yMult = UnityEngine.Random.value > 0.5f ? 1 : -1;
+            float x = ((fullX) ? 1 : UnityEngine.Random.value);
+            float y = ((!fullX) ? 1 : UnityEngine.Random.value);
+            x = (Mathf.Lerp(0, spawnDistX, x) + distanceVarienceValue) * xMult;
+            y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
+            Vector2 spawnPos = new Vector2(x, y);
+
+            // Test Object Spawn
+            GameObject go = new GameObject("Test Enemy");
+            go.transform.position = spawnPos;
+        }
+
         endOfWaveSectionCallback(waveSectionIndex);
     }
 }
