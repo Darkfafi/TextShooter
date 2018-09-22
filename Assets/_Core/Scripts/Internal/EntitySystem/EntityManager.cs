@@ -23,7 +23,7 @@ public class EntityManager
 
     public Controller<M, V> CreateEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
     {
-        Controller<M, V> controller = Controller<M, V>.Create(model, view);
+        Controller<M, V> controller = Controller<M, V>.Link(model, view);
         model.DestroyEvent += OnDestroyEvent;
         _entities.Add(model);
         return controller;

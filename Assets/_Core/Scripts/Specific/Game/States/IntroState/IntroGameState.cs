@@ -19,7 +19,7 @@ public class IntroGameState : GameState
 
         if (_currentState == IntroState.End)
         {
-            UnityEngine.Debug.Log("GO TO GAME STATE!");
+            GameStateManager.SetGameState<SurvivalGameState>();
         }
         else
         {

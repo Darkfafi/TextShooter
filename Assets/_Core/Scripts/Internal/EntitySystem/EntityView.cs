@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Base View for the game. Recommended to be used with the EntityManager, but not required.
+/// The design is to have the View contain all the Unity specific code and use the Model data to set its visual state.
+/// </summary>
 public abstract class EntityView : MonoBehaviour, IView
 {
     public Controller Controller

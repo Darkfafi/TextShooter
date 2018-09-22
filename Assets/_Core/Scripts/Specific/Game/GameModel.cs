@@ -14,7 +14,6 @@ public class GameModel : EntityModel
 
     protected override void OnEntityReady()
     {
-        Debug.Log("Hello World!");
         GameStateManager.SetGameState<IntroGameState>();
     }
 }

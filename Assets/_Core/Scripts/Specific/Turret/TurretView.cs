@@ -9,7 +9,7 @@ public class TurretView : EntityView
 
     protected override void OnViewReady()
     {
-        _model = MVCUtil.GetModel<TurretModel>(Controller);
+        _model = MVCUtil.GetModel<TurretModel>(this);
         _model.TargetSetEvent += OnTargetSetEvent;
     }
 

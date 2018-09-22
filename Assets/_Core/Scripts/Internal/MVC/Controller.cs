@@ -1,6 +1,6 @@
 ﻿public class Controller<M, V> : Controller where M : class, IModel where V : class, IView
 {
-    public static Controller<M, V> Create(M model, V view)
+    public static Controller<M, V> Link(M model, V view)
     {
         Controller<M, V> c = new Controller<M, V>();
         c.Setup(model, view);
@@ -26,7 +26,7 @@
 
 public class Controller
 {
-    public static Controller Create(IModel model, IView view)
+    public static Controller Link(IModel model, IView view)
     {
         Controller c = new Controller();
         c.Setup(model, view);
