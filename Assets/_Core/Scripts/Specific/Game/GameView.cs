@@ -11,7 +11,7 @@ public class GameView : EntityView
     [SerializeField]
     private SurvivalGameStateView _survivalGameStateView;
 
-    protected void Awake()
+    protected void Start()
     {
         GameModel gm = new GameModel();
 
