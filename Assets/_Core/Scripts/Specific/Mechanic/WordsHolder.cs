@@ -2,6 +2,9 @@
 
 public class WordsHolder
 {
+    public delegate void PreNewWordHandler(string previousWord, string newWord);
+    public event PreNewWordHandler WordCycledEvent;
+
     public string CurrentWord { get; private set; }
     private List<string> _words = new List<string>();
 
@@ -23,19 +26,32 @@ public class WordsHolder
 
     public int WordsAmount(bool incCurrent = true)
     {
-        return (incCurrent ? 1 : 0) + _words.Count;
+        return ((incCurrent && !string.IsNullOrEmpty(CurrentWord)) ? 1 : 0) + _words.Count;
     }
 
     public bool CycleToNextWord()
     {
-        if (_words.Count > 0)
+        if(string.IsNullOrEmpty(CurrentWord))
         {
-            CurrentWord = _words[0];
-            _words.RemoveAt(0);
-            return true;
+            return false;
         }
 
-        return false;
+        string preWord = CurrentWord;
+        string nextWord = "";
+        if(_words.Count > 0)
+        {
+            nextWord = _words[0];
+            _words.RemoveAt(0);
+        }
+
+        CurrentWord = nextWord;
+
+        if (WordCycledEvent != null)
+        {
+            WordCycledEvent(preWord, CurrentWord);
+        }
+
+        return true;
     }
 
     public bool HasWord(string word, bool incCurrent = true)
@@ -44,5 +60,12 @@ public class WordsHolder
             return true;
 
         return _words.Contains(word);
+    }
+
+    public void Clean()
+    {
+        _words.Clear();
+        _words = null;
+        CurrentWord = null;
     }
 }

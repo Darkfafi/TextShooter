@@ -8,10 +8,8 @@ public class EnemyModel : EntityModel
         Double, // Each word is to be typed 2 times
     }
 
-    public event Action<EnemyModel> CurrentWordSetEvent;
-    public event Action<EnemyModel> DeathEvent;
-
     public WordsHolder WordsHolder { get; private set; }
+    public WordsHitter WordsHitter { get; private set; }
     public int Damage { get; private set; }
     public EnemyCharacterType EnemyType { get; private set; }
 
@@ -23,70 +21,31 @@ public class EnemyModel : EntityModel
         }
     }
 
-    private int _currentWordChar = 0;
-    private int _hitsOnChar = 0;
-
     public EnemyModel(EnemyCharacterType enemyType, int damage, string currentWord, params string[] nextWords)
     {
-        WordsHolder = new WordsHolder(currentWord, nextWords);
         EnemyType = enemyType;
         Damage = damage;
+        WordsHolder = new WordsHolder(currentWord, nextWords);
+        WordsHitter = new WordsHitter(WordsHolder, GetCharHitsNeeded());
     }
 
-    public void Hit(char hitChar)
+    protected override void OnEntityDestroy()
     {
-        if(WordsHolder.CurrentWord[_currentWordChar] == hitChar)
-        {
-            _hitsOnChar++;
-            switch(EnemyType)
-            {
-                case EnemyCharacterType.Double:
-                    WordHitInternal(2);
-                    break;
+        WordsHitter.Clean();
+        WordsHolder.Clean();
 
-                default:
-                    WordHitInternal(1);
-                    break;
-            }
-        }
+        WordsHitter = null;
+        WordsHolder = null;
     }
 
-    private void WordHitInternal(int hitsNeeded)
+    private int GetCharHitsNeeded()
     {
-        if (_hitsOnChar >= hitsNeeded)
+        switch (EnemyType)
         {
-            if(_currentWordChar >= WordsHolder.CurrentWord.Length - 1)
-            {
-                if(WordsHolder.CycleToNextWord())
-                {
-                    // Next Word
-                    _currentWordChar = 0;
-                    _hitsOnChar = 0;
-
-                    if (CurrentWordSetEvent != null)
-                    {
-                        CurrentWordSetEvent(this);
-                    }
-                }
-                else
-                {
-                    // No words == Death
-                    if(DeathEvent != null)
-                    {
-                        DeathEvent(this);
-                    }
-                }
-            }
-            else
-            {
-                // Next Character in word
-                _currentWordChar++;
-                _hitsOnChar = 0;
-                if (CurrentWordSetEvent != null)
-                {
-                    CurrentWordSetEvent(this);
-                }
-            }
+            case EnemyCharacterType.Double:
+                return 2;
+            default:
+                return 1;
         }
     }
 }
