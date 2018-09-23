@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WaveSystemView : EntityView
+public class WaveSystemView : MonoBaseView
 {
     [Header("Options")]
     [SerializeField]

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameModel : EntityModel
+public class GameModel : BaseModel
 {
     public GameStateManager GameStateManager { get; private set; }
 

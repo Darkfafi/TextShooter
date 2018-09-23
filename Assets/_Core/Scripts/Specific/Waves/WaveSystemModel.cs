@@ -1,4 +1,4 @@
-﻿public class WaveSystemModel : EntityModel
+﻿public class WaveSystemModel : BaseModel
 {
     public const float TIME_TO_FIGHT_UNTIL_ALL_EXTINCT = -1f;
 

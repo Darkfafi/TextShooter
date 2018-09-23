@@ -1,6 +1,4 @@
-﻿using System;
-
-public class EnemyModel : EntityModel
+﻿public class EnemyModel : BaseModel
 {
     public enum EnemyCharacterType
     {
@@ -10,6 +8,7 @@ public class EnemyModel : EntityModel
 
     public WordsHolder WordsHolder { get; private set; }
     public WordsHitter WordsHitter { get; private set; }
+    public AIModel AIModel { get; private set; }
     public int Damage { get; private set; }
     public EnemyCharacterType EnemyType { get; private set; }
 
@@ -17,7 +16,7 @@ public class EnemyModel : EntityModel
     {
         get
         {
-            return WordsHolder.WordsAmount(true) == 0;
+            return WordsHolder == null || WordsHolder.WordsAmount(true) == 0;
         }
     }
 
@@ -27,6 +26,7 @@ public class EnemyModel : EntityModel
         Damage = damage;
         WordsHolder = new WordsHolder(currentWord, nextWords);
         WordsHitter = new WordsHitter(WordsHolder, GetCharHitsNeeded());
+        AIModel = new AIModel();
     }
 
     protected override void OnEntityDestroy()

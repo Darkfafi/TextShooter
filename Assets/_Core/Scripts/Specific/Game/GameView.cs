@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameView : EntityView
+public class GameView : MonoBaseView
 {
     [SerializeField]
     private IntroGameStateView _introGameStateView;
