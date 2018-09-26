@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SurvivalGameState : GameState
+public class SurvivalGameState : BaseGameState
 {
     public WaveSystemModel WaveSystem { get; private set; }
 

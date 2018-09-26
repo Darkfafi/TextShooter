@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameView : MonoBaseView
 {
@@ -11,6 +8,13 @@ public class GameView : MonoBaseView
     [SerializeField]
     private SurvivalGameStateView _survivalGameStateView;
 
+    private TimekeeperView _timekeeperView;
+
+    protected void Awake()
+    {
+        _timekeeperView = new GameObject("<TimeKeeperView>").AddComponent<TimekeeperView>();
+    }
+
     protected void Start()
     {
         GameModel gm = new GameModel();
@@ -19,7 +23,9 @@ public class GameView : MonoBaseView
         gm.GameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
         gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
-        // Create GameModel & GameView as Entity, making them part of the global system
-        EntityManager.Instance.LinkAndRegisterEntity(gm, this);
+        Controller<GameModel, GameView>.Link(gm, this);
+
+        // Setup TimKkeeper
+        Controller<TimekeeperModel, TimekeeperView>.Link(gm.TimekeeperModel, _timekeeperView);
     }
 }

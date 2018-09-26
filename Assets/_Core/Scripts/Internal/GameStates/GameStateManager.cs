@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class GameStateManager
+public class GameStateManager<T> where T : class, IGame
 {
     private Stack<Type> _gameStateHistory = new Stack<Type>();
-    private Dictionary<Type, IGameStateView> _viewToGameState = new Dictionary<Type, IGameStateView>();
-    private GameState _currentGameState;
-    private IGameStateView _currentView;
+    private Dictionary<Type, IGameStateView<T>> _viewToGameState = new Dictionary<Type, IGameStateView<T>>();
+    private GameState<T> _currentGameState;
+    private IGameStateView<T> _currentView;
+    private T _game;
 
-    public void SetupStateView<T>(IGameStateView view) where T : GameState
+    public GameStateManager(T game)
     {
-        Type t = typeof(T);
+        _game = game;
+    }
+
+    public void SetupStateView<U>(IGameStateView<T> view) where U : GameState<T>
+    {
+        Type t = typeof(U);
         if(_viewToGameState.ContainsKey(t))
         {
             _viewToGameState[t] = view;
@@ -21,15 +27,25 @@ public class GameStateManager
         }
     }
 
-    public void SetGameState<T>() where T : GameState
+    public void SetGameState<U>() where U : GameState<T>
     {
-        SetGameState(typeof(T));
+        SetGameState(typeof(U));
     }
 
-    public bool IsCurrentGameState<T>() where T : GameState
+    public bool IsCurrentGameState<U>() where U : GameState<T>
     {
-        return _currentGameState.GetType() == typeof(T);
+        return _currentGameState.GetType() == typeof(U);
     } 
+
+    public void Clean()
+    {
+        SetGameState(null);
+        _gameStateHistory.Clear();
+        _viewToGameState.Clear();
+        _gameStateHistory = null;
+        _viewToGameState = null;
+        _game = null;
+    }
 
     private void SetGameState(Type gameStateType)
     {
@@ -46,9 +62,12 @@ public class GameStateManager
             _currentGameState = null;
         }
 
-        GameState gs = Activator.CreateInstance(gameStateType) as GameState;
+        if (gameStateType == null)
+            return;
+
+        GameState<T> gs = Activator.CreateInstance(gameStateType) as GameState<T>;
         _currentGameState = gs;
-        _currentGameState.SetupState(this);
+        _currentGameState.SetupState(_game, this);
 
         if (_viewToGameState.TryGetValue(gameStateType, out _currentView))
         {
@@ -63,3 +82,5 @@ public class GameStateManager
         }
     }
 }
+
+public interface IGame { }

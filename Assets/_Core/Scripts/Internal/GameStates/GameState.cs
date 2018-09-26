@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public abstract class GameState
+﻿public abstract class GameState<T> where T : class, IGame
 {
-    protected GameStateManager GameStateManager { get; private set; }
+    protected T Game { get; private set; }
+    protected GameStateManager<T> GameStateManager { get; private set; }
 
-    public void SetupState(GameStateManager gameStateManager)
+    public void SetupState(T game, GameStateManager<T> gameStateManager)
     {
+        Game = game;
         GameStateManager = gameStateManager;
         OnSetupState();
     }

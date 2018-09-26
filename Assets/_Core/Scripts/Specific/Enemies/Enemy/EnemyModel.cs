@@ -1,4 +1,4 @@
-﻿public class EnemyModel : BaseModel
+﻿public class EnemyModel : EntityModel
 {
     public enum EnemyCharacterType
     {

@@ -19,9 +19,9 @@ public class EntityManager
 
     private static EntityManager _instance;
 
-    private List<BaseModel> _entities = new List<BaseModel>();
+    private List<EntityModel> _entities = new List<EntityModel>();
 
-    public Controller<M, V> LinkAndRegisterEntity<M, V>(M model, V view) where M : BaseModel where V : MonoBaseView
+    public Controller<M, V> LinkAndRegisterEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
     {
         Controller<M, V> controller = Controller<M, V>.Link(model, view);
         model.DestroyEvent += OnDestroyEvent;
@@ -32,32 +32,32 @@ public class EntityManager
 
     private void OnDestroyEvent(BaseModel destroyedEntity)
     {
-        _entities.Remove(destroyedEntity);
+        _entities.Remove((EntityModel)destroyedEntity);
     }
 
     // -- Entity Query Methods -- \\
 
     // - Single Entity - \\
 
-    public BaseModel GetAnEntity()
+    public EntityModel GetAnEntity()
     {
-        ReadOnlyCollection<BaseModel> e = GetEntities();
+        ReadOnlyCollection<EntityModel> e = GetEntities();
         if (e.Count > 0)
             return e[0];
 
         return null;
     }
 
-    public BaseModel GetAnEntity(Func<BaseModel, bool> filterCondition)
+    public EntityModel GetAnEntity(Func<EntityModel, bool> filterCondition)
     {
-        ReadOnlyCollection<BaseModel> e = GetEntities(filterCondition);
+        ReadOnlyCollection<EntityModel> e = GetEntities(filterCondition);
         if (e.Count > 0)
             return e[0];
 
         return null;
     }
 
-    public T GetAnEntity<T>() where T : BaseModel
+    public T GetAnEntity<T>() where T : EntityModel
     {
         ReadOnlyCollection<T> e = GetEntities<T>();
         if (e.Count > 0)
@@ -66,7 +66,7 @@ public class EntityManager
         return null;
     }
 
-    public T GetAnEntity<T>(Func<T, bool> filterCondition) where T : BaseModel
+    public T GetAnEntity<T>(Func<T, bool> filterCondition) where T : EntityModel
     {
         ReadOnlyCollection<T> e = GetEntities<T>(filterCondition);
         if (e.Count > 0)
@@ -77,22 +77,22 @@ public class EntityManager
 
     // - Multiple Entities - \\
 
-    public ReadOnlyCollection<BaseModel> GetEntities()
+    public ReadOnlyCollection<EntityModel> GetEntities()
     {
         return _entities.AsReadOnly();
     }
 
-    public ReadOnlyCollection<BaseModel> GetEntities(Func<BaseModel, bool> filterCondition)
+    public ReadOnlyCollection<EntityModel> GetEntities(Func<EntityModel, bool> filterCondition)
     {
-        return GetEntities<BaseModel>(filterCondition);
+        return GetEntities<EntityModel>(filterCondition);
     }
 
-    public ReadOnlyCollection<T> GetEntities<T>() where T : BaseModel
+    public ReadOnlyCollection<T> GetEntities<T>() where T : EntityModel
     {
         return GetEntities<T>(null);
     }
 
-    public ReadOnlyCollection<T> GetEntities<T>(Func<T, bool> filterCondition) where T : BaseModel
+    public ReadOnlyCollection<T> GetEntities<T>(Func<T, bool> filterCondition) where T : EntityModel
     {
         List<T> result = new List<T>();
         for (int i = 0, count = _entities.Count; i < count; i++)

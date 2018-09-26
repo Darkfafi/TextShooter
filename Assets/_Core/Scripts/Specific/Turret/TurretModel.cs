@@ -3,16 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurretModel : BaseModel
+public class TurretModel : EntityModel
 {
-    public delegate void NewOldTargetHandler(BaseModel newTarget, BaseModel previousTarget);
+    public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
     public event NewOldTargetHandler TargetSetEvent;
 
-    public BaseModel CurrentTarget { get; private set; }
+    public EntityModel CurrentTarget { get; private set; }
 
-    public void FocusOnTarget(BaseModel target)
+    public void FocusOnTarget(EntityModel target)
     {
-        BaseModel previousTarget = CurrentTarget;
+        EntityModel previousTarget = CurrentTarget;
         CurrentTarget = target;
 
         if(TargetSetEvent != null)

@@ -49,7 +49,7 @@ public class AIModel : BaseModel
         
         if(_currentStateStatus.IsValidState)
         {
-            _currentStateStatus.State.DeSet();
+            _currentStateStatus.State.Deactivate();
         }
 
         StateStatus newState = new StateStatus();
@@ -58,7 +58,7 @@ public class AIModel : BaseModel
 
         _currentStateStatus = newState;
 
-        _currentStateStatus.State.Set();
+        _currentStateStatus.State.Activate();
 
         if(StateSetEvent != null)
         {
@@ -103,6 +103,6 @@ public class AIModel : BaseModel
 
 public abstract class AIState
 {
-    public abstract void Set();
-    public abstract void DeSet();
+    public abstract void Activate();
+    public abstract void Deactivate();
 }

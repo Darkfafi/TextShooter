@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyView : MonoBaseView
+public class EnemyView : EntityView
 {
 
 }

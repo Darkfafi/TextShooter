@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class TurretView : MonoBaseView
+public class TurretView : EntityView
 {
     [SerializeField]
     private GameObject _turretTurningPoint;
@@ -35,7 +35,7 @@ public class TurretView : MonoBaseView
             return;
         }
         
-        MonoBaseView targetView = MVCUtil.GetView<MonoBaseView>(_model.CurrentTarget);
+        EntityView targetView = MVCUtil.GetView<EntityView>(_model.CurrentTarget);
 
         float x = targetView.transform.position.x - _turretTurningPoint.transform.position.x;
         float y = targetView.transform.position.y - _turretTurningPoint.transform.position.y;
@@ -47,7 +47,7 @@ public class TurretView : MonoBaseView
         _turretTurningPoint.transform.rotation = Quaternion.Euler(0, 0, newAngle);
     }
 
-    private void OnTargetSetEvent(BaseModel newTarget, BaseModel previousTarget)
+    private void OnTargetSetEvent(EntityModel newTarget, EntityModel previousTarget)
     {
         //TODO: PLAY COOL SOUND AND SHIT
     }

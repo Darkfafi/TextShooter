@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class IntroGameState : GameState
+public class IntroGameState : BaseGameState
 {
     public enum IntroState
     {
