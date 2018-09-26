@@ -16,8 +16,6 @@ public class SurvivalGameStateView : MonoBehaviourGameStateView
 
         Controller.Link(_survivalGameState.TurretModel, _turretView);
         Controller.Link(_survivalGameState.WaveSystem, _waveSystemView);
-
-        _waveSystemView.StartWaveSystem();
     }
 
     protected override void OnStartStateView()

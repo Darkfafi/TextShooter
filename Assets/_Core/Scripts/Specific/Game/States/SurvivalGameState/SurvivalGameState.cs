@@ -14,11 +14,12 @@ public class SurvivalGameState : BaseGameState
         TurretModel = new TurretModel(Game.TimekeeperModel);
 
         // Setup Environment
-        WaveSystem = new WaveSystemModel();
+        WaveSystem = new WaveSystemModel(Game.TimekeeperModel);
     }
 
     protected override void OnStartState()
     {
+        WaveSystem.StartWaveSystem();
         TurretModel.FocusOnTarget(EntityTracker.Instance.GetAnEntity<EnemyModel>()); //TODO: Replace Test with real targeting code
     }
 
