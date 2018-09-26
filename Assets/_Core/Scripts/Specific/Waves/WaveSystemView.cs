@@ -44,6 +44,7 @@ public class WaveSystemView : MonoBaseView
         if (_waveSystemModel == null)
             return;
 
+        //TODO: Make camera model & screen model which hold the data required. <<--
         float spawnDistY = _gameCamera.orthographicSize + _orthographicSpawnMargin;
         float spawnDistX = spawnDistY * Screen.width / Screen.height;
 
