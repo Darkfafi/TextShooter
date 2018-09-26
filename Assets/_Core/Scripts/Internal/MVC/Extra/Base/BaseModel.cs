@@ -35,7 +35,7 @@ public abstract class BaseModel : IModel
 
         IsDestroyed = true;
 
-        OnEntityDestroy();
+        OnModelDestroy();
         if (DestroyEvent != null)
         {
             DestroyEvent(this);
@@ -48,9 +48,9 @@ public abstract class BaseModel : IModel
     {
         Controller = controller;
         IsDestroyed = false;
-        OnEntityReady();
+        OnModelReady();
     }
 
-    protected virtual void OnEntityReady() { }
-    protected virtual void OnEntityDestroy() { }
+    protected virtual void OnModelReady() { }
+    protected virtual void OnModelDestroy() { }
 }

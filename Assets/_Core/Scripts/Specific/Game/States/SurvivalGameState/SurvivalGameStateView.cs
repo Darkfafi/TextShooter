@@ -7,11 +7,15 @@ public class SurvivalGameStateView : MonoBehaviourGameStateView
     [SerializeField]
     private WaveSystemView _waveSystemView;
 
+    [SerializeField]
+    private TurretView _turretView;
+
     protected override void OnPreStartStateView()
     {
         _survivalGameState = GameState as SurvivalGameState;
+
+        Controller.Link(_survivalGameState.TurretModel, _turretView);
         Controller.Link(_survivalGameState.WaveSystem, _waveSystemView);
-        // Setup Game Visual Elements and link them to their respective Model
 
         _waveSystemView.StartWaveSystem();
     }

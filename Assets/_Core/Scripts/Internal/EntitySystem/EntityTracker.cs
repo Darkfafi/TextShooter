@@ -2,31 +2,41 @@
 using System.Collections.ObjectModel;
 using System;
 
-public class EntityManager
+public class EntityTracker
 {
-    public static EntityManager Instance
+    public static EntityTracker Instance
     {
         get
         {
             if(_instance == null)
             {
-                _instance = new EntityManager();
+                _instance = new EntityTracker();
             }
 
             return _instance;
         }
     }
 
-    private static EntityManager _instance;
+    private static EntityTracker _instance;
 
     private List<EntityModel> _entities = new List<EntityModel>();
 
-    public Controller<M, V> LinkAndRegisterEntity<M, V>(M model, V view) where M : EntityModel where V : EntityView
+    public void Register(EntityModel model)
     {
-        Controller<M, V> controller = Controller<M, V>.Link(model, view);
+        if (_entities.Contains(model))
+            return;
+
         model.DestroyEvent += OnDestroyEvent;
         _entities.Add(model);
-        return controller;
+    }
+
+    public void Unregister(EntityModel model)
+    {
+        if (!_entities.Contains(model))
+            return;
+
+        model.DestroyEvent -= OnDestroyEvent;
+        _entities.Remove(model);
     }
 
 

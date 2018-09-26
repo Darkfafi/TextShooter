@@ -11,13 +11,16 @@ public abstract class MonoBaseView : MonoBehaviour, IView
     {
         get
         {
+            if (_baseView == null)
+                return null;
+
             return _baseView.Controller;
         }
     }
 
     public virtual void DestroyView()
     {
-        if(_baseView == null)
+        if(Controller == null)
         {
             return;
         }

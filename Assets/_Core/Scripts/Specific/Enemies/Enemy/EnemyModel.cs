@@ -29,8 +29,9 @@
         AIModel = new AIModel();
     }
 
-    protected override void OnEntityDestroy()
+    protected override void OnModelDestroy()
     {
+        base.OnModelDestroy();
         WordsHitter.Clean();
         WordsHolder.Clean();
 

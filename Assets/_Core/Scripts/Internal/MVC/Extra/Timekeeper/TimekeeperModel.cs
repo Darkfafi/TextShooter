@@ -1,6 +1,6 @@
 ﻿public class TimekeeperModel : BaseModel
 {
-    public delegate void FrameTickHandler(double deltaTime, float timeScale);
+    public delegate void FrameTickHandler(float deltaTime, float timeScale);
 
     public float TimeScale = 1f;
     public double SecondsPassedSessionUnscaled { get; private set; }
@@ -8,7 +8,7 @@
 
     private FrameTickHandler _frameTickAction;
 
-    public void FrameTick(double deltaTime)
+    public void FrameTick(float deltaTime)
     {
         SecondsPassedSessionUnscaled += deltaTime;
         SecondsPassedSessionScaled += deltaTime * TimeScale;
@@ -29,7 +29,7 @@
         _frameTickAction -= callback;
     }
 
-    protected override void OnEntityDestroy()
+    protected override void OnModelDestroy()
     {
         _frameTickAction = null;
     }

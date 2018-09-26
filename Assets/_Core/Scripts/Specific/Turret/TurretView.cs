@@ -9,12 +9,14 @@ public class TurretView : EntityView
 
     protected override void OnViewReady()
     {
+        base.OnViewReady();
         _model = MVCUtil.GetModel<TurretModel>(this);
         _model.TargetSetEvent += OnTargetSetEvent;
     }
 
-    public override void DestroyView()
+    protected override void OnViewDestroy()
     {
+        base.OnViewDestroy();
         if (_model != null)
         {
             _model.TargetSetEvent -= OnTargetSetEvent;
@@ -22,29 +24,14 @@ public class TurretView : EntityView
         }
     }
 
-    protected void Update()
+    protected override void Update()
     {
-        if(_model != null)
-            TurretFocus();
-    }
+        base.Update();
 
-    private void TurretFocus()
-    {
-        if(_model.CurrentTarget == null)
+        if (_model != null)
         {
-            return;
+            _turretTurningPoint.transform.rotation = Quaternion.Euler(0, 0, _model.TurretNeckRotation);
         }
-        
-        EntityView targetView = MVCUtil.GetView<EntityView>(_model.CurrentTarget);
-
-        float x = targetView.transform.position.x - _turretTurningPoint.transform.position.x;
-        float y = targetView.transform.position.y - _turretTurningPoint.transform.position.y;
-
-        float angle = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
-
-        float newAngle = Mathf.LerpAngle(_turretTurningPoint.transform.eulerAngles.z, angle, Time.deltaTime * 7.4f);
-
-        _turretTurningPoint.transform.rotation = Quaternion.Euler(0, 0, newAngle);
     }
 
     private void OnTargetSetEvent(EntityModel newTarget, EntityModel previousTarget)

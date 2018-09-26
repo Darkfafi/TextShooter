@@ -10,7 +10,7 @@ public class EnemyViewFactory : MonoBehaviour
     public EnemyView CreateEnemyView(EnemyModel enemyModel)
     {
         EnemyView enemyView = Object.Instantiate(_enemyPrefab);
-        EntityManager.Instance.LinkAndRegisterEntity(enemyModel, enemyView);
+        Controller.Link(enemyModel, enemyView);
         return enemyView;
     }
 }

@@ -23,9 +23,9 @@ public class GameView : MonoBaseView
         gm.GameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
         gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
-        Controller<GameModel, GameView>.Link(gm, this);
+        Controller.Link(gm, this);
 
         // Setup TimKkeeper
-        Controller<TimekeeperModel, TimekeeperView>.Link(gm.TimekeeperModel, _timekeeperView);
+        Controller.Link(gm.TimekeeperModel, _timekeeperView);
     }
 }

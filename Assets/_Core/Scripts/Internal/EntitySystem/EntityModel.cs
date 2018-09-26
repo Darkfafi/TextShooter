@@ -7,12 +7,13 @@ public class EntityModel : BaseModel
     public EntityModel()
     {
         Transform = new EntityTransform();
+        EntityTracker.Instance.Register(this);
     }
 }
 
 public class EntityTransform
 {
-    public Vector3 Position;
-    public Vector3 Rotation;
-    public Vector3 Scale;
+    public Vector3 Position = Vector3.zero;
+    public Vector3 Rotation = Vector3.zero;
+    public Vector3 Scale = Vector3.one;
 }

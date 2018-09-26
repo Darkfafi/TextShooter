@@ -14,8 +14,16 @@ public class GameModel : BaseModel, IGame
         TimekeeperModel = new TimekeeperModel();
     }
 
-    protected override void OnEntityReady()
+    protected override void OnModelReady()
     {
         GameStateManager.SetGameState<IntroGameState>();
+    }
+
+    protected override void OnModelDestroy()
+    {
+        GameStateManager.Clean();
+        TimekeeperModel.Destroy();
+        GameStateManager = null;
+        TimekeeperModel = null;
     }
 }

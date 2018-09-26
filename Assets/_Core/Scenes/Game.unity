@@ -501,8 +501,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d559aba804fc114197dbc9331c67be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gameCamera: {fileID: 1074143730}
   _orthographicSpawnMargin: 1
+  _gameCamera: {fileID: 1074143730}
   _enemyViewFactory: {fileID: 752904554}
 --- !u!4 &739578482
 Transform:
@@ -724,6 +724,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _waveSystemView: {fileID: 739578481}
+  _turretView: {fileID: 961880201}
 --- !u!1 &1346859640
 GameObject:
   m_ObjectHideFlags: 0
@@ -922,10 +923,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f5c779552ccc346986b4da6aa1b8c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _cameraForIntro: {fileID: 1074143730}
-  _overlayImage: {fileID: 1567667248}
   _startCameraZoom: 1
   _introDurationInSeconds: 3
+  _cameraForIntro: {fileID: 1074143730}
+  _overlayImage: {fileID: 1567667248}
 --- !u!4 &1755008531
 Transform:
   m_ObjectHideFlags: 0

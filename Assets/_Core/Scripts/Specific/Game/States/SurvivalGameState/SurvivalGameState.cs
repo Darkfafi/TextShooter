@@ -6,21 +6,20 @@ using UnityEngine;
 public class SurvivalGameState : BaseGameState
 {
     public WaveSystemModel WaveSystem { get; private set; }
-
-    public SurvivalGameState()
-    {
-        WaveSystem = new WaveSystemModel();
-    }
+    public TurretModel TurretModel { get; private set; }
 
     protected override void OnSetupState()
     {
-        //EntityManager.Instance.GetAnEntity<GameModel>(); <--- Can be used to get to game specific data
-        // Though, track all SurvivalGameState data in this Game state. 
+        // Setup Player
+        TurretModel = new TurretModel(Game.TimekeeperModel);
+
+        // Setup Environment
+        WaveSystem = new WaveSystemModel();
     }
 
     protected override void OnStartState()
     {
-
+        TurretModel.FocusOnTarget(EntityTracker.Instance.GetAnEntity<EnemyModel>()); //TODO: Replace Test with real targeting code
     }
 
     protected override void OnEndState()
