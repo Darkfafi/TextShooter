@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Game.WaveSystemInternal;
 
 public class WaveSystemModel : BaseModel
 {
