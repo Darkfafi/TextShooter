@@ -5,6 +5,11 @@ public class EntityView : MonoBaseView
     public EntityModel SelfModel { get; private set; }
     protected EntityTransform ViewDeltaTransform { get; private set; }
 
+    [SerializeField]
+    protected bool IgnoreModelTransform = false;
+
+    //TODO: IDEA: Make debug menu to set the position of the model through the view to make it easier to debug through the editor
+
     protected override void OnViewReady()
     {
         ViewDeltaTransform = new EntityTransform();
@@ -23,9 +28,25 @@ public class EntityView : MonoBaseView
     {
         if (ViewDeltaTransform != null && SelfModel != null)
         {
-            transform.position = SelfModel.Transform.Position + ViewDeltaTransform.Position;
-            transform.rotation = Quaternion.Euler(SelfModel.Transform.Rotation + ViewDeltaTransform.Rotation);
-            transform.localScale = SelfModel.Transform.Scale + ViewDeltaTransform.Scale;
+            Vector3 p = transform.position;
+            Vector3 r = transform.rotation.eulerAngles;
+            Vector3 s = transform.localScale;
+
+            if(!IgnoreModelTransform)
+            {
+                p = SelfModel.Transform.Position;
+                r = SelfModel.Transform.Rotation;
+                s = SelfModel.Transform.Scale;
+            }
+
+            p += ViewDeltaTransform.Position;
+            r += ViewDeltaTransform.Rotation;
+            s += ViewDeltaTransform.Scale;
+
+
+            transform.position = p;
+            transform.rotation = Quaternion.Euler(r);
+            transform.localScale = s;
         }
     }
 }
