@@ -2,6 +2,7 @@
 
 /// <summary>
 /// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
+/// It is to only read from the Model, not to alter its data.
 /// </summary>
 public abstract class MonoBaseView : MonoBehaviour, IView
 {

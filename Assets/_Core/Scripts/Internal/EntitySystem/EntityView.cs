@@ -5,7 +5,6 @@ public class EntityView : MonoBaseView
     public EntityModel SelfModel { get; private set; }
     protected EntityTransform ViewDeltaTransform { get; private set; }
 
-    [SerializeField]
     protected bool IgnoreModelTransform = false;
 
     //TODO: IDEA: Make debug menu to set the position of the model through the view to make it easier to debug through the editor

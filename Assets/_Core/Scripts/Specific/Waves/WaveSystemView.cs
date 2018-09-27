@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class WaveSystemView : MonoBaseView
 {
-    [Header("Options")]
-    [SerializeField]
-    private float _orthographicSpawnMargin = 1f;
-
-    [Header("Requirements")]
-    [SerializeField]
-    private Camera _gameCamera;
-
     [SerializeField]
     private EnemyViewFactory _enemyViewFactory;
 
@@ -23,7 +12,6 @@ public class WaveSystemView : MonoBaseView
     protected override void OnViewReady()
     {
         _waveSystemModel = MVCUtil.GetModel<WaveSystemModel>(this);
-        SetSpawnDistanceToCamBoundry();
         _waveSystemModel.SpawnEnemyEvent += OnSpawnEnemyEvent;
     }
 
@@ -32,24 +20,7 @@ public class WaveSystemView : MonoBaseView
         _waveSystemModel.SpawnEnemyEvent -= OnSpawnEnemyEvent;
     }
 
-    protected void Update()
-    {
-        SetSpawnDistanceToCamBoundry();
-    }
-
     #endregion
-
-    private void SetSpawnDistanceToCamBoundry()
-    {
-        if (_waveSystemModel == null)
-            return;
-
-        //TODO: Make camera model & screen model which hold the data required. <<--
-        float spawnDistY = _gameCamera.orthographicSize + _orthographicSpawnMargin;
-        float spawnDistX = spawnDistY * Screen.width / Screen.height;
-
-        _waveSystemModel.SetSpawnDistance(spawnDistX, spawnDistY);
-    }
 
     private void OnSpawnEnemyEvent(EnemyModel enemy)
     {
