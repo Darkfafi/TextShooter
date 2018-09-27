@@ -8,6 +8,8 @@ public class EntityView : MonoBaseView
     [SerializeField]
     protected bool IgnoreModelTransform = false;
 
+    //TODO: IDEA: Make debug menu to set the position of the model through the view to make it easier to debug through the editor
+
     protected override void OnViewReady()
     {
         ViewDeltaTransform = new EntityTransform();
