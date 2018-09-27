@@ -14,7 +14,7 @@ public class SurvivalGameState : BaseGameState
         TurretModel = new TurretModel(Game.TimekeeperModel);
 
         // Setup Environment
-        WaveSystem = new WaveSystemModel(Game.TimekeeperModel);
+        WaveSystem = new WaveSystemModel(Game.GameCamera, Game.TimekeeperModel);
     }
 
     protected override void OnStartState()

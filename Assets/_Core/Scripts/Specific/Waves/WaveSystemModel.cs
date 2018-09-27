@@ -12,16 +12,17 @@ public class WaveSystemModel : BaseModel
     public event Action<EnemyModel> SpawnEnemyEvent;
 
     public int CurrentWave { get; private set; }
-    public float SpawnDistanceY { get; private set; }
-    public float SpawnDistanceX { get; private set; }
 
-    // Global
+    private CameraModel _gameCamera;
+    private float _orthographicSpawnMargin = 1f;
+
     private Tracker _sectionTracker;
     private int _currentSection = 0;
     private WaveInfo _currentWaveInfo;
 
-    public WaveSystemModel(TimekeeperModel timekeeper)
+    public WaveSystemModel(CameraModel gameCamera, TimekeeperModel timekeeper)
     {
+        _gameCamera = gameCamera;
         _sectionTracker = new Tracker(timekeeper);
     }
 
@@ -36,17 +37,15 @@ public class WaveSystemModel : BaseModel
         _sectionTracker.Clean();
         _sectionTracker = null;
         _currentWaveInfo = null;
-    }
-
-    public void SetSpawnDistance(float x, float y)
-    {
-        SpawnDistanceX = x;
-        SpawnDistanceY = y;
+        _gameCamera = null;
     }
 
     private void SpawnWaveSection(WaveSectionObject waveSection)
     {
         EnemyModel[] enemiesSpawned = new EnemyModel[waveSection.Enemies.Length];
+
+        float spawnDistY = _gameCamera.OrthographicSize + _orthographicSpawnMargin;
+        float spawnDistX = spawnDistY * Screen.width / Screen.height;
 
         for (int i = 0; i < waveSection.Enemies.Length; i++)
         {
@@ -56,8 +55,8 @@ public class WaveSystemModel : BaseModel
             int yMult = UnityEngine.Random.value > 0.5f ? 1 : -1;
             float x = ((fullX) ? 1 : UnityEngine.Random.value);
             float y = ((!fullX) ? 1 : UnityEngine.Random.value);
-            x = (Mathf.Lerp(0, SpawnDistanceX, x) + distanceVarienceValue) * xMult;
-            y = (Mathf.Lerp(0, SpawnDistanceY, y) + distanceVarienceValue) * yMult;
+            x = (Mathf.Lerp(0, spawnDistX, x) + distanceVarienceValue) * xMult;
+            y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
             Vector2 spawnPos = new Vector2(x, y);
 
             EnemyModel enemy = waveSection.Enemies[i].CreateEnemy();

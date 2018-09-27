@@ -2,11 +2,16 @@
 
 public class GameView : MonoBaseView
 {
+    [Header("Game States")]
     [SerializeField]
     private IntroGameStateView _introGameStateView;
 
     [SerializeField]
     private SurvivalGameStateView _survivalGameStateView;
+
+    [Header("Requirements")]
+    [SerializeField]
+    private CameraView _cameraView;
 
     private TimekeeperView _timekeeperView;
 
@@ -17,7 +22,10 @@ public class GameView : MonoBaseView
 
     protected void Start()
     {
-        GameModel gm = new GameModel();
+        GameModel gm = new GameModel(_cameraView.Camera.orthographicSize);
+
+        // Setup Camera
+        Controller.Link(gm.GameCamera, _cameraView);
 
         // Setup GameModel
         gm.GameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
