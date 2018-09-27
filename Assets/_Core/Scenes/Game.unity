@@ -610,11 +610,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1074143731}
   - component: {fileID: 1074143730}
-  - component: {fileID: 1074143729}
   - component: {fileID: 1074143728}
   - component: {fileID: 1074143732}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: GameCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -622,13 +621,6 @@ GameObject:
   m_IsActive: 1
 --- !u!81 &1074143728
 AudioListener:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1074143727}
-  m_Enabled: 1
---- !u!124 &1074143729
-Behaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
@@ -936,7 +928,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _startCameraZoom: 1
   _introDurationInSeconds: 3
-  _cameraForIntro: {fileID: 1074143730}
+  _cameraForIntro: {fileID: 1074143732}
   _overlayImage: {fileID: 1567667248}
 --- !u!4 &1755008531
 Transform:

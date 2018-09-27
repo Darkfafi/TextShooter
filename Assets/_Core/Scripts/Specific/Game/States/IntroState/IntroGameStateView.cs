@@ -13,7 +13,7 @@ public class IntroGameStateView : MonoBehaviourGameStateView
 
     [Header("Requirements")]
     [SerializeField]
-    private Camera _cameraForIntro;
+    private CameraView _cameraForIntro;
 
     [SerializeField]
     private Image _overlayImage;
@@ -22,15 +22,10 @@ public class IntroGameStateView : MonoBehaviourGameStateView
 
     private IntroGameState _introGameState;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        _originalGameZoom = _cameraForIntro.orthographicSize;
-    }
-
     protected override void OnPreStartStateView()
     {
         _introGameState = GameState as IntroGameState;
+        _originalGameZoom = _cameraForIntro.GetOrthographicSize();
         _introGameState.IntroStateSwitchedEvent += OnIntroStateSwitchedEvent;
     }
 
@@ -58,14 +53,17 @@ public class IntroGameStateView : MonoBehaviourGameStateView
     private void DoCinematicCameraVisual()
     {
         // Camera Visual Start Setup
-        _cameraForIntro.orthographicSize = _startCameraZoom;
+        _cameraForIntro.SetCameraChainedToView(false);
+        _cameraForIntro.Camera.orthographicSize = _startCameraZoom;
         Color c = _overlayImage.color;
         c.a = 1f;
         _overlayImage.color = c;
 
         // Camera Visual Animation
-        _cameraForIntro.DOOrthoSize(_originalGameZoom, _introDurationInSeconds * 0.6f).SetEase(Ease.OutCubic).SetDelay(_introDurationInSeconds * 0.1f);
-        _overlayImage.DOFade(0f, _introDurationInSeconds).OnComplete(() => {
+        _cameraForIntro.Camera.DOOrthoSize(_originalGameZoom, _introDurationInSeconds * 0.6f).SetEase(Ease.OutCubic).SetDelay(_introDurationInSeconds * 0.1f);
+        _overlayImage.DOFade(0f, _introDurationInSeconds).OnComplete(() => 
+        {
+            _cameraForIntro.SetCameraChainedToView(true);
             _introGameState.GoToNextState();
         });
     }

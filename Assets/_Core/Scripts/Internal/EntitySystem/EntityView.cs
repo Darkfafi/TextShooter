@@ -3,7 +3,7 @@
 public class EntityView : MonoBaseView
 {
     public EntityModel SelfModel { get; private set; }
-    protected EntityTransform ViewDeltaTransform { get; private set; }
+    public EntityTransform ViewDeltaTransform { get; private set; }
 
     protected bool IgnoreModelTransform = false;
 
@@ -25,23 +25,11 @@ public class EntityView : MonoBaseView
 
     protected virtual void Update()
     {
-        if (ViewDeltaTransform != null && SelfModel != null)
+        if (ViewDeltaTransform != null && SelfModel != null && !IgnoreModelTransform)
         {
-            Vector3 p = transform.position;
-            Vector3 r = transform.rotation.eulerAngles;
-            Vector3 s = transform.localScale;
-
-            if(!IgnoreModelTransform)
-            {
-                p = SelfModel.Transform.Position;
-                r = SelfModel.Transform.Rotation;
-                s = SelfModel.Transform.Scale;
-            }
-
-            p += ViewDeltaTransform.Position;
-            r += ViewDeltaTransform.Rotation;
-            s += ViewDeltaTransform.Scale;
-
+            Vector3 p = SelfModel.Transform.Position + ViewDeltaTransform.Position;
+            Vector3 r = SelfModel.Transform.Rotation + ViewDeltaTransform.Rotation;
+            Vector3 s = SelfModel.Transform.Scale + ViewDeltaTransform.Scale;
 
             transform.position = p;
             transform.rotation = Quaternion.Euler(r);
