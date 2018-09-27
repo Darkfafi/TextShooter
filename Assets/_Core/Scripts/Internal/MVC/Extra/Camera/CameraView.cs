@@ -26,7 +26,7 @@ public class CameraView : EntityView
     {
         base.OnViewReady();
         _cameraModel = SelfModel as CameraModel;
-        ViewDeltaTransform.SetPosZ(-10);
+        ViewDeltaTransform.SetPosZ(-10); // Make it so the unity camera is at the right distance without affecting the model data.
     }
 
     protected override void OnViewDestroy()
