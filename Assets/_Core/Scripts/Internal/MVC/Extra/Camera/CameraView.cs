@@ -13,13 +13,27 @@ public class CameraView : EntityView
 
     protected override void Update()
     {
-        if(_cameraModel == null)
+        base.Update();
+
+        if(_cameraModel == null || IgnoreModelTransform)
         {
             return;
         }
 
-        base.Update();
         Camera.orthographicSize = _cameraModel.OrthographicSize;
+    }
+
+    public float GetOrthographicSize()
+    {
+        if (_cameraModel == null)
+            return 0f;
+
+        return _cameraModel.OrthographicSize;
+    }
+
+    public void SetCameraChainedToView(bool chainedToView)
+    {
+        IgnoreModelTransform = !chainedToView;
     }
 
     protected override void OnViewReady()
