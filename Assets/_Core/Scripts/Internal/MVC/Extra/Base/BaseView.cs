@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// The design is to have the View contain all the Unity / visual specific code and use the Model data to set its visual state.
@@ -16,6 +17,17 @@ public abstract class MonoBaseView : MonoBehaviour, IView
                 return null;
 
             return _baseView.LinkingController;
+        }
+    }
+
+    public MethodPermitter MethodPermitter
+    {
+        get
+        {
+            if (_baseView == null)
+                return null;
+
+            return _baseView.MethodPermitter;
         }
     }
 
@@ -65,6 +77,11 @@ public class BaseView : IView
         get; private set;
     }
 
+    public MethodPermitter MethodPermitter
+    {
+        get; private set;
+    }
+
     public virtual void DestroyView()
     {
         if(LinkingController == null)
@@ -83,6 +100,7 @@ public class BaseView : IView
             return;
 
         LinkingController = controller;
+        MethodPermitter = MVCUtil.GetModel<BaseModel>(this).MethodPermitter;
         OnViewReady();
     }
 

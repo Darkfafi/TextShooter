@@ -17,7 +17,16 @@ public abstract class BaseModel : IModel
         get; private set;
     }
 
+    public MethodPermitter MethodPermitter
+    {
+        get
+        {
+            return _methodPermitter;
+        }
+    }
+
     private bool _internalDestroyCalled = false;
+    private MethodPermitter _methodPermitter = new MethodPermitter();
 
     public void Destroy()
     {

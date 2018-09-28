@@ -21,10 +21,12 @@ public class IntroGameStateView : MonoBehaviourGameStateView
     private float _originalGameZoom;
 
     private IntroGameState _introGameState;
+    private System.Action _cameraCinematicStatePermissionSignaller;
 
     protected override void OnPreStartStateView()
     {
         _introGameState = GameState as IntroGameState;
+        _introGameState.MethodPermitter.BlockPermission((int)IntroGameState.IntroState.CameraCinematic, out _cameraCinematicStatePermissionSignaller);
         _originalGameZoom = _cameraForIntro.GetOrthographicSize();
         _introGameState.IntroStateSwitchedEvent += OnIntroStateSwitchedEvent;
     }
@@ -38,6 +40,7 @@ public class IntroGameStateView : MonoBehaviourGameStateView
     {
         _introGameState.IntroStateSwitchedEvent -= OnIntroStateSwitchedEvent;
         _introGameState = null;
+        _cameraCinematicStatePermissionSignaller = null;
     }
 
     private void OnIntroStateSwitchedEvent(IntroGameState.IntroState newIntroState)
@@ -64,7 +67,7 @@ public class IntroGameStateView : MonoBehaviourGameStateView
         _overlayImage.DOFade(0f, _introDurationInSeconds).OnComplete(() => 
         {
             _cameraForIntro.SetCameraChainedToView(true);
-            _introGameState.GoToNextState();
+            _cameraCinematicStatePermissionSignaller();
         });
     }
 }
