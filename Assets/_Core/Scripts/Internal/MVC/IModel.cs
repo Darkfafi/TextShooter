@@ -1,6 +1,6 @@
 ﻿public interface IModel
 {
-    Controller Controller { get; }
-    void SetupModel(Controller controller);
+    IDestroyable LinkingController { get; }
+    void SetupModel(IDestroyable controller);
     void Destroy();
 }
