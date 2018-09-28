@@ -34,6 +34,9 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 
     public virtual void SetupView(object controller)
     {
+        if (LinkingController != null)
+            return;
+
         _baseView.SetupView(controller);
         OnViewReady();
     }
@@ -76,6 +79,9 @@ public class BaseView : IView
 
     public virtual void SetupView(object controller)
     {
+        if (LinkingController != null)
+            return;
+
         LinkingController = controller;
         OnViewReady();
     }
