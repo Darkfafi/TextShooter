@@ -4,29 +4,31 @@ public class IntroGameState : BaseGameState
 {
     public enum IntroState
     {
-        None,
-        CameraCinematic,
-        End
+        None = 0,
+        CameraCinematic = 1,
+        End = 2
     }
 
     public event Action<IntroState> IntroStateSwitchedEvent;
 
     private IntroState _currentState;
 
-    public void GoToNextState()
+    private void GoToNextState()
     {
         _currentState = _currentState + 1;
 
-        if (_currentState == IntroState.End)
+        switch(_currentState)
         {
-            GameStateManager.SetGameState<SurvivalGameState>();
-        }
-        else
-        {
-            if (IntroStateSwitchedEvent != null)
-            {
-                IntroStateSwitchedEvent(_currentState);
-            }
+            case IntroState.End:
+                GameStateManager.SetGameState<SurvivalGameState>();
+                break;
+            default:
+                if (IntroStateSwitchedEvent != null)
+                {
+                    IntroStateSwitchedEvent(_currentState);
+                }
+                MethodPermitter.ExecuteWhenPermitted((int)_currentState, GoToNextState);
+                break;
         }
     }
 
