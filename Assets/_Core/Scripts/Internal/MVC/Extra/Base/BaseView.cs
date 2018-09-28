@@ -8,33 +8,42 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 {
     private BaseView _baseView = new BaseView();
 
-    public Controller Controller
+    public object LinkingController
     {
         get
         {
             if (_baseView == null)
                 return null;
 
-            return _baseView.Controller;
+            return _baseView.LinkingController;
         }
     }
 
     public virtual void DestroyView()
     {
-        if(Controller == null)
+        if(LinkingController == null)
         {
             return;
         }
 
         _baseView.DestroyView();
         OnViewDestroy();
+        ViewDestruction();
         _baseView = null;
     }
 
-    public virtual void SetupView(Controller controller)
+    public virtual void SetupView(object controller)
     {
+        if (LinkingController != null)
+            return;
+
         _baseView.SetupView(controller);
         OnViewReady();
+    }
+
+    protected virtual void ViewDestruction()
+    {
+        Destroy(gameObject);
     }
 
     private void OnDestroy()
@@ -51,46 +60,30 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 /// </summary>
 public class BaseView : IView
 {
-    public Controller Controller
+    public object LinkingController
     {
         get; private set;
     }
 
-    private bool _internalDestroyed = false;
-
     public virtual void DestroyView()
     {
-        if(!_internalDestroyed)
-        {
-            _internalDestroyed = true;
-            Controller.Destroy();
-            return;
-        }
-
-        if(Controller == null)
+        if(LinkingController == null)
         {
             return;
         }
 
         OnViewDestroy();
 
-        Controller = null;
+        LinkingController = null;
     }
 
-    public virtual void SetupView(Controller controller)
+    public virtual void SetupView(object controller)
     {
-        Controller = controller;
+        if (LinkingController != null)
+            return;
+
+        LinkingController = controller;
         OnViewReady();
-    }
-
-    private void OnDestroy()
-    {
-        OnViewDestroy();
-
-        if (Controller != null)
-        {
-            Controller.Destroy();
-        }
     }
 
     protected virtual void OnViewReady() { }

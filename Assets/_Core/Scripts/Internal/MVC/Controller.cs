@@ -1,39 +1,11 @@
-﻿public class Controller<M, V> : Controller where M : class, IModel where V : class, IView
-{
-    public static Controller<M, V> Link(M model, V view)
-    {
-        Controller<M, V> c = new Controller<M, V>();
-        c.Setup(model, view);
-        return c;
-    }
-
-    public M Model
-    {
-        get
-        {
-            return (M)CoreModel;
-        }
-    }
-
-    public V View
-    {
-        get
-        {
-            return (V)CoreView;
-        }
-    }
-}
-
-public class Controller
+﻿public class Controller : IDestroyable
 {
     public static Controller Link(IModel model, IView view)
     {
-        Controller c = new Controller();
-        c.Setup(model, view);
-        return c;
+        return new Controller(model, view);
     }
 
-    protected void Setup(IModel model, IView view)
+    private Controller(IModel model, IView view)
     {
         CoreModel = model;
         CoreView = view;
@@ -66,4 +38,9 @@ public class Controller
         CoreModel = null;
         CoreView = null;
     }
+}
+
+public interface IDestroyable
+{
+    void Destroy();
 }

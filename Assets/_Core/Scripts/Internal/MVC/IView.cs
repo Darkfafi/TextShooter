@@ -1,6 +1,6 @@
 ﻿public interface IView
 {
-    Controller Controller { get; }
-    void SetupView(Controller model);
+    object LinkingController { get; }
+    void SetupView(object controller);
     void DestroyView();
 }

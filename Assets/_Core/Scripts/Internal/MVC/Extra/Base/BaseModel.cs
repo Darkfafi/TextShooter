@@ -12,7 +12,7 @@ public abstract class BaseModel : IModel
         get; private set;
     }
 
-    public Controller Controller
+    public IDestroyable LinkingController
     {
         get; private set;
     }
@@ -29,7 +29,7 @@ public abstract class BaseModel : IModel
         if(!_internalDestroyCalled)
         {
             _internalDestroyCalled = true;
-            Controller.Destroy();
+            LinkingController.Destroy();
             return;
         }
 
@@ -41,12 +41,15 @@ public abstract class BaseModel : IModel
             DestroyEvent(this);
         }
 
-        Controller = null;
+        LinkingController = null;
     }
 
-    public void SetupModel(Controller controller)
+    public void SetupModel(IDestroyable controller)
     {
-        Controller = controller;
+        if (LinkingController != null)
+            return;
+
+        LinkingController = controller;
         IsDestroyed = false;
         OnModelReady();
     }
