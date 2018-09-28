@@ -20,17 +20,6 @@ public abstract class MonoBaseView : MonoBehaviour, IView
         }
     }
 
-    public MethodPermitter MethodPermitter
-    {
-        get
-        {
-            if (_baseView == null)
-                return null;
-
-            return _baseView.MethodPermitter;
-        }
-    }
-
     public virtual void DestroyView()
     {
         if(LinkingController == null)
@@ -77,11 +66,6 @@ public class BaseView : IView
         get; private set;
     }
 
-    public MethodPermitter MethodPermitter
-    {
-        get; private set;
-    }
-
     public virtual void DestroyView()
     {
         if(LinkingController == null)
@@ -100,7 +84,6 @@ public class BaseView : IView
             return;
 
         LinkingController = controller;
-        MethodPermitter = MVCUtil.GetModel<BaseModel>(this).MethodPermitter;
         OnViewReady();
     }
 
