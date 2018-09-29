@@ -77,11 +77,11 @@ public class ModelManipulationWindow : EditorWindow
 
         EditorGUILayout.Space();
 
-        GUILayout.Label("Model Transform: ");
+        IModelTransformHolder transformHolder = _targetModel as IModelTransformHolder;
+
+        GUILayout.Label("Model Transform: " + (transformHolder != null ? "OK" : "None Available"));
 
         EditorGUILayout.Space();
-
-        IModelTransformHolder transformHolder = _targetModel as IModelTransformHolder;
 
         if (transformHolder != null)
         {
