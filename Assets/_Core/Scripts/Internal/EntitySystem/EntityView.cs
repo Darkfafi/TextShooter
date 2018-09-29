@@ -3,7 +3,7 @@
 public class EntityView : MonoBaseView
 {
     public EntityModel SelfModel { get; private set; }
-    public EntityTransform ViewDeltaTransform { get; private set; }
+    public ModelTransform ViewDeltaTransform { get; private set; }
 
     protected bool IgnoreModelTransform = false;
 
@@ -11,7 +11,7 @@ public class EntityView : MonoBaseView
 
     protected override void OnViewReady()
     {
-        ViewDeltaTransform = new EntityTransform();
+        ViewDeltaTransform = new ModelTransform();
         ViewDeltaTransform.Scale = Vector3.zero;
 
         SelfModel = MVCUtil.GetModel<EntityModel>(this);
@@ -27,9 +27,9 @@ public class EntityView : MonoBaseView
     {
         if (ViewDeltaTransform != null && SelfModel != null && !IgnoreModelTransform)
         {
-            Vector3 p = SelfModel.Transform.Position + ViewDeltaTransform.Position;
-            Vector3 r = SelfModel.Transform.Rotation + ViewDeltaTransform.Rotation;
-            Vector3 s = SelfModel.Transform.Scale + ViewDeltaTransform.Scale;
+            Vector3 p = SelfModel.ModelTransform.Position + ViewDeltaTransform.Position;
+            Vector3 r = SelfModel.ModelTransform.Rotation + ViewDeltaTransform.Rotation;
+            Vector3 s = SelfModel.ModelTransform.Scale + ViewDeltaTransform.Scale;
 
             transform.position = p;
             transform.rotation = Quaternion.Euler(r);

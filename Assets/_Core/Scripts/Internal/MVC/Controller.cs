@@ -1,4 +1,6 @@
-﻿public class Controller : IDestroyable
+﻿using System;
+
+public class Controller : IAbstractController
 {
     public static Controller Link(IModel model, IView view)
     {
@@ -23,6 +25,17 @@
         get; private set;
     }
 
+    public MethodPermitter MethodPermitter
+    {
+        get
+        {
+            if (CoreModel == null)
+                return null;
+
+            return CoreModel.MethodPermitter;
+        }
+    }
+
     public virtual void Destroy()
     {
         if(CoreModel != null)
@@ -40,7 +53,13 @@
     }
 }
 
-public interface IDestroyable
+
+public interface IAbstractController : IMethodPermitter
 {
     void Destroy();
+}
+
+public interface IMethodPermitter
+{
+    MethodPermitter MethodPermitter { get; }
 }

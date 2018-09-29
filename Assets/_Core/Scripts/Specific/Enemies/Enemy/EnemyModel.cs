@@ -15,6 +15,7 @@ public class EnemyModel : EntityModel
     public AIModel AIModel { get; private set; }
     public int Damage { get; private set; }
     public EnemyCharacterType EnemyType { get; private set; }
+    public TopDownMovement TopDownMovement { get; private set; }
 
     public bool IsDead
     {
@@ -24,15 +25,21 @@ public class EnemyModel : EntityModel
         }
     }
 
-    public EnemyModel(EnemyCharacterType enemyType, int damage, string currentWord, params string[] nextWords)
+    public EnemyModel(TimekeeperModel timekeeper, EnemyCharacterType enemyType, string currentWord, params string[] nextWords)
     {
         EnemyType = enemyType;
-        Damage = damage;
+        Damage = 1;
+        TopDownMovement = new TopDownMovement(timekeeper, ModelTransform);
         WordsHolder = new WordsHolder(currentWord, nextWords);
         WordsHitter = new WordsHitter(WordsHolder, GetCharHitsNeeded());
         AIModel = new AIModel();
 
         WordsHolder.WordCycledEvent += OnWordCycledEvent;
+    }
+
+    public void SetDamage(int damage)
+    {
+        Damage = damage;
     }
 
     protected override void OnModelDestroy()
