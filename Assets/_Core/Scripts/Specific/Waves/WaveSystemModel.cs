@@ -19,9 +19,11 @@ public class WaveSystemModel : BaseModel
     private Tracker _sectionTracker;
     private int _currentSection = 0;
     private WaveInfo _currentWaveInfo;
+    private TimekeeperModel _timekeeperModel;
 
     public WaveSystemModel(CameraModel gameCamera, TimekeeperModel timekeeper)
     {
+        _timekeeperModel = timekeeper;
         _gameCamera = gameCamera;
         _sectionTracker = new Tracker(timekeeper);
     }
@@ -38,6 +40,7 @@ public class WaveSystemModel : BaseModel
         _sectionTracker = null;
         _currentWaveInfo = null;
         _gameCamera = null;
+        _timekeeperModel = null;
     }
 
     private void SpawnWaveSection(WaveSectionObject waveSection)
@@ -59,8 +62,8 @@ public class WaveSystemModel : BaseModel
             y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
             Vector2 spawnPos = new Vector2(x, y);
 
-            EnemyModel enemy = waveSection.Enemies[i].CreateEnemy();
-            enemy.Transform.Position = spawnPos;
+            EnemyModel enemy = waveSection.Enemies[i].CreateEnemy(_timekeeperModel);
+            enemy.ModelTransform.Position = spawnPos;
 
             enemiesSpawned[i] = enemy;
 

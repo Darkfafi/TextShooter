@@ -33,8 +33,8 @@ public class TurretModel : EntityModel
             return;
         }
 
-        float x = CurrentTarget.Transform.Position.x - Transform.Position.x;
-        float y = CurrentTarget.Transform.Position.y - Transform.Position.y;
+        float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
+        float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
 
         float angle = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
 

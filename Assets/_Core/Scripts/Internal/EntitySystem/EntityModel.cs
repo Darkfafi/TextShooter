@@ -1,10 +1,15 @@
-﻿public class EntityModel : BaseModel
+﻿using System;
+
+public class EntityModel : BaseModel, IModelTransformHolder
 {
-    public EntityTransform Transform { get; protected set; }
+    public ModelTransform ModelTransform
+    {
+        get; private set;
+    }
 
     public EntityModel()
     {
-        Transform = new EntityTransform();
+        ModelTransform = new ModelTransform();
         EntityTracker.Instance.Register(this);
     }
 }

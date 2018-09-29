@@ -33,9 +33,11 @@
             Damage = damage;
         }
 
-        public EnemyModel CreateEnemy()
+        public EnemyModel CreateEnemy(TimekeeperModel timekeeper)
         {
-            return new EnemyModel(EnemyCharacterType, Damage, EnemyWord, EnemyNextWords);
+            EnemyModel m = new EnemyModel(timekeeper, EnemyCharacterType, EnemyWord, EnemyNextWords);
+            m.SetDamage(Damage);
+            return m;
         }
     }
 }

@@ -12,7 +12,7 @@ public abstract class BaseModel : IModel
         get; private set;
     }
 
-    public IDestroyable LinkingController
+    public IAbstractController LinkingController
     {
         get; private set;
     }
@@ -53,7 +53,7 @@ public abstract class BaseModel : IModel
         LinkingController = null;
     }
 
-    public void SetupModel(IDestroyable controller)
+    public void SetupModel(IAbstractController controller)
     {
         if (LinkingController != null)
             return;

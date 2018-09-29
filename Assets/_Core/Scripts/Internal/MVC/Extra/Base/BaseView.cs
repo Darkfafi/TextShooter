@@ -9,7 +9,7 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 {
     private BaseView _baseView = new BaseView();
 
-    public object LinkingController
+    public IMethodPermitter LinkingController
     {
         get
         {
@@ -33,7 +33,7 @@ public abstract class MonoBaseView : MonoBehaviour, IView
         _baseView = null;
     }
 
-    public virtual void SetupView(object controller)
+    public virtual void SetupView(IMethodPermitter controller)
     {
         if (LinkingController != null)
             return;
@@ -61,7 +61,7 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 /// </summary>
 public class BaseView : IView
 {
-    public object LinkingController
+    public IMethodPermitter LinkingController
     {
         get; private set;
     }
@@ -78,7 +78,7 @@ public class BaseView : IView
         LinkingController = null;
     }
 
-    public virtual void SetupView(object controller)
+    public virtual void SetupView(IMethodPermitter controller)
     {
         if (LinkingController != null)
             return;

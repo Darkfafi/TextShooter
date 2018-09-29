@@ -1,7 +1,7 @@
 ﻿public interface IModel
 {
-    IDestroyable LinkingController { get; }
+    IAbstractController LinkingController { get; }
     MethodPermitter MethodPermitter { get; }
-    void SetupModel(IDestroyable controller);
+    void SetupModel(IAbstractController controller);
     void Destroy();
 }
