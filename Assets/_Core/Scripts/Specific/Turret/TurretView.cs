@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
+using DG.Tweening;
 
 public class TurretView : EntityView
 {
     [SerializeField]
     private GameObject _turretTurningPoint;
+
+    [SerializeField]
+    private GameObject _rangeIndicator;
 
     private TurretModel _model;
 
@@ -12,6 +16,8 @@ public class TurretView : EntityView
         base.OnViewReady();
         _model = MVCUtil.GetModel<TurretModel>(this);
         _model.TargetSetEvent += OnTargetSetEvent;
+
+        _rangeIndicator.transform.DOScale(_model.Range * 2f, 0.8f).SetEase(Ease.OutElastic, 1.2f, 1);
     }
 
     protected override void OnViewDestroy()
