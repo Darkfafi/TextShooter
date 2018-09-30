@@ -39,49 +39,37 @@ public class TurretModel : EntityModel
 
     private void Update(float deltaTime, float timeScale)
     {
-        float distCurrent = CurrentTarget == null ? float.MaxValue : (CurrentTarget.ModelTransform.Position - ModelTransform.Position).magnitude;
-
         EnemyModel otherTarget = _enemyFilter.GetAny(
             (e) =>
             {
-                float dist = (e.ModelTransform.Position - ModelTransform.Position).magnitude;
-                if (dist > Range)
+                if (e.IsDestroyed || e.IsDead)
+                    return false;
+
+                if ((e.ModelTransform.Position - ModelTransform.Position).magnitude > Range)
                 {
                     return false;
                 }
-
-                if (dist < distCurrent)
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
+            }, (a, b) =>
+            {
+                float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
+                float distB = (b.ModelTransform.Position - ModelTransform.Position).magnitude;
+                return (int)(distA - distB);
             });
 
+        FocusOnTarget(otherTarget);
 
-        if (otherTarget == null)
-        {
-            if(distCurrent > Range)
-                FocusOnTarget(null);
-        }
-        else if ((otherTarget.ModelTransform.Position - ModelTransform.Position).magnitude < distCurrent)
-        {
-            FocusOnTarget(otherTarget);
-        }
+        float angleToTarget = 0;
 
-        if (CurrentTarget == null)
+        if (CurrentTarget != null)
         {
-            return;
+            float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
+            float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
+
+            angleToTarget = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
         }
 
-        float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
-        float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
-
-        float angle = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
-
-        float newAngle = Mathf.LerpAngle(TurretNeckRotation, angle, deltaTime * timeScale * 7.4f);
-
-        TurretNeckRotation = newAngle;
+        TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
     }
 
     public void FocusOnTarget(EnemyModel target)
@@ -91,33 +79,11 @@ public class TurretModel : EntityModel
         if(previousTarget == target)
             return;
 
-        if(previousTarget != null)
-        {
-            previousTarget.DestroyEvent -= OnDestroyEvent;
-            previousTarget.DeathEvent -= OnDeathEvent;
-        }
-
         CurrentTarget = target;
-
-        if (CurrentTarget != null)
-        {
-            CurrentTarget.DestroyEvent += OnDestroyEvent;
-            CurrentTarget.DeathEvent += OnDeathEvent;
-        }
 
         if (TargetSetEvent != null)
         {
             TargetSetEvent(CurrentTarget, previousTarget);
         }
-    }
-
-    private void OnDeathEvent(EnemyModel target)
-    {
-        FocusOnTarget(null);
-    }
-
-    private void OnDestroyEvent(BaseModel target)
-    {
-        FocusOnTarget(null);
     }
 }

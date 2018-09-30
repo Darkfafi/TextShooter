@@ -13,36 +13,36 @@ public class ModelHolder<BM> where BM : BaseModel
 
     // - Single Entity - \\
 
-    public BM GetAny()
+    public BM GetAny(Comparison<BM> sort = null)
     {
-        ReadOnlyCollection<BM> e = GetAll();
+        ReadOnlyCollection<BM> e = GetAll(sort);
         if (e.Count > 0)
             return e[0];
 
         return null;
     }
 
-    public BM GetAny(Func<BM, bool> filterCondition)
+    public BM GetAny(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
     {
-        ReadOnlyCollection<BM> e = GetAll(filterCondition);
+        ReadOnlyCollection<BM> e = GetAll(filterCondition, sort);
         if (e.Count > 0)
             return e[0];
 
         return null;
     }
 
-    public T GetAny<T>() where T : BM
+    public T GetAny<T>(Comparison<T> sort = null) where T : BM
     {
-        ReadOnlyCollection<T> e = GetAll<T>();
+        ReadOnlyCollection<T> e = GetAll(sort);
         if (e.Count > 0)
             return e[0];
 
         return null;
     }
 
-    public T GetAny<T>(Func<T, bool> filterCondition) where T : BM
+    public T GetAny<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
     {
-        ReadOnlyCollection<T> e = GetAll<T>(filterCondition);
+        ReadOnlyCollection<T> e = GetAll<T>(filterCondition, sort);
         if (e.Count > 0)
             return e[0];
 
@@ -51,22 +51,25 @@ public class ModelHolder<BM> where BM : BaseModel
 
     // - Multiple Entities - \\
 
-    public ReadOnlyCollection<BM> GetAll()
+    public ReadOnlyCollection<BM> GetAll(Comparison<BM> sort = null)
     {
-        return _models.AsReadOnly();
+        if (sort == null)
+            return _models.AsReadOnly();
+        else
+            return GetAll(null, sort);
     }
 
-    public ReadOnlyCollection<BM> GetAll(Func<BM, bool> filterCondition)
+    public ReadOnlyCollection<BM> GetAll(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
     {
-        return GetAll<BM>(filterCondition);
+        return GetAll<BM>(filterCondition, sort);
     }
 
-    public ReadOnlyCollection<T> GetAll<T>() where T : BM
+    public ReadOnlyCollection<T> GetAll<T>(Comparison<T> sort = null) where T : BM
     {
-        return GetAll<T>(null);
+        return GetAll(null, sort);
     }
 
-    public ReadOnlyCollection<T> GetAll<T>(Func<T, bool> filterCondition) where T : BM
+    public ReadOnlyCollection<T> GetAll<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
     {
         List<T> result = new List<T>();
         for (int i = 0, count = _models.Count; i < count; i++)
@@ -77,6 +80,10 @@ public class ModelHolder<BM> where BM : BaseModel
                 result.Add(e);
             }
         }
+
+        if(sort != null)
+            result.Sort(sort);
+
         return result.AsReadOnly();
     }
 
