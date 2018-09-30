@@ -5,7 +5,10 @@ public class ModelManipulationWindow : EditorWindow
 {
     private MonoBaseView _targetView;
     private BaseModel _targetModel;
+
     private bool _manipulateTransform = false;
+    private bool _showTags = false;
+    private string _currentTagAddString = "";
 
     [MenuItem("MVC/Model Manipulator")]
     static void OpenWindow()
@@ -63,25 +66,69 @@ public class ModelManipulationWindow : EditorWindow
         {
             _targetModel = MVCUtil.GetModel<BaseModel>(monoBaseView);
             _targetView = monoBaseView;
-            _manipulateTransform = false;
         }
 
         if (_targetModel == null)
             return;
 
+        EditorGUILayout.BeginVertical(GUI.skin.textArea);
 
-        GUIStyle goodStyle = new GUIStyle(GUI.skin.label);
-        goodStyle.normal.textColor = new Color(0f, 0.9f, 0f);
-        GUILayout.Label("View Object Name: " + _targetView.gameObject.name, goodStyle);
+        GUILayout.Label("View Object Name: " + _targetView.gameObject.name);
         GUILayout.Label("Model Type: " + _targetModel.GetType());
+
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.Space();
+
+
+        IModelTagsHolder tagsHolder = _targetModel as IModelTagsHolder;
+
+        EditorGUILayout.BeginVertical(GUI.skin.textArea);
+
+        GUILayout.Label("Model Tags: " + (tagsHolder != null ? "OK" : "None Available"));
+
+        if (tagsHolder != null)
+        {
+            System.Collections.ObjectModel.ReadOnlyCollection<string> tags = tagsHolder.ModelTags.GetTags();
+            if (_showTags = EditorGUILayout.Foldout(_showTags, string.Format("Tags ({0})", tags.Count)))
+            {
+                EditorGUILayout.BeginHorizontal();
+                _currentTagAddString = EditorGUILayout.TextField("Add Tag: ", _currentTagAddString);
+                if(GUILayout.Button("+", GUILayout.Width(40)))
+                {
+                    tagsHolder.ModelTags.AddTag(_currentTagAddString);
+                    _currentTagAddString = string.Empty;
+                }
+                EditorGUILayout.EndHorizontal();
+
+                for (int i = 0; i < tags.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    GUIStyle s = new GUIStyle(GUI.skin.label);
+                    s.normal.textColor = new Color(0.5f, 0.3f, 0.6f);
+                    GUILayout.Label(" * " + tags[i], s);
+                    s = new GUIStyle(GUI.skin.button);
+                    s.normal.textColor = Color.red;
+                    if (GUILayout.Button("x", s, GUILayout.Width(25)))
+                    {
+                        tagsHolder.ModelTags.RemoveTag(tags[i]);
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                EditorGUILayout.Space();
+            }
+        }
+
+        EditorGUILayout.EndVertical();
 
         EditorGUILayout.Space();
 
         IModelTransformHolder transformHolder = _targetModel as IModelTransformHolder;
 
-        GUILayout.Label("Model Transform: " + (transformHolder != null ? "OK" : "None Available"));
+        EditorGUILayout.BeginVertical(GUI.skin.textArea);
 
-        EditorGUILayout.Space();
+        GUILayout.Label("Model Transform: " + (transformHolder != null ? "OK" : "None Available"));
 
         if (transformHolder != null)
         {
@@ -94,6 +141,10 @@ public class ModelManipulationWindow : EditorWindow
 
             EditorGUILayout.Space();
         }
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.EndVertical();
 
         if (GUILayout.Button("Destroy Model"))
         {

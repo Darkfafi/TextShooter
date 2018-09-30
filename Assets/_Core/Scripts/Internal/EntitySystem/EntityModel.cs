@@ -1,15 +1,27 @@
-﻿using System;
-
-public class EntityModel : BaseModel, IModelTransformHolder
+﻿public class EntityModel : BaseModel, IModelTransformHolder, IModelTagsHolder
 {
+    public EntityModel()
+    {
+        ModelTransform = new ModelTransform();
+        ModelTags = new ModelTags(this);
+        EntityTracker.Instance.Register(this);
+    }
+
+    public ModelTags ModelTags
+    {
+        get; private set;
+    }
+
     public ModelTransform ModelTransform
     {
         get; private set;
     }
 
-    public EntityModel()
+    protected override void OnModelDestroy()
     {
-        ModelTransform = new ModelTransform();
-        EntityTracker.Instance.Register(this);
+        base.OnModelDestroy();
+        ModelTags.Clean();
+        ModelTags = null;
+        ModelTransform = null;
     }
 }
