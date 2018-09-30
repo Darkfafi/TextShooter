@@ -1,7 +1,8 @@
 ﻿public class EntityTracker : ModelHolder<EntityModel>
 {
-    public event EntityModel.EntityTagHandler EntityAddedTagEvent;
-    public event EntityModel.EntityTagHandler EntityRemovedTagEvent;
+    public delegate void EntityTagHandler(EntityModel entity, string tag);
+    public event EntityTagHandler EntityAddedTagEvent;
+    public event EntityTagHandler EntityRemovedTagEvent;
 
     public static EntityTracker Instance
     {
@@ -29,8 +30,8 @@
             else
             {
                 model.DestroyEvent += OnDestroyEvent;
-                model.TagAddedEvent += OnTagAddedEvent;
-                model.TagRemovedEvent += OnTagRemovedEvent;
+                model.ModelTags.TagAddedEvent += OnTagAddedEvent;
+                model.ModelTags.TagRemovedEvent += OnTagRemovedEvent;
             }
         }
     }
@@ -40,8 +41,8 @@
         if (Untrack(model))
         {
             model.DestroyEvent -= OnDestroyEvent;
-            model.TagAddedEvent -= OnTagAddedEvent;
-            model.TagRemovedEvent -= OnTagRemovedEvent;
+            model.ModelTags.TagAddedEvent -= OnTagAddedEvent;
+            model.ModelTags.TagRemovedEvent -= OnTagRemovedEvent;
         }
     }
 
@@ -50,14 +51,20 @@
         Unregister((EntityModel)destroyedEntity);
     }
 
-    private void OnTagAddedEvent(EntityModel entity, string tag)
+    private void OnTagAddedEvent(BaseModel entity, string tag)
     {
-        EntityAddedTagEvent(entity, tag);
+        if (EntityAddedTagEvent != null)
+        {
+            EntityAddedTagEvent((EntityModel)entity, tag);
+        }
     }
 
-    private void OnTagRemovedEvent(EntityModel entity, string tag)
+    private void OnTagRemovedEvent(BaseModel entity, string tag)
     {
-        EntityRemovedTagEvent(entity, tag);
+        if (EntityRemovedTagEvent != null)
+        {
+            EntityRemovedTagEvent((EntityModel)entity, tag);
+        }
     }
 }
 
@@ -153,9 +160,9 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         switch(UsingFilterType)
         {
             case FilterType.HasAnyTag:
-                return entity.HasAnyTag(FilterTags);
+                return entity.ModelTags.HasAnyTag(FilterTags);
             case FilterType.HasAllTags:
-                return entity.HasAllTags(FilterTags);
+                return entity.ModelTags.HasAllTags(FilterTags);
             default:
                 return true;
         }
