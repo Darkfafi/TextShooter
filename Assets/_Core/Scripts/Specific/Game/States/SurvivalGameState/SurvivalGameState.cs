@@ -21,7 +21,7 @@ public class SurvivalGameState : BaseGameState
     {
         WaveSystem.StartWaveSystem();
 
-        TurretModel.FocusOnTarget(EntityTracker.Instance.GetAnEntity<EnemyModel>()); //TODO: Replace Test with real targeting code
+        TurretModel.FocusOnTarget(EntityTracker.Instance.GetAny<EnemyModel>()); //TODO: Replace Test with real targeting code
     }
 
     protected override void OnEndState()
