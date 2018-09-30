@@ -68,29 +68,29 @@
     }
 }
 
+public enum TagFilterType
+{
+    None,
+    HasAnyTag,
+    HasAllTags,
+}
+
 public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 {
-    public enum FilterType
-    {
-        None,
-        HasAnyTag,
-        HasAllTags,
-    }
-
-    public FilterType UsingFilterType { get; private set; }
+    public TagFilterType FilterType { get; private set; }
     public string[] FilterTags { get; private set; }
 
     public EntityFilter()
     {
-        UsingFilterType = FilterType.None;
+        FilterType = TagFilterType.None;
         FilterTags = new string[] { };
 
         InternalSetup();
     }
 
-    public EntityFilter(FilterType filterType, params string[] tags)
+    public EntityFilter(TagFilterType filterType, params string[] tags)
     {
-        UsingFilterType = filterType;
+        FilterType = filterType;
         FilterTags = tags;
         InternalSetup();
     }
@@ -157,11 +157,11 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     public bool HasFilterPermission(T entity)
     {
-        switch(UsingFilterType)
+        switch(FilterType)
         {
-            case FilterType.HasAnyTag:
+            case TagFilterType.HasAnyTag:
                 return entity.ModelTags.HasAnyTag(FilterTags);
-            case FilterType.HasAllTags:
+            case TagFilterType.HasAllTags:
                 return entity.ModelTags.HasAllTags(FilterTags);
             default:
                 return true;

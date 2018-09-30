@@ -44,11 +44,12 @@ public abstract class BaseModel : IModel
 
         IsDestroyed = true;
 
-        OnModelDestroy();
         if (DestroyEvent != null)
         {
             DestroyEvent(this);
         }
+
+        OnModelDestroy();
 
         LinkingController = null;
     }

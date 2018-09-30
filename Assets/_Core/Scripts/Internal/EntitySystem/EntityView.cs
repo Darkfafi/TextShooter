@@ -25,7 +25,7 @@ public class EntityView : MonoBaseView
 
     protected virtual void Update()
     {
-        if (ViewDeltaTransform != null && SelfModel != null && !IgnoreModelTransform)
+        if (ViewDeltaTransform != null && SelfModel != null && !SelfModel.IsDestroyed && !IgnoreModelTransform)
         {
             Vector3 p = SelfModel.ModelTransform.Position + ViewDeltaTransform.Position;
             Vector3 r = SelfModel.ModelTransform.Rotation + ViewDeltaTransform.Rotation;
