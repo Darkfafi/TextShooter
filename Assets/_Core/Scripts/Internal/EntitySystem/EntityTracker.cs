@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System;
-
-public class EntityTracker
+﻿public class EntityTracker : ModelHolder<EntityModel>
 {
+    public event EntityModel.EntityTagHandler EntityAddedTagEvent;
+    public event EntityModel.EntityTagHandler EntityRemovedTagEvent;
+
     public static EntityTracker Instance
     {
         get
@@ -19,100 +18,146 @@ public class EntityTracker
 
     private static EntityTracker _instance;
 
-    private List<EntityModel> _entities = new List<EntityModel>();
-
     public void Register(EntityModel model)
     {
-        if (_entities.Contains(model))
-            return;
-
-        model.DestroyEvent += OnDestroyEvent;
-        _entities.Add(model);
+        if(Track(model))
+        {
+            if(model.IsDestroyed)
+            {
+                Unregister(model);
+            }
+            else
+            {
+                model.DestroyEvent += OnDestroyEvent;
+                model.TagAddedEvent += OnTagAddedEvent;
+                model.TagRemovedEvent += OnTagRemovedEvent;
+            }
+        }
     }
 
     public void Unregister(EntityModel model)
     {
-        if (!_entities.Contains(model))
-            return;
-
-        model.DestroyEvent -= OnDestroyEvent;
-        _entities.Remove(model);
+        if (Untrack(model))
+        {
+            model.DestroyEvent -= OnDestroyEvent;
+            model.TagAddedEvent -= OnTagAddedEvent;
+            model.TagRemovedEvent -= OnTagRemovedEvent;
+        }
     }
-
 
     private void OnDestroyEvent(BaseModel destroyedEntity)
     {
-        _entities.Remove((EntityModel)destroyedEntity);
+        Unregister((EntityModel)destroyedEntity);
     }
 
-    // -- Entity Query Methods -- \\
-
-    // - Single Entity - \\
-
-    public EntityModel GetAnEntity()
+    private void OnTagAddedEvent(EntityModel entity, string tag)
     {
-        ReadOnlyCollection<EntityModel> e = GetEntities();
-        if (e.Count > 0)
-            return e[0];
-
-        return null;
+        EntityAddedTagEvent(entity, tag);
     }
 
-    public EntityModel GetAnEntity(Func<EntityModel, bool> filterCondition)
+    private void OnTagRemovedEvent(EntityModel entity, string tag)
     {
-        ReadOnlyCollection<EntityModel> e = GetEntities(filterCondition);
-        if (e.Count > 0)
-            return e[0];
+        EntityRemovedTagEvent(entity, tag);
+    }
+}
 
-        return null;
+public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
+{
+    public enum FilterType
+    {
+        None,
+        HasAnyTag,
+        HasAllTags,
     }
 
-    public T GetAnEntity<T>() where T : EntityModel
-    {
-        ReadOnlyCollection<T> e = GetEntities<T>();
-        if (e.Count > 0)
-            return e[0];
+    public FilterType UsingFilterType { get; private set; }
+    public string[] FilterTags { get; private set; }
 
-        return null;
+    public EntityFilter()
+    {
+        UsingFilterType = FilterType.None;
+        FilterTags = new string[] { };
+
+        InternalSetup();
     }
 
-    public T GetAnEntity<T>(Func<T, bool> filterCondition) where T : EntityModel
+    public EntityFilter(FilterType filterType, params string[] tags)
     {
-        ReadOnlyCollection<T> e = GetEntities<T>(filterCondition);
-        if (e.Count > 0)
-            return e[0];
-
-        return null;
+        UsingFilterType = filterType;
+        FilterTags = tags;
+        InternalSetup();
     }
 
-    // - Multiple Entities - \\
-
-    public ReadOnlyCollection<EntityModel> GetEntities()
+    public override void Clean()
     {
-        return _entities.AsReadOnly();
+        EntityTracker.Instance.EntityAddedTagEvent -= OnEntityAddedTagEvent;
+        EntityTracker.Instance.EntityRemovedTagEvent -= OnEntityRemovedTagEvent;
+        EntityTracker.Instance.TrackedEvent -= OnTrackedEvent;
+        EntityTracker.Instance.UntrackedEvent -= OnEntityUntrackedEvent;
+        base.Clean();
     }
 
-    public ReadOnlyCollection<EntityModel> GetEntities(Func<EntityModel, bool> filterCondition)
+    private void OnTrackedEvent(EntityModel entity)
     {
-        return GetEntities<EntityModel>(filterCondition);
-    }
-
-    public ReadOnlyCollection<T> GetEntities<T>() where T : EntityModel
-    {
-        return GetEntities<T>(null);
-    }
-
-    public ReadOnlyCollection<T> GetEntities<T>(Func<T, bool> filterCondition) where T : EntityModel
-    {
-        List<T> result = new List<T>();
-        for (int i = 0, count = _entities.Count; i < count; i++)
+        T e = entity as T;
+        if (e != null && HasFilterPermission(e))
         {
-            T e = _entities[i] as T;
-            if (e != null && (filterCondition == null || filterCondition(e)))
-            {
-                result.Add(e);
-            }
+            Track(e);
         }
-        return result.AsReadOnly();
+    }
+
+    private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
+    {
+        T e = entity as T;
+        if (e != null && !HasFilterPermission(e))
+        {
+            Untrack(e);
+        }
+    }
+
+    private void OnEntityAddedTagEvent(EntityModel entity, string tag)
+    {
+        OnTrackedEvent(entity);
+    }
+
+    private void OnEntityUntrackedEvent(EntityModel entity)
+    {
+        T e = entity as T;
+        if (e != null)
+        {
+            Untrack(e);
+        }
+    }
+
+    private void InternalSetup()
+    {
+        EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
+        EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
+        EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
+        EntityTracker.Instance.UntrackedEvent += OnEntityUntrackedEvent;
+        FillWithAlreadyExistingMatches();
+    }
+
+    private void FillWithAlreadyExistingMatches()
+    {
+        System.Collections.ObjectModel.ReadOnlyCollection<T> t = EntityTracker.Instance.GetAll<T>(HasFilterPermission);
+
+        for (int i = 0; i < t.Count; i++)
+        {
+            Track(t[i]);
+        }
+    }
+
+    public bool HasFilterPermission(T entity)
+    {
+        switch(UsingFilterType)
+        {
+            case FilterType.HasAnyTag:
+                return entity.HasAnyTag(FilterTags);
+            case FilterType.HasAllTags:
+                return entity.HasAllTags(FilterTags);
+            default:
+                return true;
+        }
     }
 }
