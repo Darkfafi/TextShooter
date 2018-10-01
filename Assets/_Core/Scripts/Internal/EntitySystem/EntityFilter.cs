@@ -10,7 +10,16 @@ public enum TagFilterType
 public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 {
     public TagFilterType FilterType { get; private set; }
-    public string[] FilterTags { get; private set; }
+
+    public string[] FilterTags
+    {
+        get
+        {
+            return _filterTagsList.ToArray();
+        }
+    }
+
+    private List<string> _filterTagsList;
 
     #region Static Construction
 
@@ -89,7 +98,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
     private EntityFilter(TagFilterType filterType, params string[] tags)
     {
         FilterType = filterType;
-        FilterTags = tags;
+        _filterTagsList = new List<string>(tags);
         InternalSetup();
     }
 
@@ -128,10 +137,9 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
     {
         if (FilterType == filterType && FilterTags.Length == tags.Length)
         {
-            List<string> myTags = new List<string>(FilterTags);
             for (int i = 0, c = tags.Length; i < c; i++)
             {
-                if (!myTags.Contains(tags[i]))
+                if (!_filterTagsList.Contains(tags[i]))
                 {
                     return false;
                 }
