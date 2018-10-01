@@ -132,7 +132,7 @@ public class ModelManipulationWindow : EditorWindow
 
         if (transformHolder != null)
         {
-            if (_manipulateTransform = EditorGUILayout.Foldout(_manipulateTransform, (_manipulateTransform ? "Deactivate" : "Activate") + " Manipulation: "))
+            if (_manipulateTransform = EditorGUILayout.Foldout(_manipulateTransform, "Transform Data"))
             {
                 transformHolder.ModelTransform.Position = EditorGUILayout.Vector3Field("Position", transformHolder.ModelTransform.Position);
                 transformHolder.ModelTransform.Rotation = EditorGUILayout.Vector3Field("Rotation", transformHolder.ModelTransform.Rotation);
