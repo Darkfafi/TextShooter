@@ -12,7 +12,7 @@ public class TurretModel : EntityModel
 
     private TimekeeperModel _timekeeper;
 
-    private EntityFilter<EnemyModel> _enemyFilter = new EntityFilter<EnemyModel>(TagFilterType.HasAnyTag, "Enemy");
+    private EntityFilter<EnemyModel> _enemyFilter = EntityFilter<EnemyModel>.Create("Enemy");
 
     public TurretModel(TimekeeperModel timekeeper)
     {
@@ -39,17 +39,17 @@ public class TurretModel : EntityModel
 
     private void Update(float deltaTime, float timeScale)
     {
-        EnemyModel otherTarget = _enemyFilter.GetAny(
+        EnemyModel target = _enemyFilter.GetAny(
             (e) =>
             {
                 if (e.IsDestroyed || e.IsDead)
                     return false;
 
                 if ((e.ModelTransform.Position - ModelTransform.Position).magnitude > Range)
-                {
                     return false;
-                }
+
                 return true;
+
             }, (a, b) =>
             {
                 float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
@@ -57,7 +57,7 @@ public class TurretModel : EntityModel
                 return (int)(distA - distB);
             });
 
-        FocusOnTarget(otherTarget);
+        FocusOnTarget(target);
 
         float angleToTarget = 0;
 
