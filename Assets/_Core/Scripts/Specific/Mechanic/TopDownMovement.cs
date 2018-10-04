@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TopDownMovement
+public class TopDownMovement : BaseModelComponent
 {
     /// <summary>
     /// The movement speed which is being used during movement
@@ -52,14 +52,25 @@ public class TopDownMovement
     private float _duration;
     private float _timePassed;
 
-    public TopDownMovement(TimekeeperModel timekeeper, ModelTransform transformToAffect, float baseSpeed = 4f)
+    public void Setup(TimekeeperModel timekeeper, float baseSpeed = 4f)
     {
         _timekeeperModel = timekeeper;
         RotationSpeed = 0.35f;
         SetBaseSpeed(baseSpeed);
         SetMovementSpeed(0f);
-        _transformToAffect = transformToAffect;
         _timekeeperModel.ListenToFrameTick(Update);
+    }
+
+    protected override void Added()
+    {
+        _transformToAffect = Components.GetComponent<ModelTransform>();
+    }
+
+    protected override void Removed()
+    {
+        _timekeeperModel.UnlistenFromFrameTick(Update);
+        _timekeeperModel = null;
+        _transformToAffect = null;
     }
 
     public void MoveTo(Vector2 position)
@@ -96,12 +107,6 @@ public class TopDownMovement
         {
             MovementSpeed = newSpeed;
         }
-    }
-
-    public void Clean()
-    {
-        _timekeeperModel.UnlistenFromFrameTick(Update);
-        _timekeeperModel = null;
     }
 
     private void Update(float deltaTime, float timeScale)

@@ -12,10 +12,10 @@ public class EnemyModel : EntityModel
 
     public WordsHolder WordsHolder { get; private set; }
     public WordsHitter WordsHitter { get; private set; }
+
     public AIModel AIModel { get; private set; }
     public int Damage { get; private set; }
     public EnemyCharacterType EnemyType { get; private set; }
-    public TopDownMovement TopDownMovement { get; private set; }
 
     public bool IsDead
     {
@@ -29,12 +29,17 @@ public class EnemyModel : EntityModel
     {
         EnemyType = enemyType;
         Damage = 1;
-        TopDownMovement = new TopDownMovement(timekeeper, ModelTransform);
-        WordsHolder = new WordsHolder(currentWord, nextWords);
-        WordsHitter = new WordsHitter(WordsHolder, GetCharHitsNeeded());
+
+        AddComponent<TopDownMovement>().Setup(timekeeper);
+        WordsHolder = AddComponent<WordsHolder>();
+        WordsHolder.Setup(currentWord, nextWords);
+        AddComponent<WordsHitter>().SetCharHitsNeeded(GetCharHitsNeeded());
+
         AIModel = new AIModel();
 
         WordsHolder.WordCycledEvent += OnWordCycledEvent;
+
+        ModelTags.AddTag("Enemy");
     }
 
     public void SetDamage(int damage)
@@ -47,9 +52,6 @@ public class EnemyModel : EntityModel
         base.OnModelDestroy();
 
         WordsHolder.WordCycledEvent -= OnWordCycledEvent;
-
-        WordsHitter.Clean();
-        WordsHolder.Clean();
 
         WordsHitter = null;
         WordsHolder = null;

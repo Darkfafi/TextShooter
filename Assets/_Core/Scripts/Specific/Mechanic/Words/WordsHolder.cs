@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class WordsHolder
+public class WordsHolder : BaseModelComponent
 {
     public delegate void PreNewWordHandler(string previousWord, string newWord);
     public event PreNewWordHandler WordCycledEvent;
@@ -8,10 +8,23 @@ public class WordsHolder
     public string CurrentWord { get; private set; }
     private List<string> _words = new List<string>();
 
-    public WordsHolder(string startWord, params string[] nextWords)
+    private bool _setup = false;
+
+    public void Setup(string startWord, params string[] nextWords)
     {
+        if (_setup)
+            return;
+
         CurrentWord = startWord;
         _words = new List<string>(nextWords);
+        _setup = true;
+    }
+
+    protected override void Removed()
+    {
+        _words.Clear();
+        _words = null;
+        CurrentWord = null;
     }
 
     public void AddWord(string word)
@@ -60,12 +73,5 @@ public class WordsHolder
             return true;
 
         return _words.Contains(word);
-    }
-
-    public void Clean()
-    {
-        _words.Clear();
-        _words = null;
-        CurrentWord = null;
     }
 }

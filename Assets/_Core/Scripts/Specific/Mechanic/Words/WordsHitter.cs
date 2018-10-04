@@ -1,4 +1,4 @@
-﻿public class WordsHitter
+﻿public class WordsHitter : BaseModelComponent
 {
     public delegate void WordCharHandler(string word, int charIndex, WordsHitter hitter);
     public event WordCharHandler WordCharHitEvent;
@@ -17,10 +17,19 @@
     public int TargetWordCharIndex { get; private set; }
     public int HitsOnCharDone { get; private set; }
 
-    public WordsHitter(WordsHolder wordsHolder, int charHitsNeeded)
+    public void SetCharHitsNeeded(int charHitsNeeded)
     {
-        _wordsHolder = wordsHolder;
         _charHitsNeeded = charHitsNeeded;
+    }
+
+    protected override void Added()
+    {
+        _wordsHolder = Components.GetComponent<WordsHolder>();
+    }
+
+    protected override void Removed()
+    {
+        _wordsHolder = null;
     }
 
     public void Hit(char hitChar)
@@ -34,11 +43,6 @@
         {
             WordHitInternal(_charHitsNeeded);
         }
-    }
-
-    public void Clean()
-    {
-        _wordsHolder = null;
     }
 
     private void WordHitInternal(int hitsNeeded)

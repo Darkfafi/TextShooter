@@ -1,9 +1,9 @@
-﻿public class EntityModel : BaseModel, IModelTransformHolder, IModelTagsHolder
+﻿public class EntityModel : BaseModel
 {
     public EntityModel()
     {
-        ModelTransform = new ModelTransform();
-        ModelTags = new ModelTags(this);
+        ModelTransform = AddComponent<ModelTransform>();
+        ModelTags = AddComponent<ModelTags>();
         EntityTracker.Instance.Register(this);
     }
 
@@ -20,7 +20,6 @@
     protected override void OnModelDestroy()
     {
         base.OnModelDestroy();
-        ModelTags.Clean();
         ModelTags = null;
         ModelTransform = null;
     }
