@@ -99,7 +99,11 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
     {
         FilterType = filterType;
         _filterTagsList = new List<string>(tags);
-        InternalSetup();
+        EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
+        EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
+        EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
+        EntityTracker.Instance.UntrackedEvent += OnEntityUntrackedEvent;
+        FillWithAlreadyExistingMatches();
     }
 
     public override void Clean()
@@ -181,15 +185,6 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         {
             Untrack(e);
         }
-    }
-
-    private void InternalSetup()
-    {
-        EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
-        EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
-        EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
-        EntityTracker.Instance.UntrackedEvent += OnEntityUntrackedEvent;
-        FillWithAlreadyExistingMatches();
     }
 
     private void FillWithAlreadyExistingMatches()
