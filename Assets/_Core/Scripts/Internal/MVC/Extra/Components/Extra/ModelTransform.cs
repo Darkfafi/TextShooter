@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 
-public class ModelTransform
+public class ModelTransform : BaseModelComponent
 {
     public Vector3 Position = Vector3.zero;
     public Vector3 Rotation = Vector3.zero;
     public Vector3 Scale = Vector3.one;
-
 
     public void TranslatePosition(float x, float y, float z)
     {
@@ -66,9 +65,4 @@ public class ModelTransform
         r.z = z;
         Rotation = r;
     }
-}
-
-public interface IModelTransformHolder
-{
-    ModelTransform ModelTransform { get; }
 }
