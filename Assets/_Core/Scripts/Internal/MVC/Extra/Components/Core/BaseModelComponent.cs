@@ -23,7 +23,7 @@ public abstract class BaseModelComponent
 
     public void SignalReady()
     {
-        if(ComponentState != ModelComponentState.Initialized)
+        if (ComponentState != ModelComponentState.Initialized)
             return;
         
         ComponentState = ModelComponentState.Active;
