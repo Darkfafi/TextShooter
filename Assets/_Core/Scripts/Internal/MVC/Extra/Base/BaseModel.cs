@@ -3,7 +3,7 @@
 /// <summary>
 /// The design is to have the model contain no Unity specifications. It serves as a data object for its respective view.
 /// </summary>
-public abstract class BaseModel : IModel
+public abstract class BaseModel : IModel, IComponentsHolder
 {
     public event Action<BaseModel> DestroyEvent;
 
@@ -19,14 +19,17 @@ public abstract class BaseModel : IModel
 
     public MethodPermitter MethodPermitter
     {
-        get
-        {
-            return _methodPermitter;
-        }
+        get; private set;
     }
 
+    private ModelComponents _components;
     private bool _internalDestroyCalled = false;
-    private MethodPermitter _methodPermitter = new MethodPermitter();
+
+    public BaseModel()
+    {
+        MethodPermitter = new MethodPermitter();
+        _components = new ModelComponents(this);
+    }
 
     public void Destroy()
     {
@@ -51,6 +54,9 @@ public abstract class BaseModel : IModel
 
         OnModelDestroy();
 
+        _components.Clean();
+        _components = null;
+
         LinkingController = null;
     }
 
@@ -61,9 +67,25 @@ public abstract class BaseModel : IModel
 
         LinkingController = controller;
         IsDestroyed = false;
+        _components.SignalReady();
         OnModelReady();
     }
 
     protected virtual void OnModelReady() { }
     protected virtual void OnModelDestroy() { }
+
+    public T AddComponent<T>() where T : BaseModelComponent
+    {
+        return _components.AddComponent<T>();
+    }
+
+    public void RemoveComponent<T>() where T : BaseModelComponent
+    {
+        _components.RemoveComponent<T>();
+    }
+
+    public T GetComponent<T>() where T : BaseModelComponent
+    {
+        return _components.GetComponent<T>();
+    }
 }

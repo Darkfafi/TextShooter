@@ -3,21 +3,14 @@ using System.Collections.ObjectModel;
 
 public delegate void ModelTagHandler(BaseModel model, string tag);
 
-public class ModelTags
+public class ModelTags : BaseModelComponent
 {
     public event ModelTagHandler TagAddedEvent;
     public event ModelTagHandler TagRemovedEvent;
 
     public List<string> _tags = new List<string>();
 
-    private BaseModel _parent;
-
-    public ModelTags(BaseModel parent)
-    {
-        _parent = parent;
-    }
-
-    public void Clean()
+    protected override void Removed()
     {
         for(int i = _tags.Count - 1; i >= 0; i--)
         {
@@ -26,7 +19,6 @@ public class ModelTags
 
         _tags.Clear();
         _tags = null;
-        _parent = null;
 
         TagAddedEvent = null;
         TagRemovedEvent = null;
@@ -45,7 +37,7 @@ public class ModelTags
 
             if (TagAddedEvent != null)
             {
-                TagAddedEvent(_parent, tag);
+                TagAddedEvent(Components.Model, tag);
             }
         }
     }
@@ -61,7 +53,7 @@ public class ModelTags
 
             if (TagRemovedEvent != null)
             {
-                TagRemovedEvent(_parent, tag);
+                TagRemovedEvent(Components.Model, tag);
             }
         }
     }
@@ -105,9 +97,4 @@ public class ModelTags
 
         return true;
     }
-}
-
-public interface IModelTagsHolder
-{
-    ModelTags ModelTags { get; }
 }

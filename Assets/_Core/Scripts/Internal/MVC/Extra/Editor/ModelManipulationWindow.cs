@@ -80,23 +80,22 @@ public class ModelManipulationWindow : EditorWindow
 
         EditorGUILayout.Space();
 
-
-        IModelTagsHolder tagsHolder = _targetModel as IModelTagsHolder;
+        ModelTags tagsComponent = _targetModel.GetComponent<ModelTags>();
 
         EditorGUILayout.BeginVertical(GUI.skin.textArea);
 
-        GUILayout.Label("Model Tags: " + (tagsHolder != null ? "OK" : "None Available"));
+        GUILayout.Label("Model Tags: " + (tagsComponent != null ? "OK" : "None Available"));
 
-        if (tagsHolder != null)
+        if (tagsComponent != null)
         {
-            System.Collections.ObjectModel.ReadOnlyCollection<string> tags = tagsHolder.ModelTags.GetTags();
+            System.Collections.ObjectModel.ReadOnlyCollection<string> tags = tagsComponent.GetTags();
             if (_showTags = EditorGUILayout.Foldout(_showTags, string.Format("Tags ({0})", tags.Count)))
             {
                 EditorGUILayout.BeginHorizontal();
                 _currentTagAddString = EditorGUILayout.TextField("Add Tag: ", _currentTagAddString);
                 if(GUILayout.Button("+", GUILayout.Width(40)))
                 {
-                    tagsHolder.ModelTags.AddTag(_currentTagAddString);
+                    tagsComponent.AddTag(_currentTagAddString);
                     _currentTagAddString = string.Empty;
                 }
                 EditorGUILayout.EndHorizontal();
@@ -111,7 +110,7 @@ public class ModelManipulationWindow : EditorWindow
                     s.normal.textColor = Color.red;
                     if (GUILayout.Button("x", s, GUILayout.Width(25)))
                     {
-                        tagsHolder.ModelTags.RemoveTag(tags[i]);
+                        tagsComponent.RemoveTag(tags[i]);
                     }
                     EditorGUILayout.EndHorizontal();
                 }
@@ -124,19 +123,19 @@ public class ModelManipulationWindow : EditorWindow
 
         EditorGUILayout.Space();
 
-        IModelTransformHolder transformHolder = _targetModel as IModelTransformHolder;
+        ModelTransform transformComponent = _targetModel.GetComponent<ModelTransform>();
 
         EditorGUILayout.BeginVertical(GUI.skin.textArea);
 
-        GUILayout.Label("Model Transform: " + (transformHolder != null ? "OK" : "None Available"));
+        GUILayout.Label("Model Transform: " + (transformComponent != null ? "OK" : "None Available"));
 
-        if (transformHolder != null)
+        if (transformComponent != null)
         {
             if (_manipulateTransform = EditorGUILayout.Foldout(_manipulateTransform, "Transform Data"))
             {
-                transformHolder.ModelTransform.Position = EditorGUILayout.Vector3Field("Position", transformHolder.ModelTransform.Position);
-                transformHolder.ModelTransform.Rotation = EditorGUILayout.Vector3Field("Rotation", transformHolder.ModelTransform.Rotation);
-                transformHolder.ModelTransform.Scale = EditorGUILayout.Vector3Field("Scale", transformHolder.ModelTransform.Scale);
+                transformComponent.Position = EditorGUILayout.Vector3Field("Position", transformComponent.Position);
+                transformComponent.Rotation = EditorGUILayout.Vector3Field("Rotation", transformComponent.Rotation);
+                transformComponent.Scale = EditorGUILayout.Vector3Field("Scale", transformComponent.Scale);
             }
 
             EditorGUILayout.Space();
