@@ -12,7 +12,7 @@ public class TurretModel : EntityModel
 
     private TimekeeperModel _timekeeper;
 
-    private EntityFilter<EnemyModel> _enemyFilter = EntityFilter<EnemyModel>.Create("Enemy");
+    private EntityFilter<EnemyModel> _enemyFilter = EntityFilter<EnemyModel>.Create(Tags.ENEMY);
 
     public TurretModel(TimekeeperModel timekeeper)
     {
