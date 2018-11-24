@@ -88,9 +88,11 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
     private EntityFilter(Filter filter)
     {
 		Filter = filter;
-        EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
+		EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
         EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
-        EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
+		EntityTracker.Instance.EntityAddedComponentEvent += OnEntityAddedComponentEvent;
+		EntityTracker.Instance.EntityRemovedComponentEvent += OnEntityRemovedComponentEvent;
+		EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
         EntityTracker.Instance.UntrackedEvent += OnEntityUntrackedEvent;
         FillWithAlreadyExistingMatches();
     }
@@ -102,13 +104,15 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         {
             EntityTracker.Instance.EntityAddedTagEvent -= OnEntityAddedTagEvent;
             EntityTracker.Instance.EntityRemovedTagEvent -= OnEntityRemovedTagEvent;
-            EntityTracker.Instance.TrackedEvent -= OnTrackedEvent;
+			EntityTracker.Instance.EntityAddedComponentEvent += OnEntityAddedComponentEvent;
+			EntityTracker.Instance.EntityRemovedComponentEvent += OnEntityRemovedComponentEvent;
+			EntityTracker.Instance.TrackedEvent -= OnTrackedEvent;
             EntityTracker.Instance.UntrackedEvent -= OnEntityUntrackedEvent;
             base.Clean();
         }
     }
 
-    public bool Equals(EntityFilter<T> filter)
+	public bool Equals(EntityFilter<T> filter)
     {
         return Equals(filter.Filter);
     }
@@ -120,20 +124,34 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         {
             Track(e);
         }
-    }
+	}
 
-    private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
+	private void OnEntityAddedComponentEvent(EntityModel entity, BaseModelComponent component)
+	{
+		OnTrackedEvent(entity);
+	}
+
+	private void OnEntityRemovedComponentEvent(EntityModel entity, BaseModelComponent component)
+	{
+		throw new NotImplementedException();
+	}
+
+	private void OnEntityAddedTagEvent(EntityModel entity, string tag)
+	{
+		T e = entity as T;
+		if (e != null && !Filter.HasFilterPermission(e))
+		{
+			Untrack(e);
+		}
+	}
+
+	private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
     {
         T e = entity as T;
         if (e != null && !Filter.HasFilterPermission(e))
         {
             Untrack(e);
         }
-    }
-
-    private void OnEntityAddedTagEvent(EntityModel entity, string tag)
-    {
-        OnTrackedEvent(entity);
     }
 
     private void OnEntityUntrackedEvent(EntityModel entity)

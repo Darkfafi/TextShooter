@@ -1,10 +1,15 @@
-﻿public class EntityTracker : ModelHolder<EntityModel>
+﻿using System;
+
+public class EntityTracker : ModelHolder<EntityModel>
 {
     public delegate void EntityTagHandler(EntityModel entity, string tag);
-    public event EntityTagHandler EntityAddedTagEvent;
+	public delegate void EntityComponentHandler(EntityModel entity, BaseModelComponent component);
+	public event EntityTagHandler EntityAddedTagEvent;
     public event EntityTagHandler EntityRemovedTagEvent;
+	public event EntityComponentHandler EntityAddedComponentEvent;
+	public event EntityComponentHandler EntityRemovedComponentEvent;
 
-    public static EntityTracker Instance
+	public static EntityTracker Instance
     {
         get
         {
@@ -32,11 +37,13 @@
                 model.DestroyEvent += OnDestroyEvent;
                 model.ModelTags.TagAddedEvent += OnTagAddedEvent;
                 model.ModelTags.TagRemovedEvent += OnTagRemovedEvent;
-            }
+				model.AddedComponentToModelEvent += OnComponentAddedEvent;
+				model.RemovedComponentFromModelEvent += OnComponentRemovedEvent;
+			}
         }
     }
 
-    public void Unregister(EntityModel model)
+	public void Unregister(EntityModel model)
     {
         if (Untrack(model))
         {
@@ -66,4 +73,20 @@
             EntityRemovedTagEvent((EntityModel)entity, tag);
         }
     }
+
+	private void OnComponentAddedEvent(BaseModel entity, BaseModelComponent component)
+	{
+		if(EntityAddedComponentEvent != null)
+		{
+			EntityAddedComponentEvent((EntityModel)entity, component);
+		}
+	}
+
+	private void OnComponentRemovedEvent(BaseModel entity, BaseModelComponent component)
+	{
+		if (EntityRemovedComponentEvent != null)
+		{
+			EntityRemovedComponentEvent((EntityModel)entity, component);
+		}
+	}
 }

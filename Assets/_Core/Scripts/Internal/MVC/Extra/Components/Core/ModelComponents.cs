@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 public class ModelComponents : IComponentsHolder
 {
-	public event Action<BaseModelComponent> OnAddedComponentEvent;
-	public event Action<BaseModelComponent> OnRemovedComponentEvent;
+	public event Action<BaseModelComponent> AddedComponentEvent;
+	public event Action<BaseModelComponent> RemovedComponentEvent;
 
 	public BaseModel Model { get; private set; }
     private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
     private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
     private bool _isReady = false;
 
-    public ModelComponents(BaseModel model)
+	public ModelComponents(BaseModel model)
     {
         Model = model;
     }
@@ -45,7 +45,10 @@ public class ModelComponents : IComponentsHolder
         _components.Clear();
         _removingComponents.Clear();
 
-        _components = null;
+		AddedComponentEvent = null;
+		RemovedComponentEvent = null;
+
+		_components = null;
         _removingComponents = null;
         Model = null;
     }
@@ -56,9 +59,9 @@ public class ModelComponents : IComponentsHolder
         _components.Add(c);
         c.Initialize(this);
 
-		if(OnAddedComponentEvent != null)
+		if(AddedComponentEvent != null)
 		{
-			OnAddedComponentEvent(c);
+			AddedComponentEvent(c);
 		}
 
         if (_isReady)
@@ -109,9 +112,9 @@ public class ModelComponents : IComponentsHolder
         {
             _removingComponents.Add(component);
 
-			if (OnRemovedComponentEvent != null)
+			if (RemovedComponentEvent != null)
 			{
-				OnRemovedComponentEvent(component);
+				RemovedComponentEvent(component);
 			}
 
 			component.Deinitialize();
@@ -130,7 +133,7 @@ public class ModelComponents : IComponentsHolder
 
 public interface IComponentsHolder
 {
-    T AddComponent<T>() where T : BaseModelComponent;
+	T AddComponent<T>() where T : BaseModelComponent;
     void RemoveComponent<T>() where T : BaseModelComponent;
     T GetComponent<T>() where T : BaseModelComponent;
 	bool HasComponent<T>() where T : BaseModelComponent;
