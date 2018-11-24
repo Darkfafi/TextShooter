@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 public class ModelHolder<BM> where BM : BaseModel
 {
@@ -13,37 +12,50 @@ public class ModelHolder<BM> where BM : BaseModel
 
     // - Single Entity - \\
 
-    public BM GetAny(Comparison<BM> sort = null)
+    public BM GetRandom()
     {
-        ReadOnlyCollection<BM> e = GetAll(sort);
-        if (e.Count > 0)
-            return e[0];
+        return GetRandom<BM>();
+    }
+
+    public BM GetRandom(Func<BM, bool> filterCondition)
+    {
+        return GetRandom<BM>(filterCondition);
+    }
+
+    public BM GetRandom<T>() where T : BM
+    {
+        return GetRandom<BM>(null);
+    }
+
+    public T GetRandom<T>(Func<T, bool> filterCondition) where T : BM
+    {
+        Random r = new Random();
+        T[] e = GetAll(filterCondition);
+        if (e.Length > 0)
+            return e[r.Next(0, e.Length)];
 
         return null;
     }
 
-    public BM GetAny(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
+    public BM GetFirst(Comparison<BM> sort = null)
     {
-        ReadOnlyCollection<BM> e = GetAll(filterCondition, sort);
-        if (e.Count > 0)
-            return e[0];
-
-        return null;
+        return GetFirst<BM>(sort);
     }
 
-    public T GetAny<T>(Comparison<T> sort = null) where T : BM
+    public BM GetFirst(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
     {
-        ReadOnlyCollection<T> e = GetAll(sort);
-        if (e.Count > 0)
-            return e[0];
-
-        return null;
+        return GetFirst<BM>(filterCondition, sort);
     }
 
-    public T GetAny<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
+    public T GetFirst<T>(Comparison<T> sort = null) where T : BM
     {
-        ReadOnlyCollection<T> e = GetAll<T>(filterCondition, sort);
-        if (e.Count > 0)
+        return GetFirst(null, sort);
+    }
+
+    public T GetFirst<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
+    {
+        T[] e = GetAll(filterCondition, sort);
+        if (e.Length > 0)
             return e[0];
 
         return null;
@@ -51,25 +63,25 @@ public class ModelHolder<BM> where BM : BaseModel
 
     // - Multiple Entities - \\
 
-    public ReadOnlyCollection<BM> GetAll(Comparison<BM> sort = null)
+    public BM[] GetAll(Comparison<BM> sort = null)
     {
         if (sort == null)
-            return _models.AsReadOnly();
+            return _models.ToArray();
         else
-            return GetAll(null, sort);
+            return GetAll<BM>(sort);
     }
 
-    public ReadOnlyCollection<BM> GetAll(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
+    public BM[] GetAll(Func<BM, bool> filterCondition, Comparison<BM> sort = null)
     {
         return GetAll<BM>(filterCondition, sort);
     }
 
-    public ReadOnlyCollection<T> GetAll<T>(Comparison<T> sort = null) where T : BM
+    public T[] GetAll<T>(Comparison<T> sort = null) where T : BM
     {
         return GetAll(null, sort);
     }
 
-    public ReadOnlyCollection<T> GetAll<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
+    public T[] GetAll<T>(Func<T, bool> filterCondition, Comparison<T> sort = null) where T : BM
     {
         List<T> result = new List<T>();
         for (int i = 0, count = _models.Count; i < count; i++)
@@ -84,7 +96,7 @@ public class ModelHolder<BM> where BM : BaseModel
         if(sort != null)
             result.Sort(sort);
 
-        return result.AsReadOnly();
+        return result.ToArray();
     }
 
     public virtual void Clean()

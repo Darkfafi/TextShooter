@@ -1,5 +1,7 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections.Generic;
+
 
 public class TurretModel : EntityModel
 {
@@ -38,8 +40,8 @@ public class TurretModel : EntityModel
     }
 
     private void Update(float deltaTime, float timeScale)
-    {
-        EnemyModel target = _enemyFilter.GetAny(
+    {  
+        EnemyModel target = _enemyFilter.GetFirst(
             (e) =>
             {
                 if (e.IsDestroyed || e.IsDead)

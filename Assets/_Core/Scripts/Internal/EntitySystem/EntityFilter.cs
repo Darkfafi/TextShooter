@@ -189,8 +189,8 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     private void FillWithAlreadyExistingMatches()
     {
-        System.Collections.ObjectModel.ReadOnlyCollection<T> t = EntityTracker.Instance.GetAll<T>(HasFilterPermission);
-        for (int i = 0; i < t.Count; i++)
+        T[] t = EntityTracker.Instance.GetAll<T>(HasFilterPermission);
+        for (int i = 0; i < t.Length; i++)
         {
             Track(t[i]);
         }
