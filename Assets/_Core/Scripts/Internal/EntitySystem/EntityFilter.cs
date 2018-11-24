@@ -104,8 +104,8 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         {
             EntityTracker.Instance.EntityAddedTagEvent -= OnEntityAddedTagEvent;
             EntityTracker.Instance.EntityRemovedTagEvent -= OnEntityRemovedTagEvent;
-			EntityTracker.Instance.EntityAddedComponentEvent += OnEntityAddedComponentEvent;
-			EntityTracker.Instance.EntityRemovedComponentEvent += OnEntityRemovedComponentEvent;
+			EntityTracker.Instance.EntityAddedComponentEvent -= OnEntityAddedComponentEvent;
+			EntityTracker.Instance.EntityRemovedComponentEvent -= OnEntityRemovedComponentEvent;
 			EntityTracker.Instance.TrackedEvent -= OnTrackedEvent;
             EntityTracker.Instance.UntrackedEvent -= OnEntityUntrackedEvent;
             base.Clean();
@@ -128,31 +128,23 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
 	private void OnEntityAddedComponentEvent(EntityModel entity, BaseModelComponent component)
 	{
-		OnTrackedEvent(entity);
+		TrackLogics(entity);
 	}
 
 	private void OnEntityRemovedComponentEvent(EntityModel entity, BaseModelComponent component)
 	{
-		throw new NotImplementedException();
+		TrackLogics(entity);
 	}
 
 	private void OnEntityAddedTagEvent(EntityModel entity, string tag)
 	{
-		T e = entity as T;
-		if (e != null && !Filter.HasFilterPermission(e))
-		{
-			Untrack(e);
-		}
+		TrackLogics(entity);
 	}
 
 	private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
     {
-        T e = entity as T;
-        if (e != null && !Filter.HasFilterPermission(e))
-        {
-            Untrack(e);
-        }
-    }
+		TrackLogics(entity);
+	}
 
     private void OnEntityUntrackedEvent(EntityModel entity)
     {
@@ -171,6 +163,22 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
             Track(t[i]);
         }
     }
+
+	private void TrackLogics(EntityModel entity)
+	{
+		T e = entity as T;
+		if (e != null)
+		{
+			if (Filter.HasFilterPermission(e))
+			{
+				Track(e);
+			}
+			else
+			{
+				Untrack(e);
+			}
+		}
+	}
 }
 
 public class Filter

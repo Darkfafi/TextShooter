@@ -50,7 +50,9 @@ public class EntityTracker : ModelHolder<EntityModel>
             model.DestroyEvent -= OnDestroyEvent;
             model.ModelTags.TagAddedEvent -= OnTagAddedEvent;
             model.ModelTags.TagRemovedEvent -= OnTagRemovedEvent;
-        }
+			model.AddedComponentToModelEvent -= OnComponentAddedEvent;
+			model.RemovedComponentFromModelEvent -= OnComponentRemovedEvent;
+		}
     }
 
     private void OnDestroyEvent(BaseModel destroyedEntity)
