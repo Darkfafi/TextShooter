@@ -14,11 +14,18 @@ public class TurretModel : EntityModel
 
     private TimekeeperModel _timekeeper;
 
-    private EntityFilter<EnemyModel> _enemyFilter = EntityFilter<EnemyModel>.Create(Tags.ENEMY);
+	private EntityFilter<EnemyModel> _enemyFilter;
 
     public TurretModel(TimekeeperModel timekeeper)
     {
-        _timekeeper = timekeeper;
+		Filter enemyFilter;
+		Filter.OpenFilterCreation();
+		Filter.CreateHasAnyTagsFilter(Tags.ENEMY);
+		Filter.AddComponentToFilterOn<WordsHolder>();
+		Filter.CloseFilterCreation(out enemyFilter);
+
+		_enemyFilter = EntityFilter<EnemyModel>.Create(enemyFilter);
+		_timekeeper = timekeeper;
         _timekeeper.ListenToFrameTick(Update);
         Range = 5f;
     }

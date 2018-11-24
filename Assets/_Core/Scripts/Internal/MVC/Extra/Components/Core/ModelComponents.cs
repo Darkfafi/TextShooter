@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 public class ModelComponents : IComponentsHolder
 {
-    public BaseModel Model { get; private set; }
+	public event Action<BaseModelComponent> OnAddedComponentEvent;
+	public event Action<BaseModelComponent> OnRemovedComponentEvent;
+
+	public BaseModel Model { get; private set; }
     private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
     private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
     private bool _isReady = false;
@@ -53,6 +56,11 @@ public class ModelComponents : IComponentsHolder
         _components.Add(c);
         c.Initialize(this);
 
+		if(OnAddedComponentEvent != null)
+		{
+			OnAddedComponentEvent(c);
+		}
+
         if (_isReady)
         {
             c.SignalReady();
@@ -72,6 +80,16 @@ public class ModelComponents : IComponentsHolder
         return GetComponentOfType(typeof(T)) as T;
     }
 
+	public bool HasComponent<T>() where T : BaseModelComponent
+	{
+		return GetComponent<T>() != null;
+	}
+
+	public bool HasComponent(Type componentType)
+	{
+		return GetComponentOfType(componentType) != null;
+	}
+
     private BaseModelComponent GetComponentOfType(Type type)
     {
         foreach (BaseModelComponent component in _components)
@@ -90,7 +108,13 @@ public class ModelComponents : IComponentsHolder
         if (component != null && !_removingComponents.Contains(component))
         {
             _removingComponents.Add(component);
-            component.Deinitialize();
+
+			if (OnRemovedComponentEvent != null)
+			{
+				OnRemovedComponentEvent(component);
+			}
+
+			component.Deinitialize();
         }
 
         if (!selfClean)
@@ -109,4 +133,6 @@ public interface IComponentsHolder
     T AddComponent<T>() where T : BaseModelComponent;
     void RemoveComponent<T>() where T : BaseModelComponent;
     T GetComponent<T>() where T : BaseModelComponent;
+	bool HasComponent<T>() where T : BaseModelComponent;
+	bool HasComponent(Type componentType);
 }

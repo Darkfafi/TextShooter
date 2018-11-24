@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public enum TagFilterType
 {
@@ -9,48 +10,37 @@ public enum TagFilterType
 
 public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 {
-    public TagFilterType FilterType { get; private set; }
+    public Filter Filter { get; private set; }
 
-    public string[] FilterTags
-    {
-        get
-        {
-            return _filterTagsList.ToArray();
-        }
-    }
+	#region Static Construction
 
-    private List<string> _filterTagsList;
-
-    #region Static Construction
-
-    private static List<EntityFilter<T>> _cachedFilters = new List<EntityFilter<T>>();
+	private static List<EntityFilter<T>> _cachedFilters = new List<EntityFilter<T>>();
     private static Dictionary<EntityFilter<T>, int> _cachedFiltersReferenceCounter = new Dictionary<EntityFilter<T>, int>();
 
     public static EntityFilter<T> Create()
     {
-        return Create(TagFilterType.None, new string[] { });
+		Filter myFilter;
+		Filter.OpenFilterCreation();
+		Filter.CreateTagsFilter();
+		Filter.CloseFilterCreation(out myFilter);
+        return Create(myFilter);
     }
 
-    public static EntityFilter<T> Create(params string[] tags)
-    {
-        return Create(TagFilterType.HasAnyTag, tags);
-    }
-
-    public static EntityFilter<T> Create(TagFilterType filterType, params string[] tags)
+	public static EntityFilter<T> Create(Filter filter)
     {
         for (int i = _cachedFilters.Count - 1; i >= 0; i--)
         {
-            if (_cachedFilters[i].Equals(filterType, tags))
+            if (_cachedFilters[i].Filter.Equals(filter))
             {
                 AddReference(_cachedFilters[i]);
                 return _cachedFilters[i];
             }
         }
 
-        EntityFilter<T> filter = new EntityFilter<T>(filterType, tags);
-        AddReference(filter);
-        _cachedFilters.Add(filter);
-        return filter;
+        EntityFilter<T> self = new EntityFilter<T>(filter);
+        AddReference(self);
+        _cachedFilters.Add(self);
+        return self;
     }
 
     private static void AddReference(EntityFilter<T> instance)
@@ -95,10 +85,9 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     #endregion
 
-    private EntityFilter(TagFilterType filterType, params string[] tags)
+    private EntityFilter(Filter filter)
     {
-        FilterType = filterType;
-        _filterTagsList = new List<string>(tags);
+		Filter = filter;
         EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
         EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
         EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
@@ -119,46 +108,15 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
         }
     }
 
-    public bool HasFilterPermission(T entity)
-    {
-        switch (FilterType)
-        {
-            case TagFilterType.HasAnyTag:
-                return entity.ModelTags.HasAnyTag(FilterTags);
-            case TagFilterType.HasAllTags:
-                return entity.ModelTags.HasAllTags(FilterTags);
-            default:
-                return true;
-        }
-    }
-
     public bool Equals(EntityFilter<T> filter)
     {
-        return Equals(filter.FilterType, filter.FilterTags);
-    }
-
-    public bool Equals(TagFilterType filterType, string[] tags)
-    {
-        if (FilterType == filterType && FilterTags.Length == tags.Length)
-        {
-            for (int i = 0, c = tags.Length; i < c; i++)
-            {
-                if (!_filterTagsList.Contains(tags[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
+        return Equals(filter.Filter);
     }
 
     private void OnTrackedEvent(EntityModel entity)
     {
         T e = entity as T;
-        if (e != null && HasFilterPermission(e))
+        if (e != null && Filter.HasFilterPermission(e))
         {
             Track(e);
         }
@@ -167,7 +125,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
     private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
     {
         T e = entity as T;
-        if (e != null && !HasFilterPermission(e))
+        if (e != null && !Filter.HasFilterPermission(e))
         {
             Untrack(e);
         }
@@ -189,10 +147,145 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     private void FillWithAlreadyExistingMatches()
     {
-        T[] t = EntityTracker.Instance.GetAll<T>(HasFilterPermission);
+        T[] t = EntityTracker.Instance.GetAll<T>(Filter.HasFilterPermission);
         for (int i = 0; i < t.Length; i++)
         {
             Track(t[i]);
         }
     }
+}
+
+public class Filter
+{
+	public TagFilterType FilterType { get; private set; }
+
+	public string[] FilterTags
+	{
+		get
+		{
+			return _filterTags.ToArray();
+		}
+	}
+
+	public Type[] FilterComponents
+	{
+		get
+		{
+			return _componentsToFilterOn.ToArray();
+		}
+	}
+
+	private List<string> _filterTags = new List<string>();
+	private List<Type> _componentsToFilterOn = new List<Type>();
+
+	private static bool _filterOpened = false;
+	private static Filter _constructingFiltersParameters;
+
+	public static void OpenFilterCreation()
+	{
+		_filterOpened = true;
+	}
+
+	public static void CreateTagsFilter()
+	{
+		_constructingFiltersParameters = new Filter(new string[] { }, TagFilterType.None);
+	}
+
+	public static void CreateHasAnyTagsFilter(params string[] tags)
+	{
+		_constructingFiltersParameters = new Filter(tags, TagFilterType.HasAnyTag);
+	}
+
+	public static void CreateHasAllTagsFilter(params string[] tags)
+	{
+		_constructingFiltersParameters = new Filter(tags, TagFilterType.HasAllTags);
+	}
+
+	public static void AddComponentToFilterOn<T>() where T : BaseModelComponent
+	{
+		Type t = typeof(T);
+		if (!_constructingFiltersParameters._componentsToFilterOn.Contains(t))
+		{
+			_constructingFiltersParameters._componentsToFilterOn.Add(t);
+		}
+	}
+
+	public static void CloseFilterCreation(out Filter filterCreated)
+	{
+		filterCreated = _constructingFiltersParameters;
+		_filterOpened = false;
+		_constructingFiltersParameters = null;
+	}
+
+	public bool HasFilterPermission(EntityModel entity)
+	{
+		bool hasPermission = false;
+
+		switch (FilterType)
+		{
+			case TagFilterType.HasAnyTag:
+				hasPermission = entity.ModelTags.HasAnyTag(FilterTags);
+				break;
+			case TagFilterType.HasAllTags:
+				hasPermission = entity.ModelTags.HasAllTags(FilterTags);
+				break;
+			default:
+				hasPermission = true;
+				break;
+		}
+
+		if(!hasPermission)
+		{
+			return false;
+		}
+
+		for(int i = 0, c = _componentsToFilterOn.Count; i < c; i++)
+		{
+			if(!entity.HasComponent(_componentsToFilterOn[i]))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public bool Equals(Filter filter)
+	{
+		if (FilterType == filter.FilterType && FilterTags.Length == filter.FilterTags.Length && FilterComponents.Length == filter.FilterComponents.Length)
+		{
+			for (int i = 0, c = filter.FilterTags.Length; i < c; i++)
+			{
+				if (!_filterTags.Contains(filter.FilterTags[i]))
+				{
+					return false;
+				}
+			}
+
+			for (int i = 0, c = filter.FilterComponents.Length; i < c; i++)
+			{
+				if (!_componentsToFilterOn.Contains(filter.FilterComponents[i]))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private Filter(string[] tags, TagFilterType tagFilterType)
+	{
+		if (_filterOpened)
+		{
+			_filterTags = new List<string>(tags);
+			FilterType = tagFilterType;
+		}
+		else
+		{
+			throw new Exception("Tried creating a filter without the call being between an `OpenFilterCreation` and `CloseFilterCreation` call");
+		}
+	}
 }

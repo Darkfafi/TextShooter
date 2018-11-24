@@ -88,4 +88,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
     {
         return _components.GetComponent<T>();
     }
+
+	public bool HasComponent<T>() where T : BaseModelComponent
+	{
+		return _components.HasComponent<T>();
+	}
+
+	public bool HasComponent(Type componentType)
+	{
+		return _components.HasComponent(componentType);
+	}
 }
