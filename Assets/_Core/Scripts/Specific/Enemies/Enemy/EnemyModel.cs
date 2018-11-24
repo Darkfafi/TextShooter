@@ -39,7 +39,8 @@ public class EnemyModel : EntityModel
 
         WordsHolder.WordCycledEvent += OnWordCycledEvent;
 
-        ModelTags.AddTag("Enemy");
+        ModelTags.AddTag(Tags.ENEMY);
+		ModelTags.AddTag(Tags.DISPLAY_WORD);
     }
 
     public void SetDamage(int damage)
