@@ -10,7 +10,7 @@ public enum TagFilterType
 
 public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 {
-    public Filter Filter { get; private set; }
+    public FilterRules FilterRules { get; private set; }
 
 	#region Static Construction
 
@@ -19,25 +19,25 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     public static EntityFilter<T> Create()
     {
-		Filter myFilter;
-		Filter.OpenFilterCreation();
-		Filter.CreateTagsFilter();
-		Filter.CloseFilterCreation(out myFilter);
-        return Create(myFilter);
+		FilterRules filterRules;
+		FilterRules.OpenFilterCreation();
+		FilterRules.CreateTagsFilterRules();
+		FilterRules.CloseFilterRulesCreation(out filterRules);
+        return Create(filterRules);
     }
 
-	public static EntityFilter<T> Create(Filter filter)
+	public static EntityFilter<T> Create(FilterRules filterRules)
     {
         for (int i = _cachedFilters.Count - 1; i >= 0; i--)
         {
-            if (_cachedFilters[i].Filter.Equals(filter))
+            if (_cachedFilters[i].FilterRules.Equals(filterRules))
             {
                 AddReference(_cachedFilters[i]);
                 return _cachedFilters[i];
             }
         }
 
-        EntityFilter<T> self = new EntityFilter<T>(filter);
+        EntityFilter<T> self = new EntityFilter<T>(filterRules);
         AddReference(self);
         _cachedFilters.Add(self);
         return self;
@@ -85,9 +85,9 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     #endregion
 
-    private EntityFilter(Filter filter)
+    private EntityFilter(FilterRules filter)
     {
-		Filter = filter;
+		FilterRules = filter;
 		EntityTracker.Instance.EntityAddedTagEvent += OnEntityAddedTagEvent;
         EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
 		EntityTracker.Instance.EntityAddedComponentEvent += OnEntityAddedComponentEvent;
@@ -114,13 +114,13 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
 	public bool Equals(EntityFilter<T> filter)
     {
-        return Equals(filter.Filter);
+        return Equals(filter.FilterRules);
     }
 
     private void OnTrackedEvent(EntityModel entity)
     {
         T e = entity as T;
-        if (e != null && Filter.HasFilterPermission(e))
+        if (e != null && FilterRules.HasFilterPermission(e))
         {
             Track(e);
         }
@@ -157,7 +157,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
     private void FillWithAlreadyExistingMatches()
     {
-        T[] t = EntityTracker.Instance.GetAll<T>(Filter.HasFilterPermission);
+        T[] t = EntityTracker.Instance.GetAll<T>(FilterRules.HasFilterPermission);
         for (int i = 0; i < t.Length; i++)
         {
             Track(t[i]);
@@ -169,7 +169,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 		T e = entity as T;
 		if (e != null)
 		{
-			if (Filter.HasFilterPermission(e))
+			if (FilterRules.HasFilterPermission(e))
 			{
 				Track(e);
 			}
@@ -181,7 +181,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 	}
 }
 
-public class Filter
+public class FilterRules
 {
 	public TagFilterType FilterType { get; private set; }
 
@@ -205,29 +205,29 @@ public class Filter
 	private List<Type> _componentsToFilterOn = new List<Type>();
 
 	private static bool _filterOpened = false;
-	private static Filter _constructingFiltersParameters;
+	private static FilterRules _constructingFiltersParameters;
 
 	public static void OpenFilterCreation()
 	{
 		_filterOpened = true;
 	}
 
-	public static void CreateTagsFilter()
+	public static void CreateTagsFilterRules()
 	{
-		_constructingFiltersParameters = new Filter(new string[] { }, TagFilterType.None);
+		_constructingFiltersParameters = new FilterRules(new string[] { }, TagFilterType.None);
 	}
 
-	public static void CreateHasAnyTagsFilter(params string[] tags)
+	public static void CreateHasAnyTagsFilterRules(params string[] tags)
 	{
-		_constructingFiltersParameters = new Filter(tags, TagFilterType.HasAnyTag);
+		_constructingFiltersParameters = new FilterRules(tags, TagFilterType.HasAnyTag);
 	}
 
-	public static void CreateHasAllTagsFilter(params string[] tags)
+	public static void CreateHasAllTagsFilterRules(params string[] tags)
 	{
-		_constructingFiltersParameters = new Filter(tags, TagFilterType.HasAllTags);
+		_constructingFiltersParameters = new FilterRules(tags, TagFilterType.HasAllTags);
 	}
 
-	public static void AddComponentToFilterOn<T>() where T : BaseModelComponent
+	public static void AddComponentToFilterRules<T>() where T : BaseModelComponent
 	{
 		Type t = typeof(T);
 		if (!_constructingFiltersParameters._componentsToFilterOn.Contains(t))
@@ -236,7 +236,7 @@ public class Filter
 		}
 	}
 
-	public static void CloseFilterCreation(out Filter filterCreated)
+	public static void CloseFilterRulesCreation(out FilterRules filterCreated)
 	{
 		filterCreated = _constructingFiltersParameters;
 		_filterOpened = false;
@@ -276,7 +276,7 @@ public class Filter
 		return true;
 	}
 
-	public bool Equals(Filter filter)
+	public bool Equals(FilterRules filter)
 	{
 		if (FilterType == filter.FilterType && FilterTags.Length == filter.FilterTags.Length && FilterComponents.Length == filter.FilterComponents.Length)
 		{
@@ -302,7 +302,7 @@ public class Filter
 		return false;
 	}
 
-	private Filter(string[] tags, TagFilterType tagFilterType)
+	private FilterRules(string[] tags, TagFilterType tagFilterType)
 	{
 		if (_filterOpened)
 		{

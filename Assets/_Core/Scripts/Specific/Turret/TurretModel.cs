@@ -18,11 +18,11 @@ public class TurretModel : EntityModel
 
     public TurretModel(TimekeeperModel timekeeper)
     {
-		Filter enemyFilter;
-		Filter.OpenFilterCreation();
-		Filter.CreateHasAnyTagsFilter(Tags.ENEMY);
-		Filter.AddComponentToFilterOn<WordsHolder>();
-		Filter.CloseFilterCreation(out enemyFilter);
+		FilterRules enemyFilter;
+		FilterRules.OpenFilterCreation();
+		FilterRules.CreateHasAnyTagsFilterRules(Tags.ENEMY);
+		FilterRules.AddComponentToFilterRules<WordsHolder>();
+		FilterRules.CloseFilterRulesCreation(out enemyFilter);
 
 		_enemyFilter = EntityFilter<EnemyModel>.Create(enemyFilter);
 		_timekeeper = timekeeper;
