@@ -15,26 +15,31 @@ public class ModelTransform : BaseModelComponent
         Position = p;
     }
 
+	public void SetPos(Vector3 position)
+	{
+		Position = position;
+	}
+
     public void SetPosX(float x)
     {
         Vector3 p = Position;
         p.x = x;
-        Position = p;
-    }
+		SetPos(p);
+	}
 
     public void SetPosY(float y)
     {
         Vector3 p = Position;
         p.y = y;
-        Position = p;
-    }
+		SetPos(p);
+	}
 
     public void SetPosZ(float z)
     {
         Vector3 p = Position;
         p.z = z;
-        Position = p;
-    }
+		SetPos(p);
+	}
 
     public void TranslateRotation(float x, float y, float z)
     {
