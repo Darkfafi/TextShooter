@@ -306,6 +306,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 739578482}
+  - {fileID: 824072797}
   m_Father: {fileID: 288030582}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -548,6 +549,49 @@ Transform:
   m_Father: {fileID: 288030582}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &692163136
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 692163138}
+  - component: {fileID: 692163137}
+  m_Layer: 0
+  m_Name: WordsDisplayView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &692163137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 692163136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee4b4c1faec9a2448bb7a5067f5a9ca3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _wordUIDisplayItemPrefab: {fileID: 114838575114525306, guid: a39a10b61a2bb27439bfff9f5658bbd5,
+    type: 2}
+  _gameCanvas: {fileID: 2418014}
+--- !u!4 &692163138
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 692163136}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 824072797}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &739578480
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,6 +675,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemyPrefab: {fileID: 114731762009195088, guid: c0906f02610d1b342907b01c8b3ad272,
     type: 2}
+--- !u!1 &824072796
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 824072797}
+  m_Layer: 0
+  m_Name: UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &824072797
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 824072796}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 692163138}
+  m_Father: {fileID: 224930662}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &961880199
 GameObject:
   m_ObjectHideFlags: 0
@@ -803,6 +876,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _waveSystemView: {fileID: 739578481}
   _turretView: {fileID: 961880201}
+  _wordsDisplayerView: {fileID: 692163137}
 --- !u!1 &1346859640
 GameObject:
   m_ObjectHideFlags: 0
