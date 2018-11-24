@@ -5,30 +5,60 @@ using UnityEngine;
 
 public class WordsDisplayerModel : BaseModel
 {
-	private List<EntityModel> _displayingWordsHolders = new List<EntityModel>();
-	private EntityFilter<EntityModel> _entities = EntityFilter<EntityModel>.Create(Tags.DISPLAY_WORD);
+	public event Action<WordUIDisplayItemModel> AddedDisplayItemEvent;
+
+	public EntityFilter<EntityModel> WordsHoldingEntities { get; private set; }
+	private Dictionary<EntityModel, WordUIDisplayItemModel> _entitiesToWordUIDisplayItemMap = new Dictionary<EntityModel, WordUIDisplayItemModel>();
 
 	private TimekeeperModel _timekeeper;
 
 	public WordsDisplayerModel(TimekeeperModel timekeeper)
 	{
 		_timekeeper = timekeeper;
-		_timekeeper.ListenToFrameTick(OnUpdate);
+
+		FilterRules wordHoldingEntityFilter;
+		FilterRules.OpenFilterCreation();
+		FilterRules.CreateHasAnyTagsFilterRules(Tags.DISPLAY_WORD);
+		FilterRules.AddComponentToFilterRules<WordsHolder>();
+		FilterRules.CloseFilterRulesCreation(out wordHoldingEntityFilter);
+
+		WordsHoldingEntities = EntityFilter<EntityModel>.Create(wordHoldingEntityFilter);
+
+		WordsHoldingEntities.TrackedEvent += OnTrackedEvent;
+		WordsHoldingEntities.UntrackedEvent += OnUntrackedEvent;
 	}
 
 	protected override void OnModelDestroy()
 	{
 		base.OnModelDestroy();
-		_timekeeper.UnlistenFromFrameTick(OnUpdate);
+
+		WordsHoldingEntities.TrackedEvent -= OnTrackedEvent;
+		WordsHoldingEntities.UntrackedEvent -= OnUntrackedEvent;
+
+		WordsHoldingEntities.Clean();
+		WordsHoldingEntities = null;
 	}
 
-	private void OnUpdate(float deltaTime, float timeScale)
+	private void OnTrackedEvent(EntityModel entity)
 	{
-		_entities.GetAll(
-			(entity)=> 
+		if (!_entitiesToWordUIDisplayItemMap.ContainsKey(entity))
+		{
+			WordUIDisplayItemModel item = new WordUIDisplayItemModel(entity, _timekeeper);
+			_entitiesToWordUIDisplayItemMap.Add(entity, item);
+			if(AddedDisplayItemEvent != null)
 			{
-				return entity.GetComponent<WordsHolder>() != null;
+				AddedDisplayItemEvent(item);
 			}
-		);
+		}
+	}
+
+	private void OnUntrackedEvent(EntityModel entity)
+	{
+		WordUIDisplayItemModel item;
+		if (_entitiesToWordUIDisplayItemMap.TryGetValue(entity, out item))
+		{
+			_entitiesToWordUIDisplayItemMap.Remove(entity);
+			item.Destroy();
+		}
 	}
 }
