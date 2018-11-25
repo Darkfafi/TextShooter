@@ -1,6 +1,9 @@
 ﻿public interface IView
 {
-    IMethodPermitter LinkingController { get; }
-    void SetupView(IMethodPermitter controller);
-    void DestroyView();
+	IMethodPermitter LinkingController
+	{
+		get;
+	}
+	void SetupView(IMethodPermitter controller);
+	void DestroyView();
 }

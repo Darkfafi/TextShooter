@@ -5,25 +5,38 @@ using UnityEngine;
 
 public class SurvivalGameState : BaseGameState
 {
-    public WaveSystemModel WaveSystem { get; private set; }
-    public TurretModel TurretModel { get; private set; }
+	public WaveSystemModel WaveSystem
+	{
+		get; private set;
+	}
+	public TurretModel TurretModel
+	{
+		get; private set;
+	}
+	public WordsDisplayerModel WordsDisplayerModel
+	{
+		get; private set;
+	}
 
-    protected override void OnSetupState()
-    {
-        // Setup Player
-        TurretModel = new TurretModel(Game.TimekeeperModel);
+	protected override void OnSetupState()
+	{
+		// Setup Player
+		TurretModel = new TurretModel(Game.TimekeeperModel);
 
-        // Setup Environment
-        WaveSystem = new WaveSystemModel(Game.GameCamera, Game.TimekeeperModel);
-    }
+		// Setup UI
+		WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
 
-    protected override void OnStartState()
-    {
-        WaveSystem.StartWaveSystem();
-    }
+		// Setup Environment
+		WaveSystem = new WaveSystemModel(Game.GameCamera, Game.TimekeeperModel);
+	}
 
-    protected override void OnEndState()
-    {
+	protected override void OnStartState()
+	{
+		WaveSystem.StartWaveSystem();
+	}
 
-    }
+	protected override void OnEndState()
+	{
+
+	}
 }

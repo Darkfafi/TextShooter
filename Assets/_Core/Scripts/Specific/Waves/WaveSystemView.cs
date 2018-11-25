@@ -2,29 +2,29 @@
 
 public class WaveSystemView : MonoBaseView
 {
-    [SerializeField]
-    private EnemyViewFactory _enemyViewFactory;
+	[SerializeField]
+	private EnemyViewFactory _enemyViewFactory;
 
-    private WaveSystemModel _waveSystemModel;
+	private WaveSystemModel _waveSystemModel;
 
-    #region LifeCycle
+	#region LifeCycle
 
-    protected override void OnViewReady()
-    {
-        _waveSystemModel = MVCUtil.GetModel<WaveSystemModel>(this);
-        _waveSystemModel.SpawnEnemyEvent += OnSpawnEnemyEvent;
-    }
+	protected override void OnViewReady()
+	{
+		_waveSystemModel = MVCUtil.GetModel<WaveSystemModel>(this);
+		_waveSystemModel.SpawnEnemyEvent += OnSpawnEnemyEvent;
+	}
 
-    protected override void OnViewDestroy()
-    {
-        _waveSystemModel.SpawnEnemyEvent -= OnSpawnEnemyEvent;
-    }
+	protected override void OnViewDestroy()
+	{
+		_waveSystemModel.SpawnEnemyEvent -= OnSpawnEnemyEvent;
+	}
 
-    #endregion
+	#endregion
 
-    private void OnSpawnEnemyEvent(EnemyModel enemy)
-    {
-        _enemyViewFactory.CreateEnemyView(enemy);
-    }
+	private void OnSpawnEnemyEvent(EnemyModel enemy)
+	{
+		_enemyViewFactory.CreateEnemyView(enemy);
+	}
 
 }
