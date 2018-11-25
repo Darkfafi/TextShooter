@@ -14,11 +14,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 
 	public static EntityFilter<T> Create()
 	{
-		FilterRules filterRules;
-		FilterRules.OpenFilterCreation();
-		FilterRules.CreateTagsFilterRules();
-		FilterRules.CloseFilterRulesCreation(out filterRules);
-		return Create(filterRules);
+		return Create(FilterRules.CreateNoTagsFilter());
 	}
 
 	public static EntityFilter<T> Create(FilterRules filterRules)

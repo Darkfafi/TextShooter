@@ -20,10 +20,9 @@ public class WordsDisplayerModel : BaseModel
 		_timekeeper = timekeeper;
 
 		FilterRules wordHoldingEntityFilter;
-		FilterRules.OpenFilterCreation();
-		FilterRules.CreateHasAnyTagsFilterRules(Tags.DISPLAY_WORD);
-		FilterRules.AddComponentToFilterRules<WordsHolder>();
-		FilterRules.CloseFilterRulesCreation(out wordHoldingEntityFilter);
+		FilterRules.OpenConstructHasAnyTags(Tags.DISPLAY_WORD);
+		FilterRules.AddComponentToConstruct<WordsHolder>();
+		FilterRules.CloseConstruct(out wordHoldingEntityFilter);
 
 		WordsHoldingEntities = EntityFilter<EntityModel>.Create(wordHoldingEntityFilter);
 

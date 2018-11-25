@@ -37,34 +37,44 @@ public class FilterRules
 	private static bool _filterOpened = false;
 	private static FilterRules _constructingFiltersParameters;
 
-	public static void OpenFilterCreation()
+	/// <summary>
+	/// Creates a FilterRules with no tags to filter on (TagFilterType.None)
+	/// </summary>
+	public static void OpenConstructNoTags()
 	{
-		if(_filterOpened)
+		if(OpenFilterConstruct())
 		{
-			throw new Exception("Tried opening a filter creation while a previous one has not yet been closed using `CloseFilterRulesCreation`");
+			_constructingFiltersParameters = CreateNoTagsFilter();
 		}
-		else
+	}
+
+	/// <summary>
+	/// Creates a FilterRules which will filter getting elements which have ANY of the given tags (TagFilterType.HasAnyTag)
+	/// </summary>
+	public static void OpenConstructHasAnyTags(string tag, params string[] tags)
+	{
+		if(OpenFilterConstruct())
 		{
-			_filterOpened = true;
+			_constructingFiltersParameters = CreateHasAnyTagsFilter(tag, tags);
 		}
 	}
 
-	public static void CreateTagsFilterRules()
+	/// <summary>
+	/// Creates a FilterRules which will filter getting elements which have ALL of the given tags (TagFilterType.HasAllTags)
+	/// </summary>
+	public static void OpenConstructHasAllTags(string tag, params string[] tags)
 	{
-		_constructingFiltersParameters = new FilterRules(new string[] { }, TagFilterType.None);
+		if(OpenFilterConstruct())
+		{
+			_constructingFiltersParameters = CreateHasAllTagsFilter(tag, tags);
+		}
 	}
 
-	public static void CreateHasAnyTagsFilterRules(params string[] tags)
-	{
-		_constructingFiltersParameters = new FilterRules(tags, TagFilterType.HasAnyTag);
-	}
-
-	public static void CreateHasAllTagsFilterRules(params string[] tags)
-	{
-		_constructingFiltersParameters = new FilterRules(tags, TagFilterType.HasAllTags);
-	}
-
-	public static void AddComponentToFilterRules<T>() where T : BaseModelComponent
+	/// <summary>
+	/// Adds a component type to the filter, so it will only get entries with the given component present.
+	/// The filter will return entries which have ALL of the components given to it.
+	/// </summary>
+	public static void AddComponentToConstruct<T>() where T : BaseModelComponent
 	{
 		Type t = typeof(T);
 		if(!_constructingFiltersParameters._componentsToFilterOn.Contains(t))
@@ -73,11 +83,65 @@ public class FilterRules
 		}
 	}
 
-	public static void CloseFilterRulesCreation(out FilterRules filterCreated)
+	/// <summary>
+	/// Closes the creation of the filter and gives the constructed filter, using the static methods, into the out parameter
+	/// </summary>
+	/// <param name="filterCreated"> The constructed Filter </param>
+	public static void CloseConstruct(out FilterRules filterCreated)
 	{
 		filterCreated = _constructingFiltersParameters;
 		_filterOpened = false;
 		_constructingFiltersParameters = null;
+	}
+
+	/// <summary>
+	/// Creates a FilterRules with no tags to filter on (TagFilterType.None)
+	/// This FilterRules is not open to any static construction methods. 
+	/// </summary>
+	/// <returns>Default FilterRules of (TagFilterType.None)</returns>
+	public static FilterRules CreateNoTagsFilter()
+	{
+		return new FilterRules(new string[] { }, TagFilterType.None);
+	}
+
+	/// <summary>
+	/// Creates a FilterRules which will filter getting elements which have ANY of the given tags (TagFilterType.HasAnyTag)
+	/// This FilterRules is not open to any static construction methods. 
+	/// </summary>
+	/// <returns>Default FilterRules of (TagFilterType.HasAnyTag)</returns>
+	public static FilterRules CreateHasAnyTagsFilter(string tag, params string[] tags)
+	{
+		List<string> myTags = new List<string>(tags);
+		myTags.Add(tag);
+		return new FilterRules(myTags.ToArray(), TagFilterType.HasAnyTag);
+	}
+
+	/// <summary>
+	/// Creates a FilterRules which will filter getting elements which have ALL of the given tags (TagFilterType.HasAllTags)
+	/// This FilterRules is not open to any static construction methods. 
+	/// </summary>
+	/// <returns>Default FilterRules of (TagFilterType.HasAllTags)</returns>
+	public static FilterRules CreateHasAllTagsFilter(string tag, params string[] tags)
+	{
+		List<string> myTags = new List<string>(tags);
+		myTags.Add(tag);
+		return new FilterRules(myTags.ToArray(), TagFilterType.HasAllTags);
+	}
+
+	/// <summary>
+	/// This method allows you to create the FilterRules using the given static methods. To get the constructed FilterRules, call the `CloseFilterRulesCreation` method.
+	/// </summary>
+	private static bool OpenFilterConstruct()
+	{
+		if(_filterOpened)
+		{
+			throw new Exception("Tried opening a filter creation while a previous one has not yet been closed using `CloseFilterRulesCreation`");
+		}
+		else
+		{
+			_filterOpened = true;
+			return true;
+		}
 	}
 
 	public bool HasFilterPermission(EntityModel entity)
@@ -141,14 +205,7 @@ public class FilterRules
 
 	private FilterRules(string[] tags, TagFilterType tagFilterType)
 	{
-		if(_filterOpened)
-		{
-			_filterTags = new List<string>(tags);
-			FilterType = tagFilterType;
-		}
-		else
-		{
-			throw new Exception("Tried creating a filter without the call being between an `OpenFilterCreation` and `CloseFilterCreation` call");
-		}
+		_filterTags = new List<string>(tags);
+		FilterType = tagFilterType;
 	}
 }
