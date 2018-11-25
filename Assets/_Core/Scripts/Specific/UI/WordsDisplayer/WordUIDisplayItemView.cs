@@ -9,6 +9,7 @@ public class WordUIDisplayItemView : EntityView
     private Text _wordTextDisplay;
 
 	private CameraView _gameCamera;
+	private WordUIDisplayItemModel _wordUIDisplayItemModel;
 
 	private bool playingDisplayAnimation = false;
 	private bool displaying = false;
@@ -16,10 +17,21 @@ public class WordUIDisplayItemView : EntityView
 	protected override void OnViewReady()
 	{
 		base.OnViewReady();
+		_wordUIDisplayItemModel = MVCUtil.GetModel<WordUIDisplayItemModel>(this);
 		_gameCamera = MVCUtil.GetView<CameraView>(EntityTracker.Instance.GetFirst<CameraModel>());
 		IgnoreModelTransform = true;
 
 		transform.localScale = Vector2.zero;
+		_wordUIDisplayItemModel.NewWordDisplayingEvent += OnNewWordDisplayingEvent;
+	}
+
+	protected override void OnViewDestroy()
+	{
+		base.OnViewDestroy();
+		_wordUIDisplayItemModel.NewWordDisplayingEvent -= OnNewWordDisplayingEvent;
+		_wordUIDisplayItemModel = null;
+		_gameCamera = null;
+		_wordTextDisplay = null;
 	}
 
 	protected override void Update()
@@ -49,13 +61,6 @@ public class WordUIDisplayItemView : EntityView
 		}
 	}
 
-	protected override void OnViewDestroy()
-	{
-		base.OnViewDestroy();
-		_gameCamera = null;
-		_wordTextDisplay = null;
-	}
-
 	protected override void ViewDestruction()
 	{
 		if (!displaying)
@@ -75,9 +80,11 @@ public class WordUIDisplayItemView : EntityView
 			return;
 		}
 
-		transform.DOComplete(true);
 		playingDisplayAnimation = true;
+		transform.DOComplete(true);
+		_wordTextDisplay.text = "";
 		transform.localScale = Vector3.zero;
+		_wordTextDisplay.DOText(_wordUIDisplayItemModel.CurrentlyDisplayingWord, 0.5f);
 		transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() => 
 		{
 			playingDisplayAnimation = false;
@@ -95,5 +102,10 @@ public class WordUIDisplayItemView : EntityView
 		displaying = false;
 		transform.DOComplete(true);
 		transform.DOScale(0, 0.4f).SetEase(Ease.InBack).OnComplete(()=> { if (callback != null) { callback(); } });
+	}
+
+	private void OnNewWordDisplayingEvent(string newWord)
+	{
+		_wordTextDisplay.DOText(newWord, 0.35f);
 	}
 }
