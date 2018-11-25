@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class WordsDisplayerModel : BaseModel
 {
@@ -11,6 +9,7 @@ public class WordsDisplayerModel : BaseModel
 	{
 		get; private set;
 	}
+
 	private Dictionary<EntityModel, WordUIDisplayItemModel> _entitiesToWordUIDisplayItemMap = new Dictionary<EntityModel, WordUIDisplayItemModel>();
 
 	private TimekeeperModel _timekeeper;
@@ -33,6 +32,14 @@ public class WordsDisplayerModel : BaseModel
 	protected override void OnModelDestroy()
 	{
 		base.OnModelDestroy();
+
+		foreach(var pair in _entitiesToWordUIDisplayItemMap)
+		{
+			pair.Value.Destroy();
+		}
+
+		_entitiesToWordUIDisplayItemMap.Clear();
+		_entitiesToWordUIDisplayItemMap = null;
 
 		WordsHoldingEntities.TrackedEvent -= OnTrackedEvent;
 		WordsHoldingEntities.UntrackedEvent -= OnUntrackedEvent;
