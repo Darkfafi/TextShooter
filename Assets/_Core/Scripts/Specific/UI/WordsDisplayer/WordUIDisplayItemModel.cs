@@ -4,7 +4,10 @@ public class WordUIDisplayItemModel : EntityModel
 {
 	public event Action<string> NewWordDisplayingEvent;
 
-	public string CurrentlyDisplayingWord { get; private set; }
+	public string CurrentlyDisplayingWord
+	{
+		get; private set;
+	}
 
 	public EntityModel EntityModelLinkedTo;
 

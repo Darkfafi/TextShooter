@@ -2,8 +2,8 @@
 
 public class WordsDisplayerView : MonoBaseView
 {
-    [SerializeField]
-    private WordUIDisplayItemView _wordUIDisplayItemPrefab;
+	[SerializeField]
+	private WordUIDisplayItemView _wordUIDisplayItemPrefab;
 
 	[SerializeField]
 	private Canvas _gameCanvas;

@@ -7,53 +7,57 @@ using UnityEngine;
 /// </summary>
 public abstract class MonoBaseView : MonoBehaviour, IView
 {
-    private BaseView _baseView = new BaseView();
+	private BaseView _baseView = new BaseView();
 
-    public IMethodPermitter LinkingController
-    {
-        get
-        {
-            if (_baseView == null)
-                return null;
+	public IMethodPermitter LinkingController
+	{
+		get
+		{
+			if(_baseView == null)
+				return null;
 
-            return _baseView.LinkingController;
-        }
-    }
+			return _baseView.LinkingController;
+		}
+	}
 
-    public virtual void DestroyView()
-    {
-        if(LinkingController == null)
-        {
-            return;
-        }
+	public virtual void DestroyView()
+	{
+		if(LinkingController == null)
+		{
+			return;
+		}
 
-        _baseView.DestroyView();
-        OnViewDestroy();
-        ViewDestruction();
-        _baseView = null;
-    }
+		_baseView.DestroyView();
+		OnViewDestroy();
+		ViewDestruction();
+		_baseView = null;
+	}
 
-    public virtual void SetupView(IMethodPermitter controller)
-    {
-        if (LinkingController != null)
-            return;
+	public virtual void SetupView(IMethodPermitter controller)
+	{
+		if(LinkingController != null)
+			return;
 
-        _baseView.SetupView(controller);
-        OnViewReady();
-    }
+		_baseView.SetupView(controller);
+		OnViewReady();
+	}
 
-    protected virtual void ViewDestruction()
-    {
-        Destroy(gameObject);
-    }
+	protected virtual void ViewDestruction()
+	{
+		Destroy(gameObject);
+	}
 
-    private void OnDestroy()
-    {
-        DestroyView();
-    }
+	private void OnDestroy()
+	{
+		DestroyView();
+	}
 
-    protected virtual void OnViewReady() { }
-    protected virtual void OnViewDestroy() { }
+	protected virtual void OnViewReady()
+	{
+	}
+	protected virtual void OnViewDestroy()
+	{
+	}
 }
 
 /// <summary>
@@ -61,32 +65,36 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 /// </summary>
 public class BaseView : IView
 {
-    public IMethodPermitter LinkingController
-    {
-        get; private set;
-    }
+	public IMethodPermitter LinkingController
+	{
+		get; private set;
+	}
 
-    public virtual void DestroyView()
-    {
-        if(LinkingController == null)
-        {
-            return;
-        }
+	public virtual void DestroyView()
+	{
+		if(LinkingController == null)
+		{
+			return;
+		}
 
-        OnViewDestroy();
+		OnViewDestroy();
 
-        LinkingController = null;
-    }
+		LinkingController = null;
+	}
 
-    public virtual void SetupView(IMethodPermitter controller)
-    {
-        if (LinkingController != null)
-            return;
+	public virtual void SetupView(IMethodPermitter controller)
+	{
+		if(LinkingController != null)
+			return;
 
-        LinkingController = controller;
-        OnViewReady();
-    }
+		LinkingController = controller;
+		OnViewReady();
+	}
 
-    protected virtual void OnViewReady() { }
-    protected virtual void OnViewDestroy() { }
+	protected virtual void OnViewReady()
+	{
+	}
+	protected virtual void OnViewDestroy()
+	{
+	}
 }

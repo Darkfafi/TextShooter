@@ -10,7 +10,10 @@ public enum TagFilterType
 
 public class FilterRules
 {
-	public TagFilterType FilterType { get; private set; }
+	public TagFilterType FilterType
+	{
+		get; private set;
+	}
 
 	public string[] FilterTags
 	{
@@ -36,7 +39,7 @@ public class FilterRules
 
 	public static void OpenFilterCreation()
 	{
-		if (_filterOpened)
+		if(_filterOpened)
 		{
 			throw new Exception("Tried opening a filter creation while a previous one has not yet been closed using `CloseFilterRulesCreation`");
 		}
@@ -64,7 +67,7 @@ public class FilterRules
 	public static void AddComponentToFilterRules<T>() where T : BaseModelComponent
 	{
 		Type t = typeof(T);
-		if (!_constructingFiltersParameters._componentsToFilterOn.Contains(t))
+		if(!_constructingFiltersParameters._componentsToFilterOn.Contains(t))
 		{
 			_constructingFiltersParameters._componentsToFilterOn.Add(t);
 		}
@@ -81,7 +84,7 @@ public class FilterRules
 	{
 		bool hasPermission = false;
 
-		switch (FilterType)
+		switch(FilterType)
 		{
 			case TagFilterType.HasAnyTag:
 				hasPermission = entity.ModelTags.HasAnyTag(FilterTags);
@@ -94,14 +97,14 @@ public class FilterRules
 				break;
 		}
 
-		if (!hasPermission)
+		if(!hasPermission)
 		{
 			return false;
 		}
 
-		for (int i = 0, c = _componentsToFilterOn.Count; i < c; i++)
+		for(int i = 0, c = _componentsToFilterOn.Count; i < c; i++)
 		{
-			if (!entity.HasComponent(_componentsToFilterOn[i]))
+			if(!entity.HasComponent(_componentsToFilterOn[i]))
 			{
 				return false;
 			}
@@ -112,19 +115,19 @@ public class FilterRules
 
 	public bool Equals(FilterRules filter)
 	{
-		if (FilterType == filter.FilterType && FilterTags.Length == filter.FilterTags.Length && FilterComponents.Length == filter.FilterComponents.Length)
+		if(FilterType == filter.FilterType && FilterTags.Length == filter.FilterTags.Length && FilterComponents.Length == filter.FilterComponents.Length)
 		{
-			for (int i = 0, c = filter.FilterTags.Length; i < c; i++)
+			for(int i = 0, c = filter.FilterTags.Length; i < c; i++)
 			{
-				if (!_filterTags.Contains(filter.FilterTags[i]))
+				if(!_filterTags.Contains(filter.FilterTags[i]))
 				{
 					return false;
 				}
 			}
 
-			for (int i = 0, c = filter.FilterComponents.Length; i < c; i++)
+			for(int i = 0, c = filter.FilterComponents.Length; i < c; i++)
 			{
-				if (!_componentsToFilterOn.Contains(filter.FilterComponents[i]))
+				if(!_componentsToFilterOn.Contains(filter.FilterComponents[i]))
 				{
 					return false;
 				}
@@ -138,7 +141,7 @@ public class FilterRules
 
 	private FilterRules(string[] tags, TagFilterType tagFilterType)
 	{
-		if (_filterOpened)
+		if(_filterOpened)
 		{
 			_filterTags = new List<string>(tags);
 			FilterType = tagFilterType;

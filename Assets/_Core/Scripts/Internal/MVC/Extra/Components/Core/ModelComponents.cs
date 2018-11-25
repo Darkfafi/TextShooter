@@ -6,82 +6,85 @@ public class ModelComponents : IComponentsHolder
 	public event Action<BaseModelComponent> AddedComponentEvent;
 	public event Action<BaseModelComponent> RemovedComponentEvent;
 
-	public BaseModel Model { get; private set; }
-    private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
-    private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
-    private bool _isReady = false;
+	public BaseModel Model
+	{
+		get; private set;
+	}
+	private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
+	private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
+	private bool _isReady = false;
 
 	public ModelComponents(BaseModel model)
-    {
-        Model = model;
-    }
+	{
+		Model = model;
+	}
 
-    public void SignalReady()
-    {
-        if (_isReady)
-            return;
+	public void SignalReady()
+	{
+		if(_isReady)
+			return;
 
-        _isReady = true;
+		_isReady = true;
 
-        // Ready all already added components
-        foreach (BaseModelComponent component in _components)
-        {
-            component.SignalReady();
-        }
-    }
+		// Ready all already added components
+		foreach(BaseModelComponent component in _components)
+		{
+			component.SignalReady();
+		}
+	}
 
-    public void Clean()
-    {
-        foreach (BaseModelComponent component in _components)
-        {
-            InternalRemoveComponent(component, true);
-        }
+	public void Clean()
+	{
+		foreach(BaseModelComponent component in _components)
+		{
+			InternalRemoveComponent(component, true);
+		}
 
-        for (int i = _removingComponents.Count - 1; i >= 0; i--)
-        {
-            _components.Remove(_removingComponents[i]);
-        }
+		for(int i = _removingComponents.Count - 1; i >= 0; i--)
+		{
+			_components.Remove(_removingComponents[i]);
+		}
 
-        _components.Clear();
-        _removingComponents.Clear();
+		_components.Clear();
+		_removingComponents.Clear();
 
 		AddedComponentEvent = null;
 		RemovedComponentEvent = null;
 
 		_components = null;
-        _removingComponents = null;
-        Model = null;
-    }
+		_removingComponents = null;
+		Model = null;
+	}
 
-    public T AddComponent<T>() where T : BaseModelComponent
-    {
-        BaseModelComponent c = Activator.CreateInstance<T>();
-        _components.Add(c);
-        c.Initialize(this);
+	public T AddComponent<T>() where T : BaseModelComponent
+	{
+		BaseModelComponent c = Activator.CreateInstance<T>();
+		_components.Add(c);
+		c.Initialize(this);
 
 		if(AddedComponentEvent != null)
 		{
 			AddedComponentEvent(c);
 		}
 
-        if (_isReady)
-        {
-            c.SignalReady();
-        }
+		if(_isReady)
+		{
+			c.SignalReady();
+		}
 
-        return c as T;
-    }
+		return c as T;
+	}
 
-    public void RemoveComponent<T>() where T : BaseModelComponent
-    {
-        BaseModelComponent c = GetComponentOfType(typeof(T));
-        InternalRemoveComponent(c);
-    }
+	public void RemoveComponent<T>() where T : BaseModelComponent
+	{
+		BaseModelComponent c = GetComponentOfType(typeof(T));
+		InternalRemoveComponent(c);
+	}
 
-    public T GetComponent<T>() where T : BaseModelComponent
-    {
-        return GetComponentOfType(typeof(T)) as T;
-    }
+	public T GetComponent<T>() where T : BaseModelComponent
+	{
+		return GetComponentOfType(typeof(T)) as T;
+	}
 
 	public bool HasComponent<T>() where T : BaseModelComponent
 	{
@@ -93,49 +96,49 @@ public class ModelComponents : IComponentsHolder
 		return GetComponentOfType(componentType) != null;
 	}
 
-    private BaseModelComponent GetComponentOfType(Type type)
-    {
-        foreach (BaseModelComponent component in _components)
-        {
-            if(type.IsAssignableFrom(component.GetType()))
-            {
-                return component;
-            }
-        }
+	private BaseModelComponent GetComponentOfType(Type type)
+	{
+		foreach(BaseModelComponent component in _components)
+		{
+			if(type.IsAssignableFrom(component.GetType()))
+			{
+				return component;
+			}
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    private void InternalRemoveComponent(BaseModelComponent component, bool selfClean = false)
-    {
-        if (component != null && !_removingComponents.Contains(component))
-        {
-            _removingComponents.Add(component);
+	private void InternalRemoveComponent(BaseModelComponent component, bool selfClean = false)
+	{
+		if(component != null && !_removingComponents.Contains(component))
+		{
+			_removingComponents.Add(component);
 
-			if (RemovedComponentEvent != null)
+			if(RemovedComponentEvent != null)
 			{
 				RemovedComponentEvent(component);
 			}
 
 			component.Deinitialize();
-        }
+		}
 
-        if (!selfClean)
-        {
-            for (int i = _removingComponents.Count - 1; i >= 0; i--)
-            {
-                _components.Remove(_removingComponents[i]);
-            }
-        }
-    }
+		if(!selfClean)
+		{
+			for(int i = _removingComponents.Count - 1; i >= 0; i--)
+			{
+				_components.Remove(_removingComponents[i]);
+			}
+		}
+	}
 }
 
 
 public interface IComponentsHolder
 {
 	T AddComponent<T>() where T : BaseModelComponent;
-    void RemoveComponent<T>() where T : BaseModelComponent;
-    T GetComponent<T>() where T : BaseModelComponent;
+	void RemoveComponent<T>() where T : BaseModelComponent;
+	T GetComponent<T>() where T : BaseModelComponent;
 	bool HasComponent<T>() where T : BaseModelComponent;
 	bool HasComponent(Type componentType);
 }

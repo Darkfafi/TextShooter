@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class WordUIDisplayItemView : EntityView
 {
-    [SerializeField]
-    private Text _wordTextDisplay;
+	[SerializeField]
+	private Text _wordTextDisplay;
 
 	private CameraView _gameCamera;
 	private WordUIDisplayItemModel _wordUIDisplayItemModel;
@@ -63,19 +63,19 @@ public class WordUIDisplayItemView : EntityView
 
 	protected override void ViewDestruction()
 	{
-		if (!displaying)
+		if(!displaying)
 		{
 			base.ViewDestruction();
 		}
 		else
 		{
-			HideAnimationAnimation(()=> { base.ViewDestruction(); });
+			HideAnimationAnimation(() => { base.ViewDestruction(); });
 		}
 	}
 
 	private void DisplayAnimation()
 	{
-		if (playingDisplayAnimation || displaying)
+		if(playingDisplayAnimation || displaying)
 		{
 			return;
 		}
@@ -86,7 +86,7 @@ public class WordUIDisplayItemView : EntityView
 		_wordTextDisplay.rectTransform.sizeDelta = Vector2.zero;
 		transform.localScale = Vector3.zero;
 		_wordTextDisplay.DOText(_wordUIDisplayItemModel.CurrentlyDisplayingWord, 0.3f).SetDelay(0.2f);
-		transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() => 
+		transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() =>
 		{
 			playingDisplayAnimation = false;
 			displaying = true;
@@ -95,14 +95,14 @@ public class WordUIDisplayItemView : EntityView
 
 	private void HideAnimationAnimation(Action callback = null)
 	{
-		if (!displaying)
+		if(!displaying)
 		{
 			return;
 		}
 
 		displaying = false;
 		transform.DOComplete(true);
-		transform.DOScale(0, 0.4f).SetEase(Ease.InBack).OnComplete(()=> { if (callback != null) { callback(); } });
+		transform.DOScale(0, 0.4f).SetEase(Ease.InBack).OnComplete(() => { if(callback != null) { callback(); } });
 	}
 
 	private void OnNewWordDisplayingEvent(string newWord)

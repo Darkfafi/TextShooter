@@ -7,7 +7,10 @@ public class WordsDisplayerModel : BaseModel
 {
 	public event Action<WordUIDisplayItemModel> AddedDisplayItemEvent;
 
-	public EntityFilter<EntityModel> WordsHoldingEntities { get; private set; }
+	public EntityFilter<EntityModel> WordsHoldingEntities
+	{
+		get; private set;
+	}
 	private Dictionary<EntityModel, WordUIDisplayItemModel> _entitiesToWordUIDisplayItemMap = new Dictionary<EntityModel, WordUIDisplayItemModel>();
 
 	private TimekeeperModel _timekeeper;
@@ -41,7 +44,7 @@ public class WordsDisplayerModel : BaseModel
 
 	private void OnTrackedEvent(EntityModel entity)
 	{
-		if (!_entitiesToWordUIDisplayItemMap.ContainsKey(entity))
+		if(!_entitiesToWordUIDisplayItemMap.ContainsKey(entity))
 		{
 			WordUIDisplayItemModel item = new WordUIDisplayItemModel(entity, _timekeeper);
 			_entitiesToWordUIDisplayItemMap.Add(entity, item);
@@ -55,7 +58,7 @@ public class WordsDisplayerModel : BaseModel
 	private void OnUntrackedEvent(EntityModel entity)
 	{
 		WordUIDisplayItemModel item;
-		if (_entitiesToWordUIDisplayItemMap.TryGetValue(entity, out item))
+		if(_entitiesToWordUIDisplayItemMap.TryGetValue(entity, out item))
 		{
 			_entitiesToWordUIDisplayItemMap.Remove(entity);
 			item.Destroy();
