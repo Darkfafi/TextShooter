@@ -1,6 +1,4 @@
-﻿using System;
-
-public class Controller : IAbstractController
+﻿public class Controller : IAbstractController
 {
     public static Controller Link(IModel model, IView view)
     {
