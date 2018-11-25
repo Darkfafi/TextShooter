@@ -9,12 +9,10 @@ public class WordUIDisplayItemView : EntityView
 	private WordUIDisplayItemModel _wordUIDisplayItemModel;
 
 	private CameraView _gameCamera;
-	private Canvas _parentCanvas;
 
 	protected override void OnViewReady()
 	{
 		_wordUIDisplayItemModel = MVCUtil.GetModel<WordUIDisplayItemModel>(this);
-		_parentCanvas = gameObject.GetComponentInParent<Canvas>();
 		_gameCamera = MVCUtil.GetView<CameraView>(EntityTracker.Instance.GetFirst<CameraModel>());
 		IgnoreModelTransform = true;
 	}
