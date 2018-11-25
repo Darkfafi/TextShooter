@@ -14,7 +14,7 @@ public class SurvivalGameState : BaseGameState
         // Setup Player
         TurretModel = new TurretModel(Game.TimekeeperModel);
 
-		// Setup Words Displayer
+		// Setup UI
 		WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
 
         // Setup Environment
