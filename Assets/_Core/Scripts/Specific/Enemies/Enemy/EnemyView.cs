@@ -13,5 +13,9 @@ public class EnemyView : EntityView
             Vector2 pressLocation = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             MVCUtil.GetModel<EnemyModel>(this).GetComponent<TopDownMovement>().MoveTo(pressLocation);
         }
+		if(Input.GetMouseButtonDown(1))
+		{
+			MVCUtil.GetModel<EnemyModel>(this).WordsHolder.CycleToNextWord();
+		}
     }
 }

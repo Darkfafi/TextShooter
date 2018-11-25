@@ -119,9 +119,9 @@ public class WaveSystemModel : BaseModel
         WaveSectionObject section = new WaveSectionObject();
         section.Enemies = new EnemySpawnData[]
         {
-            new EnemySpawnData(EnemyModel.EnemyCharacterType.Normal, 1, "First"),
-            new EnemySpawnData(EnemyModel.EnemyCharacterType.Double, 1, "Second"),
-            new EnemySpawnData(EnemyModel.EnemyCharacterType.Normal, 2, "The Number after two"),
+            new EnemySpawnData(EnemyModel.EnemyCharacterType.Normal, 1, "First", "Hello2"),
+            new EnemySpawnData(EnemyModel.EnemyCharacterType.Double, 1, "Second", "Hello but then a bit bigger"),
+            new EnemySpawnData(EnemyModel.EnemyCharacterType.Normal, 2, "The Number after two", "Hello"),
         };
 
         section.TimeToFightEnemiesInSeconds = TIME_TO_FIGHT_UNTIL_ALL_EXTINCT;

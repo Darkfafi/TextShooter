@@ -83,8 +83,9 @@ public class WordUIDisplayItemView : EntityView
 		playingDisplayAnimation = true;
 		transform.DOComplete(true);
 		_wordTextDisplay.text = "";
+		_wordTextDisplay.rectTransform.sizeDelta = Vector2.zero;
 		transform.localScale = Vector3.zero;
-		_wordTextDisplay.DOText(_wordUIDisplayItemModel.CurrentlyDisplayingWord, 0.5f);
+		_wordTextDisplay.DOText(_wordUIDisplayItemModel.CurrentlyDisplayingWord, 0.3f).SetDelay(0.2f);
 		transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() => 
 		{
 			playingDisplayAnimation = false;
@@ -106,6 +107,10 @@ public class WordUIDisplayItemView : EntityView
 
 	private void OnNewWordDisplayingEvent(string newWord)
 	{
-		_wordTextDisplay.DOText(newWord, 0.35f);
+		_wordTextDisplay.DOText(newWord, 0.3f);
+		if(string.IsNullOrEmpty(newWord))
+		{
+			_wordTextDisplay.rectTransform.DOSizeDelta(Vector2.zero, 0.2f);
+		}
 	}
 }
