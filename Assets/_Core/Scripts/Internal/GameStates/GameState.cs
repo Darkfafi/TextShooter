@@ -4,16 +4,18 @@
 	{
 		get; private set;
 	}
-	protected T Game
+
+	public T Game
 	{
 		get; private set;
 	}
+
 	protected GameStateManager<T> GameStateManager
 	{
 		get; private set;
 	}
 
-	public void SetupState(T game, GameStateManager<T> gameStateManager)
+	public virtual void SetupState(T game, GameStateManager<T> gameStateManager)
 	{
 		MethodPermitter = new MethodPermitter();
 		Game = game;

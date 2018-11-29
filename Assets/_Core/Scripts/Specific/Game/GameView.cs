@@ -2,10 +2,6 @@
 
 public class GameView : MonoBaseView
 {
-	[Header("Game States")]
-	[SerializeField]
-	private IntroGameStateView _introGameStateView;
-
 	[SerializeField]
 	private SurvivalGameStateView _survivalGameStateView;
 
@@ -28,7 +24,6 @@ public class GameView : MonoBaseView
 		Controller.Link(gm.GameCamera, _cameraView);
 
 		// Setup GameModel
-		gm.GameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
 		gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
 		Controller.Link(gm, this);

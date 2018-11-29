@@ -399,7 +399,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e848a784b38028f4cb7d5f06134420fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _introGameStateView: {fileID: 1755008530}
   _survivalGameStateView: {fileID: 1265146907}
   _cameraView: {fileID: 1074143732}
 --- !u!4 &288030582
@@ -704,6 +703,47 @@ Transform:
   m_Father: {fileID: 224930662}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &902016614
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 902016616}
+  - component: {fileID: 902016615}
+  m_Layer: 0
+  m_Name: WavesSubGameStateView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &902016615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 902016614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b93d7243598629439582ed4bda2dca0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _waveSystemView: {fileID: 739578481}
+--- !u!4 &902016616
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 902016614}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1265146906}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &961880199
 GameObject:
   m_ObjectHideFlags: 0
@@ -859,9 +899,11 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1755008531}
+  - {fileID: 902016616}
   m_Father: {fileID: 1554208903}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1265146907
 MonoBehaviour:
@@ -874,7 +916,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25f436b32259e9b41a4a7e89ca462cd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _waveSystemView: {fileID: 739578481}
+  _introGameStateView: {fileID: 1755008530}
+  _wavesGameStateView: {fileID: 902016615}
   _turretView: {fileID: 961880201}
   _wordsDisplayerView: {fileID: 692163137}
 --- !u!1 &1346859640
@@ -975,7 +1018,6 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 1755008531}
   - {fileID: 1265146906}
   m_Father: {fileID: 288030582}
   m_RootOrder: 0
@@ -1058,7 +1100,7 @@ GameObject:
   - component: {fileID: 1755008531}
   - component: {fileID: 1755008530}
   m_Layer: 0
-  m_Name: IntroGameStateView
+  m_Name: IntroSubGameStateView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1085,10 +1127,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1755008529}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1554208903}
+  m_Father: {fileID: 1265146906}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

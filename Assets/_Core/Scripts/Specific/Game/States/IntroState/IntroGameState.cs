@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class IntroGameState : BaseGameState
+public class IntroGameState : SubGameState<SurvivalGameState, GameModel>
 {
 	public enum IntroState
 	{
@@ -20,7 +20,7 @@ public class IntroGameState : BaseGameState
 		switch(_currentState)
 		{
 			case IntroState.End:
-				GameStateManager.SetGameState<SurvivalGameState>();
+				GameStateManager.SetGameState<WavesGameState>();
 				break;
 			default:
 				if(IntroStateSwitchedEvent != null)

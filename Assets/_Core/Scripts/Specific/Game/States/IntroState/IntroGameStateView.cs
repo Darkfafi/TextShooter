@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class IntroGameStateView : MonoBehaviourGameStateView
+public class IntroGameStateView : MonoGameStateView<SurvivalGameState>
 {
 	[Header("Options")]
 	[SerializeField]

@@ -4,10 +4,12 @@
 	{
 		get; private set;
 	}
+
 	public GameStateManager<GameModel> GameStateManager
 	{
 		get; private set;
 	}
+
 	public TimekeeperModel TimekeeperModel
 	{
 		get; private set;
@@ -22,7 +24,7 @@
 
 	protected override void OnModelReady()
 	{
-		GameStateManager.SetGameState<IntroGameState>();
+		GameStateManager.SetGameState<SurvivalGameState>();
 	}
 
 	protected override void OnModelDestroy()
