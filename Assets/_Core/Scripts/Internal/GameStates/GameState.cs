@@ -15,7 +15,7 @@
 		get; private set;
 	}
 
-	public virtual void SetupState(T game, GameStateManager<T> gameStateManager)
+	public void SetupState(T game, GameStateManager<T> gameStateManager)
 	{
 		MethodPermitter = new MethodPermitter();
 		Game = game;
