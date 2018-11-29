@@ -1,4 +1,6 @@
-﻿public class GameModel : BaseModel, IGame
+﻿using SurvivalGame;
+
+public class GameModel : BaseModel, IGame
 {
 	public CameraModel GameCamera
 	{

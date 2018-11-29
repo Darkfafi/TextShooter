@@ -1,45 +1,48 @@
 ﻿using UnityEngine;
 
-public class SurvivalGameStateView : MonoGameStateView<GameModel>
+namespace SurvivalGame
 {
-	[Header("Game States")]
-	[SerializeField]
-	private IntroGameStateView _introGameStateView;
-
-	[SerializeField]
-	private WavesGameStateView _wavesGameStateView;
-
-	[Header("Requirements")]
-	[SerializeField]
-	private TurretView _turretView;
-
-	[SerializeField]
-	private WordsDisplayerView _wordsDisplayerView;
-
-	private SurvivalGameState _survivalGameState;
-
-	protected override void OnPreStartStateView()
+	public class SurvivalGameStateView : MonoGameStateView<GameModel>
 	{
-		_survivalGameState = GameState as SurvivalGameState;
+		[Header("Game States")]
+		[SerializeField]
+		private IntroGameStateView _introGameStateView;
 
-		// UI
-		Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
+		[SerializeField]
+		private WavesGameStateView _wavesGameStateView;
 
-		// Game
-		Controller.Link(_survivalGameState.TurretModel, _turretView);
+		[Header("Requirements")]
+		[SerializeField]
+		private TurretView _turretView;
 
-		// Game States
-		_survivalGameState.SurvivalGameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
-		_survivalGameState.SurvivalGameStateManager.SetupStateView<WavesGameState>(_wavesGameStateView);
-	}
+		[SerializeField]
+		private WordsDisplayerView _wordsDisplayerView;
 
-	protected override void OnStartStateView()
-	{
+		private SurvivalGameState _survivalGameState;
 
-	}
+		protected override void OnPreStartStateView()
+		{
+			_survivalGameState = GameState as SurvivalGameState;
 
-	protected override void OnEndStateView()
-	{
-		_survivalGameState = null;
+			// UI
+			Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
+
+			// Game
+			Controller.Link(_survivalGameState.TurretModel, _turretView);
+
+			// Game States
+			_survivalGameState.SurvivalGameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
+			_survivalGameState.SurvivalGameStateManager.SetupStateView<WavesGameState>(_wavesGameStateView);
+		}
+
+		protected override void OnStartStateView()
+		{
+
+		}
+
+		protected override void OnEndStateView()
+		{
+			_survivalGameState = null;
+		}
 	}
 }
