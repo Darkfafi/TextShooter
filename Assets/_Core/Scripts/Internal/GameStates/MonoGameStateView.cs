@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public abstract class MonoBehaviourGameStateView : MonoBehaviour, IGameStateView<GameModel>
+public abstract class MonoGameStateView<T> : MonoBehaviour, IGameStateView<T> where T : class, IGame
 {
-	protected GameState<GameModel> GameState
+	protected GameState<T> GameState
 	{
 		get; private set;
 	}
@@ -14,7 +14,7 @@ public abstract class MonoBehaviourGameStateView : MonoBehaviour, IGameStateView
 		GameState = null;
 	}
 
-	public void PreStartStateView(GameState<GameModel> state)
+	public void PreStartStateView(GameState<T> state)
 	{
 		GameState = state;
 		OnPreStartStateView();

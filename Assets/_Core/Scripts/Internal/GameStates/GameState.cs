@@ -4,10 +4,12 @@
 	{
 		get; private set;
 	}
-	protected T Game
+
+	public T Game
 	{
 		get; private set;
 	}
+
 	protected GameStateManager<T> GameStateManager
 	{
 		get; private set;

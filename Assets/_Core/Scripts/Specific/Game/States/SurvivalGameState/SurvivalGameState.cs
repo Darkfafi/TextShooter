@@ -1,42 +1,41 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class SurvivalGameState : BaseGameState
+﻿namespace SurvivalGame
 {
-	public WaveSystemModel WaveSystem
+	public class SurvivalGameState : BaseGameState, IGame
 	{
-		get; private set;
-	}
-	public TurretModel TurretModel
-	{
-		get; private set;
-	}
-	public WordsDisplayerModel WordsDisplayerModel
-	{
-		get; private set;
-	}
+		public TurretModel TurretModel
+		{
+			get; private set;
+		}
 
-	protected override void OnSetupState()
-	{
-		// Setup Player
-		TurretModel = new TurretModel(Game.TimekeeperModel);
+		public WordsDisplayerModel WordsDisplayerModel
+		{
+			get; private set;
+		}
 
-		// Setup UI
-		WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
+		public GameStateManager<SurvivalGameState> SurvivalGameStateManager
+		{
+			get; private set;
+		}
 
-		// Setup Environment
-		WaveSystem = new WaveSystemModel(Game.GameCamera, Game.TimekeeperModel);
-	}
+		protected override void OnSetupState()
+		{
+			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
 
-	protected override void OnStartState()
-	{
-		WaveSystem.StartWaveSystem();
-	}
+			// Setup UI
+			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
 
-	protected override void OnEndState()
-	{
+			// Setup Player
+			TurretModel = new TurretModel(Game.TimekeeperModel);
+		}
 
+		protected override void OnStartState()
+		{
+			SurvivalGameStateManager.SetGameState<IntroGameState>();
+		}
+
+		protected override void OnEndState()
+		{
+
+		}
 	}
 }

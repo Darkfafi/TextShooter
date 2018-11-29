@@ -1,34 +1,48 @@
 ﻿using UnityEngine;
 
-public class SurvivalGameStateView : MonoBehaviourGameStateView
+namespace SurvivalGame
 {
-	private SurvivalGameState _survivalGameState;
-
-	[SerializeField]
-	private WaveSystemView _waveSystemView;
-
-	[SerializeField]
-	private TurretView _turretView;
-
-	[SerializeField]
-	private WordsDisplayerView _wordsDisplayerView;
-
-	protected override void OnPreStartStateView()
+	public class SurvivalGameStateView : MonoGameStateView<GameModel>
 	{
-		_survivalGameState = GameState as SurvivalGameState;
+		[Header("Game States")]
+		[SerializeField]
+		private IntroGameStateView _introGameStateView;
 
-		Controller.Link(_survivalGameState.TurretModel, _turretView);
-		Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
-		Controller.Link(_survivalGameState.WaveSystem, _waveSystemView);
-	}
+		[SerializeField]
+		private WavesGameStateView _wavesGameStateView;
 
-	protected override void OnStartStateView()
-	{
+		[Header("Requirements")]
+		[SerializeField]
+		private TurretView _turretView;
 
-	}
+		[SerializeField]
+		private WordsDisplayerView _wordsDisplayerView;
 
-	protected override void OnEndStateView()
-	{
-		_survivalGameState = null;
+		private SurvivalGameState _survivalGameState;
+
+		protected override void OnPreStartStateView()
+		{
+			_survivalGameState = GameState as SurvivalGameState;
+
+			// UI
+			Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
+
+			// Game
+			Controller.Link(_survivalGameState.TurretModel, _turretView);
+
+			// Game States
+			_survivalGameState.SurvivalGameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
+			_survivalGameState.SurvivalGameStateManager.SetupStateView<WavesGameState>(_wavesGameStateView);
+		}
+
+		protected override void OnStartStateView()
+		{
+
+		}
+
+		protected override void OnEndStateView()
+		{
+			_survivalGameState = null;
+		}
 	}
 }
