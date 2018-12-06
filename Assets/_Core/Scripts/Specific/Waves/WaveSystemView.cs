@@ -18,6 +18,7 @@ public class WaveSystemView : MonoBaseView
 	protected override void OnViewDestroy()
 	{
 		_waveSystemModel.SpawnEnemyEvent -= OnSpawnEnemyEvent;
+		_waveSystemModel = null;
 	}
 
 	#endregion
