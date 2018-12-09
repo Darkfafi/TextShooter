@@ -1,10 +1,16 @@
 ﻿using DG.Tweening;
 using System;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class WordUIDisplayItemView : EntityView
 {
+	public string DisplayingWord
+	{
+		get; private set;
+	}
+
 	[SerializeField]
 	private Text _wordTextDisplay;
 
@@ -13,6 +19,21 @@ public class WordUIDisplayItemView : EntityView
 
 	private bool playingDisplayAnimation = false;
 	private bool displaying = false;
+
+	public void SetTextColor(int charIndexStart, int charIndexEnd, string colorCode)
+	{
+		charIndexEnd = charIndexEnd + 1;
+		_wordTextDisplay.supportRichText = true;
+		StringBuilder wordBuilder = new StringBuilder(DisplayingWord);
+		string subString = DisplayingWord.Substring(charIndexStart, charIndexEnd - charIndexStart);
+		wordBuilder.Replace(subString, string.Format("<color=#{0}>{1}</color>", colorCode, subString), charIndexStart, subString.Length);
+		_wordTextDisplay.text = wordBuilder.ToString();
+	}
+
+	public void ResetTextColor()
+	{
+		_wordTextDisplay.text = DisplayingWord;
+	}
 
 	protected override void OnViewReady()
 	{
@@ -85,6 +106,7 @@ public class WordUIDisplayItemView : EntityView
 		_wordTextDisplay.text = "";
 		_wordTextDisplay.rectTransform.sizeDelta = Vector2.zero;
 		transform.localScale = Vector3.zero;
+		DisplayingWord = _wordUIDisplayItemModel.CurrentlyDisplayingWord;
 		_wordTextDisplay.DOText(_wordUIDisplayItemModel.CurrentlyDisplayingWord, 0.3f).SetDelay(0.2f);
 		transform.DOScale(1, 0.5f).SetEase(Ease.OutBack).OnComplete(() =>
 		{
@@ -107,6 +129,7 @@ public class WordUIDisplayItemView : EntityView
 
 	private void OnNewWordDisplayingEvent(string newWord)
 	{
+		DisplayingWord = newWord;
 		_wordTextDisplay.DOText(newWord, 0.3f);
 		if(string.IsNullOrEmpty(newWord))
 		{
