@@ -17,6 +17,9 @@ public abstract class BaseModelComponent
 	{
 		get
 		{
+			if(Components == null)
+				return null;
+
 			return Components.Model;
 		}
 	}
