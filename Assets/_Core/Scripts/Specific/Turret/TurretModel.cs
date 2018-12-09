@@ -1,19 +1,25 @@
 ﻿using UnityEngine;
 
-
 public class TurretModel : EntityModel
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
 	public event NewOldTargetHandler TargetSetEvent;
 
-	public EnemyModel CurrentTarget
+	public EntityModel CurrentTarget
 	{
 		get; private set;
 	}
+
+	public TargetSystem TargetSystem
+	{
+		get; private set;
+	}
+
 	public float TurretNeckRotation
 	{
 		get; private set;
 	}
+
 	public float Range
 	{
 		get; private set;
@@ -21,12 +27,16 @@ public class TurretModel : EntityModel
 
 	private TimekeeperModel _timekeeper;
 
-	private EntityFilter<EnemyModel> _enemyFilter = EntityFilter<EnemyModel>.Create(FilterRules.CreateHasAnyTagsFilter(Tags.ENEMY));
-
-	public TurretModel(TimekeeperModel timekeeper)
+	public TurretModel(TimekeeperModel timekeeper, CharInputModel charInputModel)
 	{
 		_timekeeper = timekeeper;
 		_timekeeper.ListenToFrameTick(Update);
+
+		TargetSystem = AddComponent<TargetSystem>();
+		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAnyTagsFilter(Tags.ENEMY));
+
+		TargetSystem.TargetCompletedEvent += OnTargetCompletedEvent;
+
 		Range = 5f;
 	}
 
@@ -42,48 +52,55 @@ public class TurretModel : EntityModel
 		_timekeeper.UnlistenFromFrameTick(Update);
 		_timekeeper = null;
 
-		_enemyFilter.Clean();
-		_enemyFilter = null;
+
+		TargetSystem.TargetCompletedEvent -= OnTargetCompletedEvent;
+		TargetSystem = null;
+	}
+
+	private void OnTargetCompletedEvent(EntityModel target)
+	{
+		if(CurrentTarget == null)
+		{
+			FocusOnTarget(target);
+		}
 	}
 
 	private void Update(float deltaTime, float timeScale)
 	{
-		EnemyModel target = _enemyFilter.GetFirst(
-			(e) =>
-			{
-				if(e.IsDestroyed || e.IsDead)
-					return false;
-
-				if((e.ModelTransform.Position - ModelTransform.Position).magnitude > Range)
-					return false;
-
-				return true;
-
-			}, (a, b) =>
-			{
-				float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
-				float distB = (b.ModelTransform.Position - ModelTransform.Position).magnitude;
-				return (int)(distA - distB);
-			});
-
-		FocusOnTarget(target);
-
 		float angleToTarget = 0;
 
-		if(CurrentTarget != null)
+		if(CurrentTarget != null && !CurrentTarget.IsDestroyed)
 		{
-			float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
-			float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
+			if(Vector2.Distance(ModelTransform.Position, CurrentTarget.ModelTransform.Position) < Range)
+			{
+				float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
+				float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
 
-			angleToTarget = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
+				angleToTarget = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
+
+				if(Mathf.Abs(Mathf.DeltaAngle(angleToTarget, TurretNeckRotation)) < 10f)
+				{
+					if(CurrentTarget.GetComponent<WordsHp>().HitEntireWord())
+					{
+						// TODO: Shoot & Hit effect
+						Debug.Log("HIT");
+					}
+
+					FocusOnTarget(TargetSystem.UnqueueFirstCompletedTarget());
+				}
+			}
+		}
+		else if(CurrentTarget != null)
+		{
+			FocusOnTarget(null);
 		}
 
 		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
 	}
 
-	public void FocusOnTarget(EnemyModel target)
+	public void FocusOnTarget(EntityModel target)
 	{
-		EnemyModel previousTarget = CurrentTarget;
+		EntityModel previousTarget = CurrentTarget;
 
 		if(previousTarget == target)
 			return;

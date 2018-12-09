@@ -18,7 +18,15 @@ namespace SurvivalGame
 		[SerializeField]
 		private WordsDisplayerView _wordsDisplayerView;
 
+		private CharKeyboardInputView _charKeyboardInputView;
+
 		private SurvivalGameState _survivalGameState;
+
+		protected override void Awake()
+		{
+			base.Awake();
+			_charKeyboardInputView = gameObject.AddComponent<CharKeyboardInputView>();
+		}
 
 		protected override void OnPreStartStateView()
 		{
@@ -26,6 +34,9 @@ namespace SurvivalGame
 
 			// UI
 			Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
+
+			// Input
+			Controller.Link(_survivalGameState.CharInputModel, _charKeyboardInputView);
 
 			// Game
 			Controller.Link(_survivalGameState.TurretModel, _turretView);
