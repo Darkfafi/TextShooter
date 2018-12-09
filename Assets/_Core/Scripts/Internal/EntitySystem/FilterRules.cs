@@ -60,6 +60,17 @@ public class FilterRules
 	}
 
 	/// <summary>
+	/// Sets up Construct on given filterRules
+	/// </summary>
+	public static void OpenConstructOnFilterRules(FilterRules filterRules)
+	{
+		if(OpenFilterConstruct())
+		{
+			_constructingFiltersParameters = filterRules;
+		}
+	}
+
+	/// <summary>
 	/// Creates a FilterRules which will filter getting elements which have ALL of the given tags (TagFilterType.HasAllTags)
 	/// </summary>
 	public static void OpenConstructHasAllTags(string tag, params string[] tags)
