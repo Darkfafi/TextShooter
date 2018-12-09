@@ -17,6 +17,11 @@
 			get; private set;
 		}
 
+		public TargetingWordItemModificationModel TargetingWordItemModificationModel
+		{
+			get; private set;
+		}
+
 		public GameStateManager<SurvivalGameState> SurvivalGameStateManager
 		{
 			get; private set;
@@ -28,6 +33,7 @@
 
 			// Setup UI
 			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
+			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(WordsDisplayerModel);
 
 			// Input
 			CharInputModel = new CharInputModel();

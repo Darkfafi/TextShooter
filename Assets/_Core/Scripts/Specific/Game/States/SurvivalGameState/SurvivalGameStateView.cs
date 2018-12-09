@@ -19,7 +19,6 @@ namespace SurvivalGame
 		private WordsDisplayerView _wordsDisplayerView;
 
 		private CharKeyboardInputView _charKeyboardInputView;
-
 		private SurvivalGameState _survivalGameState;
 
 		protected override void Awake()
@@ -34,6 +33,7 @@ namespace SurvivalGame
 
 			// UI
 			Controller.Link(_survivalGameState.WordsDisplayerModel, _wordsDisplayerView);
+			Controller.Link(_survivalGameState.TargetingWordItemModificationModel, new TargetingWordItemModificationView());
 
 			// Input
 			Controller.Link(_survivalGameState.CharInputModel, _charKeyboardInputView);
