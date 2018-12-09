@@ -36,7 +36,7 @@ public class WordUIDisplayItemModel : EntityModel
 		EntityModelLinkedTo = null;
 	}
 
-	private void OnWordCycledEvent(string previousWord, string newWord)
+	private void OnWordCycledEvent(string previousWord, string newWord, WordsHolder wordsHolder)
 	{
 		SetCurrentlyDisplayingWord(newWord);
 	}

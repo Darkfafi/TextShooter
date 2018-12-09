@@ -29,6 +29,13 @@ public class WordsDisplayerModel : BaseModel
 		WordsHoldingEntities.UntrackedEvent += OnUntrackedEvent;
 	}
 
+	public WordUIDisplayItemModel GetItemForEntityModel(EntityModel entityModel)
+	{
+		WordUIDisplayItemModel item = null;
+		_entitiesToWordUIDisplayItemMap.TryGetValue(entityModel, out item);
+		return item;
+	}
+
 	protected override void OnModelDestroy()
 	{
 		base.OnModelDestroy();

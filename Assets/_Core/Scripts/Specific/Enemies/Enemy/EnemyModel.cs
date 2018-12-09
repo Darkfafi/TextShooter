@@ -64,7 +64,7 @@ public class EnemyModel : EntityModel
 		WordsHolder = null;
 	}
 
-	private void OnWordCycledEvent(string previousWord, string newWord)
+	private void OnWordCycledEvent(string previousWord, string newWord, WordsHolder wordsHolder)
 	{
 		if(string.IsNullOrEmpty(newWord))
 		{
