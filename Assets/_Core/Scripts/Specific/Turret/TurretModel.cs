@@ -37,6 +37,8 @@ public class TurretModel : EntityModel
 
 		TargetSystem.TargetCompletedEvent += OnTargetCompletedEvent;
 
+		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
+
 		Range = 5f;
 	}
 
@@ -86,7 +88,7 @@ public class TurretModel : EntityModel
 						Debug.Log("HIT");
 					}
 
-					FocusOnTarget(TargetSystem.UnqueueFirstCompletedTarget());
+					FocusOnTarget(TargetSystem.GetFirstCompletedTarget());
 				}
 			}
 		}

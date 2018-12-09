@@ -3,12 +3,34 @@
 public class TargetSystem : BaseModelComponent
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
+	public delegate void CharTargetHandler(EntityModel target, char newChar, char requiredChar, int index);
 	public delegate void TargetHandler(EntityModel target);
 	public event NewOldTargetHandler TargetSetEvent;
+	public event CharTargetHandler TargetCharTypedEvent;
 	public event TargetHandler TargetCompletedEvent;
 
-	private EntityModel _currentTypingTarget;
-	private string _buildupShootString = "";
+	public int CurrentShootIndex
+	{
+		get
+		{
+			if(string.IsNullOrEmpty(BuildupShootString))
+			{
+				return 0;
+			}
+
+			return BuildupShootString.Length;
+		}
+	}
+
+	public string BuildupShootString
+	{
+		get; private set;
+	}
+
+	public EntityModel CurrentTypingTarget
+	{
+		get; private set;
+	}
 
 	private List<EntityModel> _completedTargetList = new List<EntityModel>();
 
@@ -32,25 +54,30 @@ public class TargetSystem : BaseModelComponent
 		_charInputModel.InputEvent += OnInputEvent;
 	}
 
-	public bool UnqueueFromCompletedTargetList(EntityModel entityModel)
-	{
-		return _completedTargetList.Remove(entityModel);
-	}
-
-	public EntityModel UnqueueFirstCompletedTarget()
+	public EntityModel GetFirstCompletedTarget()
 	{
 		if(_completedTargetList.Count > 0)
 		{
-			EntityModel model = _completedTargetList[0];
-			UnqueueFromCompletedTargetList(model);
+			return _completedTargetList[0];
 		}
 
 		return null;
 	}
 
+	public List<EntityModel> GetAllTargets(bool includingCurrentTyping)
+	{
+		List<EntityModel> targetsToReturn = new List<EntityModel>();
+		if(CurrentTypingTarget != null && includingCurrentTyping)
+		{
+			targetsToReturn.Add(CurrentTypingTarget);
+		}
+		targetsToReturn.AddRange(_completedTargetList);
+		return targetsToReturn;
+	}
+
 	private void OnInputEvent(char c)
 	{
-		if(_currentTypingTarget == null || _currentTypingTarget.IsDestroyed || _currentTypingTarget.GetComponent<WordsHp>().IsDead)
+		if(CurrentTypingTarget == null || CurrentTypingTarget.IsDestroyed || CurrentTypingTarget.GetComponent<WordsHp>().IsDead)
 		{
 			EntityModel target = _targetFilter.GetFirst(
 			(e) =>
@@ -76,14 +103,21 @@ public class TargetSystem : BaseModelComponent
 			SetTypeTarget(target);
 		}
 
-		if(_currentTypingTarget != null)
+		if(CurrentTypingTarget != null)
 		{
-			WordsHp targetWordsHp = _currentTypingTarget.GetComponent<WordsHp>();
-			char requiredChar = targetWordsHp.GetChar(_buildupShootString.Length);
+			WordsHp targetWordsHp = CurrentTypingTarget.GetComponent<WordsHp>();
+			int index = CurrentShootIndex;
+			char requiredChar = targetWordsHp.GetChar(index);
+
+			if(TargetCharTypedEvent != null)
+			{
+				TargetCharTypedEvent(CurrentTypingTarget, c, requiredChar, index);
+			}
+
 			if(WordsHp.IsHit(c, requiredChar))
 			{
-				_buildupShootString += requiredChar;
-				if(targetWordsHp.CurrentTargetWord.Length == _buildupShootString.Length)
+				BuildupShootString += requiredChar;
+				if(targetWordsHp.CurrentTargetWord.Length == BuildupShootString.Length)
 				{
 					CompleteCurrentTypingTarget();
 				}
@@ -93,7 +127,12 @@ public class TargetSystem : BaseModelComponent
 
 	private void OnUntrackedEvent(EntityModel entity)
 	{
+		if(entity == null)
+			return;
+
 		_completedTargetList.Remove(entity);
+		entity.GetComponent<WordsHolder>().WordCycledEvent -= OnWordCycledEvent;
+		entity.GetComponent<WordsHp>().WordCharHitEvent -= OnWordCharHitEvent;
 	}
 
 	protected override void Removed()
@@ -105,8 +144,8 @@ public class TargetSystem : BaseModelComponent
 
 		_charInputModel = null;
 
-		_currentTypingTarget = null;
-		_buildupShootString = null;
+		CurrentTypingTarget = null;
+		BuildupShootString = null;
 
 		_completedTargetList.Clear();
 		_completedTargetList = null;
@@ -114,10 +153,12 @@ public class TargetSystem : BaseModelComponent
 
 	private void CompleteCurrentTypingTarget()
 	{
-		if(_currentTypingTarget != null)
+		if(CurrentTypingTarget != null && !_completedTargetList.Contains(CurrentTypingTarget))
 		{
-			EntityModel target = _currentTypingTarget;
+			EntityModel target = CurrentTypingTarget;
 			_completedTargetList.Add(target);
+			target.GetComponent<WordsHolder>().WordCycledEvent += OnWordCycledEvent;
+			target.GetComponent<WordsHp>().WordCharHitEvent += OnWordCharHitEvent;
 			SetTypeTarget(null);
 
 			if(TargetCompletedEvent != null)
@@ -127,20 +168,33 @@ public class TargetSystem : BaseModelComponent
 		}
 	}
 
+	private void OnWordCharHitEvent(string word, int charIndex, WordsHp hitter)
+	{
+		if(hitter.IsDead)
+		{
+			OnUntrackedEvent((EntityModel)hitter.Parent);
+		}
+	}
+
+	private void OnWordCycledEvent(string previousWord, string newWord, WordsHolder holder)
+	{
+		OnUntrackedEvent((EntityModel)holder.Parent);
+	}
+
 	private void SetTypeTarget(EntityModel target)
 	{
-		EntityModel previousTarget = _currentTypingTarget;
+		EntityModel previousTarget = CurrentTypingTarget;
 
 		if(previousTarget == target)
 			return;
 
-		_buildupShootString = "";
+		BuildupShootString = "";
 
-		_currentTypingTarget = target;
+		CurrentTypingTarget = target;
 
 		if(TargetSetEvent != null)
 		{
-			TargetSetEvent(_currentTypingTarget, previousTarget);
+			TargetSetEvent(CurrentTypingTarget, previousTarget);
 		}
 	}
 }
