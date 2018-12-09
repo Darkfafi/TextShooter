@@ -2,19 +2,14 @@
 
 public class EnemyModel : EntityModel
 {
-	public enum EnemyCharacterType
-	{
-		Normal, // Normal word behaviour
-		Double, // Each word is to be typed 2 times
-	}
-
 	public event Action<EnemyModel> DeathEvent;
 
 	public WordsHolder WordsHolder
 	{
 		get; private set;
 	}
-	public WordsHitter WordsHitter
+
+	public WordsHp WordsHp
 	{
 		get; private set;
 	}
@@ -23,11 +18,8 @@ public class EnemyModel : EntityModel
 	{
 		get; private set;
 	}
+
 	public int Damage
-	{
-		get; private set;
-	}
-	public EnemyCharacterType EnemyType
 	{
 		get; private set;
 	}
@@ -40,15 +32,14 @@ public class EnemyModel : EntityModel
 		}
 	}
 
-	public EnemyModel(TimekeeperModel timekeeper, EnemyCharacterType enemyType, string currentWord, params string[] nextWords)
+	public EnemyModel(TimekeeperModel timekeeper, string currentWord, params string[] nextWords)
 	{
-		EnemyType = enemyType;
 		Damage = 1;
 
 		AddComponent<TopDownMovement>().Setup(timekeeper);
 		WordsHolder = AddComponent<WordsHolder>();
 		WordsHolder.Setup(currentWord, nextWords);
-		AddComponent<WordsHitter>().SetCharHitsNeeded(GetCharHitsNeeded());
+		WordsHp = AddComponent<WordsHp>();
 
 		AIModel = new AIModel();
 
@@ -69,7 +60,7 @@ public class EnemyModel : EntityModel
 
 		WordsHolder.WordCycledEvent -= OnWordCycledEvent;
 
-		WordsHitter = null;
+		WordsHp = null;
 		WordsHolder = null;
 	}
 
@@ -81,17 +72,7 @@ public class EnemyModel : EntityModel
 			{
 				DeathEvent(this);
 			}
-		}
-	}
-
-	private int GetCharHitsNeeded()
-	{
-		switch(EnemyType)
-		{
-			case EnemyCharacterType.Double:
-				return 2;
-			default:
-				return 1;
+			Destroy();
 		}
 	}
 }
