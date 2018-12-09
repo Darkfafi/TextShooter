@@ -53,6 +53,7 @@ public class WordUIDisplayItemModel : EntityModel
 
 	private void OnUpdate(float deltaTime, float timeScale)
 	{
-		ModelTransform.SetPos(EntityModelLinkedTo.ModelTransform.Position);
+		if(EntityModelLinkedTo != null && !EntityModelLinkedTo.IsDestroyed)
+			ModelTransform.SetPos(EntityModelLinkedTo.ModelTransform.Position);
 	}
 }
