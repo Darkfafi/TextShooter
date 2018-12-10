@@ -49,19 +49,23 @@ public class TargetingWordItemModificationView : BaseView
 
 	private void SetTextColor(WordUIDisplayItemModel item, int index)
 	{
-		WordUIDisplayItemView itemView = MVCUtil.GetView<WordUIDisplayItemView>(item);
-		itemView.SetTextColor(0, index, index == itemView.DisplayingWord.Length - 1 ? "00FF00" : "00AA00");
-		if(!_itemViewsModified.Contains(itemView))
+		MVCUtil.GetView<WordUIDisplayItemView>(item, (itemView) => 
 		{
-			_itemViewsModified.Add(itemView);
-			itemView.ViewDestroyedEvent += OnViewDestroyedEvent;
-		}
+			itemView.SetTextColor(0, index, index == itemView.DisplayingWord.Length - 1 ? "00FF00" : "00AA00");
+			if(!_itemViewsModified.Contains(itemView))
+			{
+				_itemViewsModified.Add(itemView);
+				itemView.ViewDestroyedEvent += OnViewDestroyedEvent;
+			}
+		});
 	}
 
 	private void ResetTextColor(WordUIDisplayItemModel item)
 	{
-		WordUIDisplayItemView itemView = MVCUtil.GetView<WordUIDisplayItemView>(item);
-		itemView.ResetTextColor();
+		MVCUtil.GetView<WordUIDisplayItemView>(item, (itemView)=>
+		{
+			itemView.ResetTextColor();
+		});
 	}
 
 	private void OnWordItemTargetCharAttemptEvent(WordUIDisplayItemModel item, int index)
