@@ -62,16 +62,6 @@ public class TargetSystem : BaseModelComponent
 		_charInputModel.InputEvent += OnInputEvent;
 	}
 
-	public EntityModel GetFirstCompletedTarget()
-	{
-		if(_completedTargetList.Count > 0)
-		{
-			return _completedTargetList[0];
-		}
-
-		return null;
-	}
-
 	public bool IsTargetCompleted(EntityModel target)
 	{
 		return _completedTargetList.Contains(target);
@@ -159,6 +149,10 @@ public class TargetSystem : BaseModelComponent
 
 		CurrentTypingTarget = null;
 		BuildupShootString = null;
+
+		_targetsFilter.UntrackedEvent -= OnUntrackedEvent;
+		_targetsFilter.Clean();
+		_targetsFilter = null;
 
 		_completedTargetList.Clear();
 		_completedTargetList = null;

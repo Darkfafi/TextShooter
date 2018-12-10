@@ -12,7 +12,19 @@ public class TurretModel : EntityModel
 			if(TargetSystem == null)
 				return null;
 
-			return TargetSystem.GetFirstCompletedTarget();
+			return TargetSystem.TargetsFilter.GetFirst(
+				(e) => 
+				{
+					if(!TargetSystem.IsTargetCompleted(e))
+						return false;
+
+					return true;
+				}, (a, b) =>
+				{
+					float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
+					float distB = (b.ModelTransform.Position - ModelTransform.Position).magnitude;
+					return (int)(distA - distB);
+				});
 		}
 	}
 
@@ -41,8 +53,6 @@ public class TurretModel : EntityModel
 		TargetSystem = AddComponent<TargetSystem>();
 		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAnyTagsFilter(Tags.ENEMY));
 
-		TargetSystem.TargetCompletedEvent += OnTargetCompletedEvent;
-
 		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
 
 		Range = 5f;
@@ -52,25 +62,11 @@ public class TurretModel : EntityModel
 	{
 		base.OnModelDestroy();
 
-		if(CurrentTarget != null)
-		{
-			FocusOnTarget(null);
-		}
-
 		_timekeeper.UnlistenFromFrameTick(Update);
 		_timekeeper = null;
 
-
-		TargetSystem.TargetCompletedEvent -= OnTargetCompletedEvent;
+		
 		TargetSystem = null;
-	}
-
-	private void OnTargetCompletedEvent(EntityModel target)
-	{
-		if(CurrentTarget == null)
-		{
-			FocusOnTarget(target);
-		}
 	}
 
 	private void Update(float deltaTime, float timeScale)
@@ -88,34 +84,15 @@ public class TurretModel : EntityModel
 
 				if(Mathf.Abs(Mathf.DeltaAngle(angleToTarget, TurretNeckRotation)) < 10f)
 				{
+					// TODO: Fire bullet which does the hit logic for the turret in its own fassion. 
 					if(CurrentTarget.GetComponent<WordsHp>().HitEntireWord())
 					{
-						// TODO: Shoot & Hit effect
 						Debug.Log("HIT");
 					}
-
-					FocusOnTarget(TargetSystem.GetFirstCompletedTarget());
 				}
 			}
 		}
-		else if(CurrentTarget != null)
-		{
-			FocusOnTarget(null);
-		}
 
 		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
-	}
-
-	public void FocusOnTarget(EntityModel target)
-	{
-		EntityModel previousTarget = CurrentTarget;
-
-		if(previousTarget == target)
-			return;
-
-		if(TargetSetEvent != null)
-		{
-			TargetSetEvent(CurrentTarget, previousTarget);
-		}
 	}
 }
