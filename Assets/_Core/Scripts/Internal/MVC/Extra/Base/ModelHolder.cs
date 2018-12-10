@@ -99,6 +99,11 @@ public class ModelHolder<BM> where BM : BaseModel
 		return result.ToArray();
 	}
 
+	public bool Has(BM model)
+	{
+		return _models.Contains(model);
+	}
+
 	public virtual void Clean()
 	{
 		for(int i = _models.Count - 1; i >= 0; i--)
