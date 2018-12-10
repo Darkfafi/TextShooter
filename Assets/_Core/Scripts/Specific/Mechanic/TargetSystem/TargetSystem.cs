@@ -32,14 +32,22 @@ public class TargetSystem : BaseModelComponent
 		get; private set;
 	}
 
+	public EntityFilter<EntityModel> TargetsFilter
+	{
+		get
+		{
+			return _targetsFilter;
+		}
+	}
+
 	private List<EntityModel> _completedTargetList = new List<EntityModel>();
 
 	private CharInputModel _charInputModel;
-	private EntityFilter<EntityModel> _targetFilter;
+	private EntityFilter<EntityModel> _targetsFilter;
 
 	public void SetupTargetSystem(CharInputModel charInputModel, FilterRules filterRules)
 	{
-		if(_targetFilter != null)
+		if(_targetsFilter != null)
 			return;
 
 		FilterRules.OpenConstructOnFilterRules(filterRules);
@@ -47,8 +55,8 @@ public class TargetSystem : BaseModelComponent
 		FilterRules.AddComponentToConstruct<WordsHp>();
 		FilterRules.CloseConstruct(out filterRules);
 
-		_targetFilter = EntityFilter<EntityModel>.Create(filterRules);
-		_targetFilter.UntrackedEvent += OnUntrackedEvent;
+		_targetsFilter = EntityFilter<EntityModel>.Create(filterRules);
+		_targetsFilter.UntrackedEvent += OnUntrackedEvent;
 
 		_charInputModel = charInputModel;
 		_charInputModel.InputEvent += OnInputEvent;
@@ -79,7 +87,7 @@ public class TargetSystem : BaseModelComponent
 	{
 		if(CurrentTypingTarget == null || CurrentTypingTarget.IsDestroyed || CurrentTypingTarget.GetComponent<WordsHp>().IsDead)
 		{
-			EntityModel target = _targetFilter.GetFirst(
+			EntityModel target = _targetsFilter.GetFirst(
 			(e) =>
 			{
 				if(e.IsDestroyed || e.GetComponent<WordsHp>().IsDead)
