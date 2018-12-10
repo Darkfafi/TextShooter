@@ -72,6 +72,11 @@ public class TargetSystem : BaseModelComponent
 		return null;
 	}
 
+	public bool IsTargetCompleted(EntityModel target)
+	{
+		return _completedTargetList.Contains(target);
+	}
+
 	public List<EntityModel> GetAllTargets(bool includingCurrentTyping)
 	{
 		List<EntityModel> targetsToReturn = new List<EntityModel>();
@@ -93,7 +98,7 @@ public class TargetSystem : BaseModelComponent
 				if(e.IsDestroyed || e.GetComponent<WordsHp>().IsDead)
 					return false;
 
-				if(_completedTargetList.Contains(e))
+				if(IsTargetCompleted(e))
 					return false;
 
 				if(!WordsHp.IsHit(c, e.GetComponent<WordsHp>().GetCurrentChar()))
@@ -161,7 +166,7 @@ public class TargetSystem : BaseModelComponent
 
 	private void CompleteCurrentTypingTarget()
 	{
-		if(CurrentTypingTarget != null && !_completedTargetList.Contains(CurrentTypingTarget))
+		if(CurrentTypingTarget != null && !IsTargetCompleted(CurrentTypingTarget))
 		{
 			EntityModel target = CurrentTypingTarget;
 			_completedTargetList.Add(target);

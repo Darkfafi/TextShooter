@@ -1,9 +1,12 @@
 ﻿
+using System;
+
 public class TargetingWordItemModificationModel : BaseModel
 {
 	public delegate void TargetWordUIItemHandler(WordUIDisplayItemModel item, int index);
 	public delegate void TargetingHandler(TargetSystem newTargetingSystem, TargetSystem previousTargetingSystem);
 	public event TargetWordUIItemHandler CharAtItemIndexTypedEvent;
+	public event Action<TargetSystem, WordUIDisplayItemModel> RegisteredItemAddedEvent;
 	public event TargetingHandler TargetingSystemChangedEvent;
 
 	private WordsDisplayerModel _wordsDisplayerModel;
@@ -23,6 +26,7 @@ public class TargetingWordItemModificationModel : BaseModel
 		_targetingEntityModels.UntrackedEvent += OnUntrackedEvent;
 
 		_wordsDisplayerModel = wordsDisplayerModel;
+		_wordsDisplayerModel.AddedDisplayItemEvent += OnAddedDisplayItemEvent;
 	}
 
 	public WordUIDisplayItemModel GetWordUIItemForEntityModel(EntityModel entityModel)
@@ -41,7 +45,22 @@ public class TargetingWordItemModificationModel : BaseModel
 		_targetingEntityModels.UntrackedEvent -= OnUntrackedEvent;
 		_targetingEntityModels = null;
 
+		_wordsDisplayerModel.AddedDisplayItemEvent -= OnAddedDisplayItemEvent;
 		_wordsDisplayerModel = null;
+	}
+
+	private void OnAddedDisplayItemEvent(WordUIDisplayItemModel item)
+	{
+		if(_activeTargetSystems != null)
+		{
+			if(_activeTargetSystems.TargetsFilter.Has(item.EntityModelLinkedTo))
+			{
+				if(RegisteredItemAddedEvent != null)
+				{
+					RegisteredItemAddedEvent(_activeTargetSystems, item);
+				}
+			}
+		}
 	}
 
 	private void OnTrackedEvent(EntityModel entity)

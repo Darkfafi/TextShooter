@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class TargetingWordItemModificationView : BaseView
 {
@@ -10,14 +11,16 @@ public class TargetingWordItemModificationView : BaseView
 		base.SetupView(controller);
 		_targetingWordItemModificationModel = MVCUtil.GetModel<TargetingWordItemModificationModel>(this);
 		_targetingWordItemModificationModel.TargetingSystemChangedEvent += OnTargetingSystemChangedEvent;
-		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent += OnWordItemTargetCharAttemptEvent;
+		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent += OnCharAtItemIndexTypedEvent;
+		_targetingWordItemModificationModel.RegisteredItemAddedEvent += OnRegisteredItemAddedEvent;
 	}
 
 	protected override void OnViewDestroy()
 	{
 		_targetingWordItemModificationModel = null;
 		_targetingWordItemModificationModel.TargetingSystemChangedEvent -= OnTargetingSystemChangedEvent;
-		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent -= OnWordItemTargetCharAttemptEvent;
+		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent -= OnCharAtItemIndexTypedEvent;
+		_targetingWordItemModificationModel.RegisteredItemAddedEvent -= OnRegisteredItemAddedEvent;
 	}
 
 	private void OnTargetingSystemChangedEvent(TargetSystem targetSystem, TargetSystem oldTargetSystem)
@@ -33,14 +36,25 @@ public class TargetingWordItemModificationView : BaseView
 
 		if(targetSystem != null)
 		{
-			List<EntityModel> newTargetsToDisplay = targetSystem.GetAllTargets(false);
-			for(int i = 0; i < newTargetsToDisplay.Count; i++)
+			ApplyStylingForTargets(targetSystem, targetSystem.GetAllTargets(true).ToArray());
+		}
+	}
+
+	private void OnRegisteredItemAddedEvent(TargetSystem targetSystem, WordUIDisplayItemModel item)
+	{
+		ApplyStylingForTargets(targetSystem, item.EntityModelLinkedTo);
+	}
+
+	private void ApplyStylingForTargets(TargetSystem targetSystem, params EntityModel[] targets)
+	{
+		for(int i = 0; i < targets.Length; i++)
+		{
+			if(targetSystem.IsTargetCompleted(targets[i]))
 			{
-				WordUIDisplayItemModel item = _targetingWordItemModificationModel.GetWordUIItemForEntityModel(newTargetsToDisplay[i]);
+				WordUIDisplayItemModel item = _targetingWordItemModificationModel.GetWordUIItemForEntityModel(targets[i]);
 				SetTextColor(item, item.CurrentlyDisplayingWord.Length - 1);
 			}
-
-			if(targetSystem.CurrentTypingTarget != null)
+			else if(targets[i] == targetSystem.CurrentTypingTarget)
 			{
 				SetTextColor(_targetingWordItemModificationModel.GetWordUIItemForEntityModel(targetSystem.CurrentTypingTarget), targetSystem.CurrentShootIndex - 1);
 			}
@@ -68,7 +82,7 @@ public class TargetingWordItemModificationView : BaseView
 		});
 	}
 
-	private void OnWordItemTargetCharAttemptEvent(WordUIDisplayItemModel item, int index)
+	private void OnCharAtItemIndexTypedEvent(WordUIDisplayItemModel item, int index)
 	{
 		SetTextColor(item, index);
 	}
