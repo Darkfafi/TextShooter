@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 
 public class ModelManipulationWindow : EditorWindow
 {
@@ -8,6 +10,7 @@ public class ModelManipulationWindow : EditorWindow
 
     private bool _manipulateTransform = false;
     private bool _showTags = false;
+	private bool _showComponents = false;
     private string _currentTagAddString = "";
 
     [MenuItem("MVC/Model Manipulator")]
@@ -76,7 +79,33 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("View Object Name: " + _targetView.gameObject.name);
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
-        EditorGUILayout.EndVertical();
+		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo componentsFieldInfo = typeof(ModelComponents).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		HashSet<BaseModelComponent> componentsOfModel = (HashSet<BaseModelComponent>)componentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+
+		GUILayout.Label("Model Components: ");
+
+		if(componentsOfModel != null)
+		{
+			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components ({0})", componentsOfModel.Count)))
+			{
+				EditorGUILayout.BeginVertical();
+
+				foreach(BaseModelComponent component in componentsOfModel)
+				{
+					GUIStyle s = new GUIStyle(GUI.skin.label);
+					s.normal.textColor = new Color(0.2f, 0.2f, 0.75f);
+					GUILayout.Label(" * " + component, s);
+				}
+				EditorGUILayout.EndVertical();
+
+				EditorGUILayout.Space();
+			}
+		}
+
+
+
+		EditorGUILayout.EndVertical();
 
         EditorGUILayout.Space();
 
@@ -88,8 +117,8 @@ public class ModelManipulationWindow : EditorWindow
 
         if (tagsComponent != null)
         {
-            System.Collections.ObjectModel.ReadOnlyCollection<string> tags = tagsComponent.GetTags();
-            if (_showTags = EditorGUILayout.Foldout(_showTags, string.Format("Tags ({0})", tags.Count)))
+            string[] tags = tagsComponent.GetTags();
+            if (_showTags = EditorGUILayout.Foldout(_showTags, string.Format("Tags ({0})", tags.Length)))
             {
                 EditorGUILayout.BeginHorizontal();
                 _currentTagAddString = EditorGUILayout.TextField("Add Tag: ", _currentTagAddString);
@@ -100,7 +129,7 @@ public class ModelManipulationWindow : EditorWindow
                 }
                 EditorGUILayout.EndHorizontal();
 
-                for (int i = 0; i < tags.Count; i++)
+                for (int i = 0; i < tags.Length; i++)
                 {
                     EditorGUILayout.BeginHorizontal();
                     GUIStyle s = new GUIStyle(GUI.skin.label);

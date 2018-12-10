@@ -24,7 +24,7 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	{
 		get; private set;
 	}
-
+	
 	private ModelComponents _components;
 	private bool _internalDestroyCalled = false;
 
