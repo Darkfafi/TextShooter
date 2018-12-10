@@ -8,6 +8,7 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	public event Action<BaseModel> DestroyEvent;
 	public event Action<BaseModel, BaseModelComponent> AddedComponentToModelEvent;
 	public event Action<BaseModel, BaseModelComponent> RemovedComponentFromModelEvent;
+	public event Action<BaseModel> ModelReadyEvent;
 
 	public bool IsDestroyed
 	{
@@ -77,6 +78,11 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		IsDestroyed = false;
 		_components.SignalReady();
 		OnModelReady();
+
+		if(ModelReadyEvent != null)
+		{
+			ModelReadyEvent(this);
+		}
 	}
 
 	protected virtual void OnModelReady()
