@@ -7,7 +7,13 @@ public class TurretModel : EntityModel
 
 	public EntityModel CurrentTarget
 	{
-		get; private set;
+		get
+		{
+			if(TargetSystem == null)
+				return null;
+
+			return TargetSystem.GetFirstCompletedTarget();
+		}
 	}
 
 	public TargetSystem TargetSystem
@@ -106,8 +112,6 @@ public class TurretModel : EntityModel
 
 		if(previousTarget == target)
 			return;
-
-		CurrentTarget = target;
 
 		if(TargetSetEvent != null)
 		{
