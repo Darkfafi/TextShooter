@@ -13,6 +13,7 @@ public class TargetingWordItemModificationView : BaseView
 		_targetingWordItemModificationModel.TargetingSystemChangedEvent += OnTargetingSystemChangedEvent;
 		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent += OnCharAtItemIndexTypedEvent;
 		_targetingWordItemModificationModel.RegisteredItemAddedEvent += OnRegisteredItemAddedEvent;
+		_targetingWordItemModificationModel.RegisteredItemRemovedEvent += OnRegisteredItemRemovedEvent;
 	}
 
 	protected override void OnViewDestroy()
@@ -21,6 +22,7 @@ public class TargetingWordItemModificationView : BaseView
 		_targetingWordItemModificationModel.TargetingSystemChangedEvent -= OnTargetingSystemChangedEvent;
 		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent -= OnCharAtItemIndexTypedEvent;
 		_targetingWordItemModificationModel.RegisteredItemAddedEvent -= OnRegisteredItemAddedEvent;
+		_targetingWordItemModificationModel.RegisteredItemRemovedEvent -= OnRegisteredItemRemovedEvent;
 	}
 
 	private void OnTargetingSystemChangedEvent(TargetSystem targetSystem, TargetSystem oldTargetSystem)
@@ -42,7 +44,18 @@ public class TargetingWordItemModificationView : BaseView
 
 	private void OnRegisteredItemAddedEvent(TargetSystem targetSystem, WordUIDisplayItemModel item)
 	{
-		ApplyStylingForTargets(targetSystem, item.EntityModelLinkedTo);
+		if(item != null && !item.IsDestroyed)
+		{
+			ApplyStylingForTargets(targetSystem, item.EntityModelLinkedTo);
+		}
+	}
+
+	private void OnRegisteredItemRemovedEvent(TargetSystem targetSystem, WordUIDisplayItemModel item)
+	{
+		if(item != null && !item.IsDestroyed)
+		{
+			ResetTextColor(item);
+		}
 	}
 
 	private void ApplyStylingForTargets(TargetSystem targetSystem, params EntityModel[] targets)

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 
 public class TargetingWordItemModificationModel : BaseModel
 {
@@ -7,6 +6,7 @@ public class TargetingWordItemModificationModel : BaseModel
 	public delegate void TargetingHandler(TargetSystem newTargetingSystem, TargetSystem previousTargetingSystem);
 	public event TargetWordUIItemHandler CharAtItemIndexTypedEvent;
 	public event Action<TargetSystem, WordUIDisplayItemModel> RegisteredItemAddedEvent;
+	public event Action<TargetSystem, WordUIDisplayItemModel> RegisteredItemRemovedEvent;
 	public event TargetingHandler TargetingSystemChangedEvent;
 
 	private WordsDisplayerModel _wordsDisplayerModel;
@@ -43,6 +43,7 @@ public class TargetingWordItemModificationModel : BaseModel
 	{
 		_targetingEntityModels.TrackedEvent -= OnTrackedEvent;
 		_targetingEntityModels.UntrackedEvent -= OnUntrackedEvent;
+		_targetingEntityModels.Clean();
 		_targetingEntityModels = null;
 
 		_wordsDisplayerModel.AddedDisplayItemEvent -= OnAddedDisplayItemEvent;
@@ -74,6 +75,8 @@ public class TargetingWordItemModificationModel : BaseModel
 		TargetSystem pre = _activeTargetSystems;
 		_activeTargetSystems = targetSystem;
 		_activeTargetSystems.TargetCharTypedEvent += OnTargetCharTypedEvent;
+		_activeTargetSystems.TargetsFilter.TrackedEvent += OnTargetTrackedEvent;
+		_activeTargetSystems.TargetsFilter.UntrackedEvent += OnTargetUntrackedEvent;
 
 		if(TargetingSystemChangedEvent != null)
 		{
@@ -89,11 +92,35 @@ public class TargetingWordItemModificationModel : BaseModel
 		{
 			TargetSystem pre = _activeTargetSystems;
 			_activeTargetSystems.TargetCharTypedEvent -= OnTargetCharTypedEvent;
+			_activeTargetSystems.TargetsFilter.TrackedEvent -= OnTargetTrackedEvent;
+			_activeTargetSystems.TargetsFilter.UntrackedEvent -= OnTargetUntrackedEvent;
 			_activeTargetSystems = null;
 
 			if(TargetingSystemChangedEvent != null)
 			{
 				TargetingSystemChangedEvent(null, pre);
+			}
+		}
+	}
+
+	private void OnTargetTrackedEvent(EntityModel target)
+	{
+		if(_activeTargetSystems != null)
+		{
+			if(RegisteredItemAddedEvent != null)
+			{
+				RegisteredItemAddedEvent(_activeTargetSystems, GetWordUIItemForEntityModel(target));
+			}
+		}
+	}
+
+	private void OnTargetUntrackedEvent(EntityModel target)
+	{
+		if(_activeTargetSystems != null)
+		{
+			if(RegisteredItemRemovedEvent != null)
+			{
+				RegisteredItemRemovedEvent(_activeTargetSystems, GetWordUIItemForEntityModel(target));
 			}
 		}
 	}
