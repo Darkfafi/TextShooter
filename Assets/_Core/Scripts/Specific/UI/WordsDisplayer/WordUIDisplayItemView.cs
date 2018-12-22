@@ -64,6 +64,7 @@ public class WordUIDisplayItemView : EntityView
 	protected override void OnViewDestroy()
 	{
 		base.OnViewDestroy();
+		ResetTextColor();
 		_wordUIDisplayItemModel.NewWordDisplayingEvent -= OnNewWordDisplayingEvent;
 		_wordUIDisplayItemModel = null;
 		_gameCamera = null;
@@ -164,7 +165,6 @@ public class WordUIDisplayItemView : EntityView
 		if(_lastTextColorApplyMethod != null)
 		{
 			_lastTextColorApplyMethod();
-			_lastTextColorApplyMethod = null;
 		}
 	}
 }

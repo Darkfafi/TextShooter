@@ -123,8 +123,8 @@ public class WaveSystemModel : BaseModel
 		section.Enemies = new EnemySpawnData[]
 		{
 			new EnemySpawnData(1, "First", "Hello2"),
-			new EnemySpawnData(1, "Second", "Hello but then a bit bigger"),
-			new EnemySpawnData(2, "The Number after two", "Hello"),
+			//new EnemySpawnData(1, "Second", "Hello but then a bit bigger"),
+			//new EnemySpawnData(2, "The Number after two", "Hello"),
 		};
 
 		section.TimeToFightEnemiesInSeconds = TIME_TO_FIGHT_UNTIL_ALL_EXTINCT;
