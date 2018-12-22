@@ -618,7 +618,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d559aba804fc114197dbc9331c67be0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyViewFactory: {fileID: 752904554}
 --- !u!4 &739578482
 Transform:
   m_ObjectHideFlags: 0
@@ -672,8 +671,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 122221dbf63eb26468a7d0f6d001c9a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyPrefab: {fileID: 114731762009195088, guid: c0906f02610d1b342907b01c8b3ad272,
+  _entityViewPrefab: {fileID: 114731762009195088, guid: c0906f02610d1b342907b01c8b3ad272,
     type: 2}
+  _initializeAsAutomatic: 1
 --- !u!1 &824072796
 GameObject:
   m_ObjectHideFlags: 0
