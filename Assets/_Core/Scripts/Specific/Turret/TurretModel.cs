@@ -1,9 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TurretModel : EntityModel
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
 	public event NewOldTargetHandler TargetSetEvent;
+	public event Action<IFireWordGun> FireWordGunChangedEvent;
+	public event Action<float> RangeChangedEvent;
+	public event Action<float> CooldownChangedEvent;
+	public event Action<bool> GunActiveStateChangedEvent;
+	public event Action GunFiredEvent;
 
 	public EntityModel CurrentTarget
 	{
@@ -40,10 +46,28 @@ public class TurretModel : EntityModel
 
 	public float Range
 	{
+		get
+		{
+			return _fireWordGun.Range;
+		}
+	}
+
+	public float Cooldown
+	{
+		get
+		{
+			return _fireWordGun.Cooldown;
+		}
+	}
+
+	public bool IsGunActive
+	{
 		get; private set;
 	}
 
 	private TimekeeperModel _timekeeper;
+
+	private BaseFireWordGun _fireWordGun;
 
 	public TurretModel(TimekeeperModel timekeeper, CharInputModel charInputModel)
 	{
@@ -55,7 +79,8 @@ public class TurretModel : EntityModel
 
 		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
 
-		Range = 5f;
+		SetFireWordGun(new InstantFireWordGun(0.25f, 5f, timekeeper));
+		SetGunActiveState(true);
 	}
 
 	protected override void OnModelDestroy()
@@ -65,7 +90,8 @@ public class TurretModel : EntityModel
 		_timekeeper.UnlistenFromFrameTick(Update);
 		_timekeeper = null;
 
-		
+		_fireWordGun = null;
+
 		TargetSystem = null;
 	}
 
@@ -73,7 +99,7 @@ public class TurretModel : EntityModel
 	{
 		float angleToTarget = 0;
 
-		if(CurrentTarget != null && !CurrentTarget.IsDestroyed)
+		if(CurrentTarget != null && !CurrentTarget.IsDestroyed && IsGunActive)
 		{
 			if(Vector2.Distance(ModelTransform.Position, CurrentTarget.ModelTransform.Position) < Range)
 			{
@@ -84,15 +110,71 @@ public class TurretModel : EntityModel
 
 				if(Mathf.Abs(Mathf.DeltaAngle(angleToTarget, TurretNeckRotation)) < 10f)
 				{
-					// TODO: Fire bullet which does the hit logic for the turret in its own fassion. 
-					if(CurrentTarget.GetComponent<WordsHp>().HitEntireWord())
+					WordsHp currentTargetWordsHp = CurrentTarget.GetComponent<WordsHp>();
+					if(_fireWordGun.Fire(currentTargetWordsHp, currentTargetWordsHp.CurrentTargetWord))
 					{
-						Debug.Log("HIT");
+						if(GunFiredEvent != null)
+						{
+							GunFiredEvent();
+						}
 					}
 				}
 			}
 		}
 
 		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
+	}
+
+	// Setters and Getters
+
+	public void SetFireWordGun(BaseFireWordGun fireWordGun)
+	{
+		if(fireWordGun != null)
+		{
+			_fireWordGun = fireWordGun;
+			if(FireWordGunChangedEvent != null)
+			{
+				FireWordGunChangedEvent(_fireWordGun);
+			}
+		}
+	}
+
+	public void SetGunActiveState(bool activeState)
+	{
+		if(IsGunActive == activeState)
+			return;
+
+		IsGunActive = activeState;
+
+		if(GunActiveStateChangedEvent != null)
+		{
+			GunActiveStateChangedEvent(IsGunActive);
+		}
+	}
+
+	public void SetRange(float newRange)
+	{
+		float preRange = Range;
+		_fireWordGun.SetRange(newRange);
+		if(preRange != Range)
+		{
+			if(RangeChangedEvent != null)
+			{
+				RangeChangedEvent(Range);
+			}
+		}
+	}
+
+	public void SetCooldown(float cooldown)
+	{
+		float preCooldown = Cooldown;
+		_fireWordGun.SetCooldown(cooldown);
+		if(preCooldown != Cooldown)
+		{
+			if(CooldownChangedEvent != null)
+			{
+				CooldownChangedEvent(Cooldown);
+			}
+		}
 	}
 }
