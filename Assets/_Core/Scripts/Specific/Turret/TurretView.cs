@@ -3,6 +3,7 @@ using DG.Tweening;
 
 public class TurretView : EntityView
 {
+	[Header("Requirements")]
 	[SerializeField]
 	private GameObject _turretTurningPoint;
 
@@ -15,6 +16,7 @@ public class TurretView : EntityView
 	[SerializeField]
 	private Transform _muzzleFlareLocation;
 
+	private EntityFilter<CameraModel> _cameraFilter;
 	private TurretModel _model;
 
 	protected override void OnViewReady()
@@ -26,6 +28,8 @@ public class TurretView : EntityView
 		_model.TargetSetEvent += OnTargetSetEvent;
 		_model.RangeChangedEvent += OnRangeChangedEvent;
 		_model.GunActiveStateChangedEvent += OnGunActiveStateChangedEvent;
+
+		_cameraFilter = EntityFilter<CameraModel>.Create();
 	}
 
 	protected override void OnViewDestroy()
@@ -39,6 +43,9 @@ public class TurretView : EntityView
 			_model.GunActiveStateChangedEvent -= OnGunActiveStateChangedEvent;
 			_model = null;
 		}
+
+		_cameraFilter.Clean();
+		_cameraFilter = null;
 	}
 
 	private void OnGunFiredEvent()
@@ -48,6 +55,15 @@ public class TurretView : EntityView
 		_muzzleFlareObject.transform.rotation = _muzzleFlareLocation.rotation;
 		CancelInvoke("DisableFlare");
 		Invoke("DisableFlare", 0.05f);
+
+		if(_cameraFilter != null)
+		{
+			CameraModel model = _cameraFilter.GetFirst((m) => !m.IsDestroyed);
+			if(model != null)
+			{
+				MVCUtil.GetView<CameraView>(model).transform.DOShakePosition(0.1f, 0.1f);
+			}
+		}
 	}
 
 	private void OnGunActiveStateChangedEvent(bool state)
