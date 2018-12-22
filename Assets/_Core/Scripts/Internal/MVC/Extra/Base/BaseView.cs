@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public abstract class MonoBaseView : MonoBehaviour, IView
 {
+	public Action<MonoBaseView> ViewDestroyedEvent;
+
 	private BaseView _baseView = new BaseView();
 
 	public IMethodPermitter LinkingController
@@ -28,6 +30,12 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 		}
 
 		_baseView.DestroyView();
+
+		if(ViewDestroyedEvent != null)
+		{
+			ViewDestroyedEvent(this);
+		}
+		
 		OnViewDestroy();
 		ViewDestruction();
 		_baseView = null;
@@ -65,6 +73,8 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 /// </summary>
 public class BaseView : IView
 {
+	public Action<BaseView> ViewDestroyedEvent;
+
 	public IMethodPermitter LinkingController
 	{
 		get; private set;
@@ -78,6 +88,11 @@ public class BaseView : IView
 		}
 
 		OnViewDestroy();
+
+		if(ViewDestroyedEvent != null)
+		{
+			ViewDestroyedEvent(this);
+		}
 
 		LinkingController = null;
 	}

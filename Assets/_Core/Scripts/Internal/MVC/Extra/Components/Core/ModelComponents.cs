@@ -10,6 +10,7 @@ public class ModelComponents : IComponentsHolder
 	{
 		get; private set;
 	}
+
 	private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
 	private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
 	private bool _isReady = false;

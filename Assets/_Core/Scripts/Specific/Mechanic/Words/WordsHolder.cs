@@ -2,7 +2,7 @@
 
 public class WordsHolder : BaseModelComponent
 {
-	public delegate void PreNewWordHandler(string previousWord, string newWord);
+	public delegate void PreNewWordHandler(string previousWord, string newWord, WordsHolder wordsHolder);
 	public event PreNewWordHandler WordCycledEvent;
 
 	public string CurrentWord
@@ -64,7 +64,7 @@ public class WordsHolder : BaseModelComponent
 
 		if(WordCycledEvent != null)
 		{
-			WordCycledEvent(preWord, CurrentWord);
+			WordCycledEvent(preWord, CurrentWord, this);
 		}
 
 		return true;

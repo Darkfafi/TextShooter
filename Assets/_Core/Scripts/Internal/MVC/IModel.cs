@@ -4,10 +4,12 @@
 	{
 		get;
 	}
+
 	MethodPermitter MethodPermitter
 	{
 		get;
 	}
+
 	void SetupModel(IAbstractController controller);
 	void Destroy();
 }

@@ -12,9 +12,26 @@ public abstract class BaseModelComponent
 	{
 		get; private set;
 	}
+
+	public BaseModel Parent
+	{
+		get
+		{
+			if(Components == null)
+				return null;
+
+			return Components.Model;
+		}
+	}
+
 	public ModelComponentState ComponentState
 	{
 		get; private set;
+	}
+
+	public T GetComponent<T>() where T : BaseModelComponent
+	{
+		return Components.GetComponent<T>();
 	}
 
 	public void Initialize(ModelComponents parent)

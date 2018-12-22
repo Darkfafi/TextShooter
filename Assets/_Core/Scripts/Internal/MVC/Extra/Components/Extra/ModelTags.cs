@@ -24,9 +24,12 @@ public class ModelTags : BaseModelComponent
 		TagRemovedEvent = null;
 	}
 
-	public ReadOnlyCollection<string> GetTags()
+	public string[] GetTags()
 	{
-		return _tags.AsReadOnly();
+		if(_tags == null)
+			return new string[] { };
+
+		return _tags.ToArray();
 	}
 
 	public void AddTag(string tag)

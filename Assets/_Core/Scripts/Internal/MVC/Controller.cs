@@ -1,5 +1,9 @@
-﻿public class Controller : IAbstractController
+﻿using System;
+
+public class Controller : IAbstractController
 {
+	public event Action<IAbstractController> ControllerSetupEvent;
+
 	public static Controller Link(IModel model, IView view)
 	{
 		return new Controller(model, view);
@@ -11,6 +15,10 @@
 		CoreView = view;
 		CoreModel.SetupModel(this);
 		CoreView.SetupView(this);
+		if(ControllerSetupEvent != null)
+		{
+			ControllerSetupEvent(this);
+		}
 	}
 
 	public IModel CoreModel
@@ -34,6 +42,11 @@
 		}
 	}
 
+	public bool HasView()
+	{
+		return CoreView != null;
+	}
+
 	public virtual void Destroy()
 	{
 		if(CoreModel != null)
@@ -54,6 +67,8 @@
 
 public interface IAbstractController : IMethodPermitter
 {
+	event Action<IAbstractController> ControllerSetupEvent;
+	bool HasView();
 	void Destroy();
 }
 

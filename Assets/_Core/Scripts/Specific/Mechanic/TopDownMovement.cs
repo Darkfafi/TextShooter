@@ -129,7 +129,7 @@ public class TopDownMovement : BaseModelComponent
 
 	private void Update(float deltaTime, float timeScale)
 	{
-		if(IsMoving)
+		if(IsMoving && Parent != null && !Parent.IsDestroyed)
 		{
 			_timePassed += deltaTime * timeScale;
 			_duration = _delta.magnitude / MovementSpeed;

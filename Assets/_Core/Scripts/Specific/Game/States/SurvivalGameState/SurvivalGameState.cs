@@ -7,7 +7,17 @@
 			get; private set;
 		}
 
+		public CharInputModel CharInputModel
+		{
+			get; private set;
+		}
+
 		public WordsDisplayerModel WordsDisplayerModel
+		{
+			get; private set;
+		}
+
+		public TargetingWordItemModificationModel TargetingWordItemModificationModel
 		{
 			get; private set;
 		}
@@ -23,9 +33,13 @@
 
 			// Setup UI
 			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
+			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(WordsDisplayerModel);
+
+			// Input
+			CharInputModel = new CharInputModel();
 
 			// Setup Player
-			TurretModel = new TurretModel(Game.TimekeeperModel);
+			TurretModel = new TurretModel(Game.TimekeeperModel, CharInputModel);
 		}
 
 		protected override void OnStartState()

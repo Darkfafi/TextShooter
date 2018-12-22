@@ -14,6 +14,7 @@ namespace SurvivalGame
 		public event Action<IntroState> IntroStateSwitchedEvent;
 
 		private IntroState _currentState;
+		private bool _turretPreActiveState;
 
 		private void GoToNextState()
 		{
@@ -22,6 +23,7 @@ namespace SurvivalGame
 			switch(_currentState)
 			{
 				case IntroState.End:
+					Game.TurretModel.SetGunActiveState(_turretPreActiveState);
 					GameStateManager.SetGameState<WavesGameState>();
 					break;
 				default:
@@ -37,6 +39,8 @@ namespace SurvivalGame
 		protected override void OnSetupState()
 		{
 			_currentState = IntroState.None;
+			_turretPreActiveState = Game.TurretModel.IsGunActive;
+			Game.TurretModel.SetGunActiveState(false);
 		}
 
 		protected override void OnStartState()
