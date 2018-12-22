@@ -8,7 +8,7 @@ public enum TagFilterType
 	HasAllTags,
 }
 
-public class FilterRules
+public struct FilterRules
 {
 	public TagFilterType FilterType
 	{
@@ -31,8 +31,8 @@ public class FilterRules
 		}
 	}
 
-	private List<string> _filterTags = new List<string>();
-	private List<Type> _componentsToFilterOn = new List<Type>();
+	private List<string> _filterTags;
+	private List<Type> _componentsToFilterOn;
 
 	private static bool _filterOpened = false;
 	private static FilterRules _constructingFiltersParameters;
@@ -102,7 +102,7 @@ public class FilterRules
 	{
 		filterCreated = _constructingFiltersParameters;
 		_filterOpened = false;
-		_constructingFiltersParameters = null;
+		_constructingFiltersParameters = default(FilterRules);
 	}
 
 	/// <summary>
@@ -217,6 +217,7 @@ public class FilterRules
 	private FilterRules(string[] tags, TagFilterType tagFilterType)
 	{
 		_filterTags = new List<string>(tags);
+		_componentsToFilterOn = new List<Type>();
 		FilterType = tagFilterType;
 	}
 }
