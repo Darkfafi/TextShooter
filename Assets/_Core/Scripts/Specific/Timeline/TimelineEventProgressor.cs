@@ -30,6 +30,11 @@ public class TimelineEventProgressor
 		get; private set;
 	}
 
+	public TimelineEventProgressor(int goalValue)
+	{
+		GoalValue = goalValue;
+	}
+
 	public static bool AreAllGoalsMatched(params TimelineEventProgressor[] progressors)
 	{
 		for(int i = 0; i < progressors.Length; i++)

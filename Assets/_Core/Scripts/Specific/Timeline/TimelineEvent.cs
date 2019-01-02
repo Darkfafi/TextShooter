@@ -1,6 +1,6 @@
 ﻿using System;
 
-public abstract class TimelineEvent
+public abstract class TimelineEvent<T> : ITimelineEvent where T : ITimelineEventData
 {
 	public bool IsActive
 	{
@@ -12,9 +12,34 @@ public abstract class TimelineEvent
 		get;
 	}
 
-	private Action<TimelineEvent, bool> _eventEndedCallback;
+	public TimelineEventParameters<T> EventParams
+	{
+		get; private set;
+	}
 
-	public void ActivateEvent(Action<TimelineEvent, bool> eventEndedCallback)
+	protected TimekeeperModel timekeeperModel
+	{
+		get; private set;
+	}
+
+	private Action<ITimelineEvent, bool> _eventEndedCallback;
+
+	public void Initialize(TimekeeperModel timekeeperModel, TimelineEventParameters<T> timelineEventParams)
+	{
+		if(this.timekeeperModel == null)
+		{
+			this.timekeeperModel = timekeeperModel;
+			EventParams = timelineEventParams;
+		}
+	}
+
+	~TimelineEvent()
+	{
+		DeactivateEvent();
+		timekeeperModel = null;
+	}
+
+	public void ActivateEvent(Action<ITimelineEvent, bool> eventEndedCallback)
 	{
 		if(IsActive)
 			return;
@@ -23,6 +48,8 @@ public abstract class TimelineEvent
 
 		IsActive = true;
 		EventActivated();
+
+		timekeeperModel.ListenToFrameTick(EventTickUpdate);
 	}
 
 	public void DeactivateEvent()
@@ -31,8 +58,8 @@ public abstract class TimelineEvent
 			return;
 
 		IsActive = false;
+		timekeeperModel.UnlistenFromFrameTick(EventTickUpdate);
 		EventDeactivated();
-
 		_eventEndedCallback = null;
 	}
 
@@ -40,9 +67,35 @@ public abstract class TimelineEvent
 
 	protected void EndEvent(bool successEnding)
 	{
-		_eventEndedCallback(this, successEnding);
+		if(IsActive)
+		{
+			_eventEndedCallback(this, successEnding);
+		}
 	}
 
 	protected abstract void EventActivated();
+	protected abstract void EventTickUpdate(float deltaTime, float timeScale);
 	protected abstract void EventDeactivated();
+}
+
+
+public interface ITimelineEvent : IReadableTimelineEvent
+{
+	void ActivateEvent(Action<ITimelineEvent, bool> eventEndedCallback);
+	void DeactivateEvent();
+}
+
+public interface IReadableTimelineEvent
+{
+	bool IsActive
+	{
+		get;
+	}
+
+	int EventType
+	{
+		get;
+	}
+
+	TimelineEventProgressor[] GetProgressors();
 }

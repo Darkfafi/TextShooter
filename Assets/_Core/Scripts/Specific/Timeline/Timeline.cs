@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 public class Timeline : IReadableTimeline
 {
-	public delegate void TimelineEventHandler(TimelineEvent timelineEvent);
-	public delegate void TimelineEventSuccessHandler(TimelineEvent timelineEvent, bool success);
+	public delegate void TimelineEventHandler(IReadableTimelineEvent timelineEvent);
+	public delegate void TimelineEventSuccessHandler(IReadableTimelineEvent timelineEvent, bool success);
 	public event Action TimelineEndReachedEvent;
 	public event Action TimelineStartReachedEvent;
 	public event TimelineEventSuccessHandler TimelineEventEndedEvent;
@@ -12,7 +12,7 @@ public class Timeline : IReadableTimeline
 	public event TimelineEventHandler TimelineDownwardsEvent;
 	public event TimelineEventHandler NewTimelineEventEvent;
 
-	public TimelineEvent[] Events
+	public IReadableTimelineEvent[] Events
 	{
 		get
 		{
@@ -25,31 +25,75 @@ public class Timeline : IReadableTimeline
 		get; private set;
 	}
 
-	private List<TimelineEvent> _events = new List<TimelineEvent>();
+	private List<ITimelineEvent> _events = new List<ITimelineEvent>();
+	private TimekeeperModel _timekeeperModel;
 
-	public void EnqueueTimelineEvent(TimelineEvent timelineEvent)
+	public Timeline(TimekeeperModel timekeeperModel)
 	{
-		_events.Add(timelineEvent);
+		_timekeeperModel = timekeeperModel;
+		TimelinePosition = -1;
 	}
 
-	public TimelineEvent GetCurrentTimelineEvent()
+	~Timeline()
 	{
-		if(TimelinePosition < 0 || TimelinePosition >= _events.Count)
+		UnsetCurrentTimelineEvent();
+		_events.Clear();
+		_events = null;
+		_timekeeperModel = null;
+	}
+
+	public void EnqueueTimelineEvent<U, T>(T data) where U : TimelineEvent<T> where T : ITimelineEventData
+	{
+		EnqueueTimelineEvent<U, T>(data, new KeyValuePair<string, object>[] { });
+	}
+
+	public void EnqueueTimelineEvent<U, T>(T data, params KeyValuePair<string, object>[] keyValueParams) where U : TimelineEvent<T> where T : ITimelineEventData
+	{
+		TimelineEventParameters<T> timelineEventParams = new TimelineEventParameters<T>(data, keyValueParams);
+		U timelineEvent = Activator.CreateInstance<U>();
+		_events.Add(timelineEvent);
+		timelineEvent.Initialize(_timekeeperModel, timelineEventParams);
+	}
+
+	public IReadableTimelineEvent GetCurrentTimelineEvent()
+	{
+		return GetCurrentEditableTimelineEvent();
+	}
+
+	public bool SetNewTimelinePosition(int timelineIndex)
+	{
+		if(TimelinePosition == timelineIndex)
+			return false;
+
+		UnsetCurrentTimelineEvent();
+		TimelinePosition = timelineIndex;
+		ITimelineEvent currentEvent = GetCurrentEditableTimelineEvent();
+
+		if(currentEvent != null)
 		{
-			return null;
+			currentEvent.ActivateEvent(OnEventEndedCallback);
+
+			if(NewTimelineEventEvent != null)
+			{
+				NewTimelineEventEvent(currentEvent);
+			}
+
+			return true;
 		}
 
-		return _events[TimelinePosition];
+		return false;
 	}
 
 	public void Up()
 	{
 		if(TimelinePosition < _events.Count - 1)
 		{
-			SetCurrentTimelinePosition(++TimelinePosition);
-			if(TimelineUpwardsEvent != null)
+			if(SetNewTimelinePosition(TimelinePosition + 1))
 			{
-				TimelineUpwardsEvent(GetCurrentTimelineEvent());
+				if(TimelineUpwardsEvent != null)
+				{
+					TimelineUpwardsEvent(GetCurrentTimelineEvent());
+				}
 			}
 		}
 		else
@@ -65,10 +109,12 @@ public class Timeline : IReadableTimeline
 	{
 		if(TimelinePosition >= 0)
 		{
-			SetCurrentTimelinePosition(--TimelinePosition);
-			if(TimelineDownwardsEvent != null)
+			if(SetNewTimelinePosition(TimelinePosition - 1))
 			{
-				TimelineDownwardsEvent(GetCurrentTimelineEvent());
+				if(TimelineDownwardsEvent != null)
+				{
+					TimelineDownwardsEvent(GetCurrentTimelineEvent());
+				}
 			}
 		}
 		else
@@ -80,45 +126,40 @@ public class Timeline : IReadableTimeline
 		}
 	}
 
-	private void UnsetCurrentTimelineEvent()
+	private bool UnsetCurrentTimelineEvent()
 	{
-		TimelineEvent e = GetCurrentTimelineEvent();
+		ITimelineEvent e = GetCurrentEditableTimelineEvent();
 		if(e != null && e.IsActive)
 		{
 			e.DeactivateEvent();
+			return true;
 		}
+
+		return false;
 	}
 
-	private void SetCurrentTimelinePosition(int timelineIndex)
-	{
-		if(TimelinePosition == timelineIndex)
-			return;
-
-		UnsetCurrentTimelineEvent();
-		TimelinePosition = timelineIndex;
-		TimelineEvent currentEvent = GetCurrentTimelineEvent();
-
-		if(currentEvent != null)
-		{
-			currentEvent.ActivateEvent(OnEventEndedCallback);
-
-			if(NewTimelineEventEvent != null)
-			{
-				NewTimelineEventEvent(currentEvent);
-			}
-		}
-	}
-
-	private void OnEventEndedCallback(TimelineEvent timelineEvent, bool success)
+	private void OnEventEndedCallback(ITimelineEvent timelineEvent, bool success)
 	{
 		if(GetCurrentTimelineEvent() == timelineEvent)
 		{
-			UnsetCurrentTimelineEvent();
-			if(TimelineEventEndedEvent != null)
+			if(UnsetCurrentTimelineEvent())
 			{
-				TimelineEventEndedEvent(timelineEvent, success);
+				if(TimelineEventEndedEvent != null)
+				{
+					TimelineEventEndedEvent(timelineEvent, success);
+				}
 			}
 		}
+	}
+
+	private ITimelineEvent GetCurrentEditableTimelineEvent()
+	{
+		if(TimelinePosition < 0 || TimelinePosition >= _events.Count)
+		{
+			return null;
+		}
+
+		return _events[TimelinePosition];
 	}
 }
 
@@ -130,10 +171,10 @@ public interface IReadableTimeline
 		get;
 	}
 
-	TimelineEvent[] Events
+	IReadableTimelineEvent[] Events
 	{
 		get;
 	}
 
-	TimelineEvent GetCurrentTimelineEvent();
+	IReadableTimelineEvent GetCurrentTimelineEvent();
 }
