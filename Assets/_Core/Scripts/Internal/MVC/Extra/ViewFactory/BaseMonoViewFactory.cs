@@ -12,7 +12,7 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 
 	protected void Awake()
 	{
-		_factory = new InnerMonoViewFactory(_entityViewPrefab, _initializeAsAutomatic);
+		_factory = new InnerMonoViewFactory(_entityViewPrefab, _initializeAsAutomatic, CreateFilterRulesForFactory());
 		_factory.CreatedViewForModelEvent += OnCreatedViewForModelEvent;
 	}
 
@@ -23,7 +23,15 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 		_factory = null;
 	}
 
-	protected abstract void OnViewConstructedForModel(M model, V view);
+	protected virtual void OnViewConstructedForModel(M model, V view)
+	{
+
+	}
+
+	protected virtual FilterRules CreateFilterRulesForFactory()
+	{
+		return FilterRules.CreateNoTagsFilter();
+	}
 
 	private void OnCreatedViewForModelEvent(M model, V view)
 	{
@@ -34,7 +42,7 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 	{
 		private V _prefab;
 
-		public InnerMonoViewFactory(V prefab, bool automaticState) : base(automaticState)
+		public InnerMonoViewFactory(V prefab, bool automaticState, FilterRules filterRules) : base(automaticState, filterRules)
 		{
 			_prefab = prefab;
 		}

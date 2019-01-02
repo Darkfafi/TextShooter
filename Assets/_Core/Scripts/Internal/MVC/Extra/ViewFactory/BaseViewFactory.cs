@@ -49,16 +49,26 @@ public abstract class BaseViewFactory<M, V> where M : EntityModel where V : clas
 
 	public V CreateViewForModel(M model)
 	{
-		V view = ConstructViewForModel(model);
-		Controller.Link(model, view);
-
-		if(CreatedViewForModelEvent != null)
+		if(IsModelValidForViewCreation(model))
 		{
-			CreatedViewForModelEvent(model, view);
+			V view = ConstructViewForModel(model);
+			Controller.Link(model, view);
+
+			if(CreatedViewForModelEvent != null)
+			{
+				CreatedViewForModelEvent(model, view);
+			}
+
+			return view;
 		}
 
-		return view;
+		return null;
 	}
 
 	protected abstract V ConstructViewForModel(M model);
+
+	protected virtual bool IsModelValidForViewCreation(M model)
+	{
+		return true;
+	}
 }
