@@ -42,6 +42,11 @@
 			TurretModel = new TurretModel(Game.TimekeeperModel, CharInputModel);
 		}
 
+		public void StartGame()
+		{
+			SurvivalGameStateManager.SetGameState<CampaignGameState>();
+		}
+
 		protected override void OnStartState()
 		{
 			SurvivalGameStateManager.SetGameState<IntroGameState>();

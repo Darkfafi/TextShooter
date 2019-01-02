@@ -9,7 +9,7 @@ namespace SurvivalGame
 		private IntroGameStateView _introGameStateView;
 
 		[SerializeField]
-		private WavesGameStateView _wavesGameStateView;
+		private CampaignGameStateView _campaignGameStateView;
 
 		[Header("Requirements")]
 		[SerializeField]
@@ -43,7 +43,7 @@ namespace SurvivalGame
 
 			// Game States
 			_survivalGameState.SurvivalGameStateManager.SetupStateView<IntroGameState>(_introGameStateView);
-			_survivalGameState.SurvivalGameStateManager.SetupStateView<WavesGameState>(_wavesGameStateView);
+			_survivalGameState.SurvivalGameStateManager.SetupStateView<CampaignGameState>(_campaignGameStateView);
 		}
 
 		protected override void OnStartStateView()

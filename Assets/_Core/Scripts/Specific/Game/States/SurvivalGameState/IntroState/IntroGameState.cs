@@ -24,7 +24,7 @@ namespace SurvivalGame
 			{
 				case IntroState.End:
 					Game.TurretModel.SetGunActiveState(_turretPreActiveState);
-					GameStateManager.SetGameState<WavesGameState>();
+					Game.StartGame();
 					break;
 				default:
 					if(IntroStateSwitchedEvent != null)

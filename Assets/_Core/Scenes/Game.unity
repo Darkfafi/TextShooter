@@ -744,7 +744,7 @@ GameObject:
   - component: {fileID: 902016616}
   - component: {fileID: 902016615}
   m_Layer: 0
-  m_Name: WavesSubGameStateView
+  m_Name: CampaignSubGameStateView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -761,7 +761,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b93d7243598629439582ed4bda2dca0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _waveSystemView: {fileID: 739578481}
 --- !u!4 &902016616
 Transform:
   m_ObjectHideFlags: 0
@@ -951,7 +950,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _introGameStateView: {fileID: 1755008530}
-  _wavesGameStateView: {fileID: 902016615}
+  _campaignGameStateView: {fileID: 902016615}
   _turretView: {fileID: 961880201}
   _wordsDisplayerView: {fileID: 692163137}
 --- !u!1 &1314458712
