@@ -19,7 +19,7 @@ public class GameModel : BaseModel, IGame
 
 	public GameModel(float orthographicSize)
 	{
-		GameCamera = new CameraModel(orthographicSize);
+		GameCamera = new CameraModel(orthographicSize, orthographicSize);
 		GameStateManager = new GameStateManager<GameModel>(this);
 		TimekeeperModel = new TimekeeperModel();
 	}
