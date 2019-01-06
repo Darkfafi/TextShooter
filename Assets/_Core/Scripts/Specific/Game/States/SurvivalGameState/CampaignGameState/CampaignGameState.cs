@@ -18,7 +18,8 @@
 			Timeline.EnqueueTimelineSlot(TimelineEventSlot<GameModel>.CreateDefaultPotentialEventSlot<MobsTimelineEvent, MobTimelineEventData>(
 			new MobTimelineEventData()
 			{
-				UseKillsProgressor = true,
+				UseKillsProgressor = false,
+				TimeForMobsInSeconds = 3,
 				MobSpawnInstructions = new SpawnData[] 
 				{
 					new SpawnData()
@@ -33,7 +34,6 @@
 			new MobTimelineEventData()
 			{
 				UseKillsProgressor = true,
-				TimeForMobsInSeconds = 5,
 				MobSpawnInstructions = new SpawnData[]
 				{
 					new SpawnData()

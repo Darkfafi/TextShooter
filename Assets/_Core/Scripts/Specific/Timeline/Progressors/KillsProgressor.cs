@@ -1,10 +1,10 @@
-﻿public class MobsKillsProgressor : BaseTimelineEventProgressor
+﻿public class KillsProgressor : BaseTimelineEventProgressor
 {
 	private EntityFilter<EnemyModel> _spawnedEnemyTrackerFilter;
 	private string _eventEnemyTag;
 	private int _enemiesSpawned;
 
-	public MobsKillsProgressor(string eventEnemyTag, int goalKills) : base(goalKills)
+	public KillsProgressor(string eventEnemyTag, int goalKills) : base(goalKills)
 	{
 		_eventEnemyTag = eventEnemyTag;
 	}

@@ -2,11 +2,11 @@
 {
 	public class CampaignGameStateView : MonoGameStateView<SurvivalGameState>
 	{
-		private CampaignGameState _campaignGameState;
+		//private CampaignGameState _campaignGameState;
 
 		protected override void OnPreStartStateView()
 		{
-			_campaignGameState = GameState as CampaignGameState;
+			//_campaignGameState = GameState as CampaignGameState;
 		}
 
 		protected override void OnStartStateView()
@@ -16,7 +16,7 @@
 
 		protected override void OnEndStateView()
 		{
-			_campaignGameState = null;
+			//_campaignGameState = null;
 		}
 	}
 }

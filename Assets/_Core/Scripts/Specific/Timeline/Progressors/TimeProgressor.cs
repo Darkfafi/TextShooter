@@ -6,6 +6,10 @@
 	public TimeProgressor(TimekeeperModel timekeeperModel, int endTimeInSeconds) : base(endTimeInSeconds)
 	{
 		_timekeeperModel = timekeeperModel;
+		if(endTimeInSeconds <= 0)
+		{
+			UpdateValue(-1);
+		}
 	}
 
 	~TimeProgressor()
@@ -15,7 +19,10 @@
 
 	public override void StartProgressor()
 	{
-		_timekeeperModel.ListenToFrameTick(OnUpdate);
+		if(CurrentValue < 0) // No time given, end immediately.
+			UpdateValue(CurrentValue + 1);
+		else
+			_timekeeperModel.ListenToFrameTick(OnUpdate);
 	}
 
 	private void OnUpdate(float deltaTime, float timeScale)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimelineEventData where U : class, IGame
 {
+	public event Action<ITimelineEvent> EventEndedEvent;
+
 	public bool IsActive
 	{
 		get; private set;
@@ -34,7 +36,6 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		}
 	}
 
-	private Action<ITimelineEvent> _eventEndedCallback;
 	private List<BaseTimelineEventProgressor> _progressors = new List<BaseTimelineEventProgressor>();
 	private bool _isDataSet = false;
 
@@ -67,12 +68,10 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		DeactivateEvent();
 	}
 
-	public void ActivateEvent(Action<ITimelineEvent> eventEndedCallback)
+	public void ActivateEvent()
 	{
 		if(IsActive)
 			return;
-
-		_eventEndedCallback = eventEndedCallback;
 
 		IsActive = true;
 
@@ -101,7 +100,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		_progressors.Clear();
 
 		EventDeactivated();
-		_eventEndedCallback = null;
+		EventEndedEvent = null;
 	}
 
 	private void OnGoalMatchedEvent(BaseTimelineEventProgressor progressor)
@@ -113,7 +112,10 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 	{
 		if(IsActive)
 		{
-			_eventEndedCallback(this);
+			if(EventEndedEvent != null)
+			{
+				EventEndedEvent(this);
+			}
 		}
 	}
 
@@ -126,11 +128,9 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 
 public interface ITimelineEvent : IReadableTimelineEvent
 {
-	void ActivateEvent(Action<ITimelineEvent> eventEndedCallback);
+	void ActivateEvent();
 	void DeactivateEvent();
 	void Setup(ITimelineState timelineState, ITimelineEventData data);
-
-	BaseTimelineEventProgressor[] GetProgressors();
 }
 
 public interface ITimelineEventData
@@ -140,8 +140,12 @@ public interface ITimelineEventData
 
 public interface IReadableTimelineEvent
 {
+	event Action<ITimelineEvent> EventEndedEvent;
+	
 	bool IsActive
 	{
 		get;
 	}
+
+	BaseTimelineEventProgressor[] GetProgressors();
 }

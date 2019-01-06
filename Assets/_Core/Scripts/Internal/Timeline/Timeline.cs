@@ -96,7 +96,8 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 		if(CurrentEventSlot != null)
 		{
 			CurrentEvent = CurrentEventSlot.CreateTimelineEvent(TimelineState);
-			CurrentEvent.ActivateEvent(OnEventEndedCallback);
+			CurrentEvent.EventEndedEvent += OnEventEndedEvent;
+			CurrentEvent.ActivateEvent();
 
 			if(NewTimelineEventEvent != null)
 			{
@@ -155,6 +156,7 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 	{
 		if(CurrentEvent != null && CurrentEvent.IsActive)
 		{
+			CurrentEvent.EventEndedEvent -= OnEventEndedEvent;
 			CurrentEvent.DeactivateEvent();
 			return true;
 		}
@@ -162,7 +164,7 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 		return false;
 	}
 
-	private void OnEventEndedCallback(ITimelineEvent timelineEvent)
+	private void OnEventEndedEvent(ITimelineEvent timelineEvent)
 	{
 		if(CurrentEvent == timelineEvent)
 		{

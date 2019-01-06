@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class EnemyFactory
+﻿public static class EnemyFactory
 {
 	public static EnemyModel CreateEnemy(TimekeeperModel timekeeperModel, string enemyType)
 	{
