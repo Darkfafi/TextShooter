@@ -3,97 +3,69 @@ using System.Collections.Generic;
 
 public class TimelineEventSlot<T> where T : class, IGame
 {
-	public PotentialEventSlot DefaultPotentialEventData
+	public PotentialEvent DefaultPotentialEvent
 	{
 		get; private set;
 	}
 
-	public PotentialEventSlot[] ConditionalPotentialEventData
+	private List<ConditionalPotentialEventData> _conditionalPotentialEvents = new List<ConditionalPotentialEventData>();
+
+	public TimelineEventSlot(PotentialEvent defaultPotentialEvent)
 	{
-		get; private set;
+		DefaultPotentialEvent = defaultPotentialEvent;
 	}
 
-	public TimelineEventSlot(PotentialEventSlot defaultPotentialEvent, params PotentialEventSlot[] conditionalPotentialEvents)
+	public void AddConditionalEvent(PotentialEvent potentialEvent, KeyValuePair<string, bool>[] keyConditions)
 	{
-		DefaultPotentialEventData = defaultPotentialEvent;
-		ConditionalPotentialEventData = conditionalPotentialEvents;
-	}
-
-	public static PotentialEventSlot CreateDefaultPotentialEventSlot<U, I>(I eventData) where U : BaseTimelineEvent<I, T> where I : ITimelineEventData
-	{
-		return CreateDefaultPotentialEventSlot(typeof(U), eventData);
-	}
-
-	public static PotentialEventSlot CreateDefaultPotentialEventSlot(Type eventType, ITimelineEventData eventData)
-	{
-		return new PotentialEventSlot(eventType, eventData);
-	}
-
-	public static PotentialEventSlot CreateConditionalPotentialEventSlot<U, I>(I eventData, params KeyValuePair<string, bool>[] keyConditions) where U : BaseTimelineEvent<I, T> where I : ITimelineEventData
-	{
-		return CreateConditionalPotentialEventSlot(typeof(U), eventData, keyConditions);
-	}
-
-	public static PotentialEventSlot CreateConditionalPotentialEventSlot(Type eventType, ITimelineEventData eventData, params KeyValuePair<string, bool>[] keyConditions)
-	{
-		return new PotentialEventSlot(eventType, eventData, keyConditions);
+		_conditionalPotentialEvents.Add(new ConditionalPotentialEventData(potentialEvent, keyConditions));
 	}
 
 	public ITimelineEvent CreateTimelineEvent(ITimelineState timelineState)
 	{
-		for(int i = 0; i < ConditionalPotentialEventData.Length; i++)
+		for(int i = 0; i < _conditionalPotentialEvents.Count; i++)
 		{
-			if(ConditionalPotentialEventData[i].IsValidToConditions(timelineState))
+			if(_conditionalPotentialEvents[i].IsValidToConditions(timelineState))
 			{
-				ITimelineEvent e = CreateTimelineEvent(timelineState, ConditionalPotentialEventData[i]);
+				ITimelineEvent e = CreateTimelineEvent(timelineState, _conditionalPotentialEvents[i].PotentialEvent);
 				return e;
 			}
 		}
 
-		return CreateTimelineEvent(timelineState, DefaultPotentialEventData);
+		return CreateTimelineEvent(timelineState, DefaultPotentialEvent);
 	}
 
-	private ITimelineEvent CreateTimelineEvent(ITimelineState timelineState, PotentialEventSlot slot)
+	private ITimelineEvent CreateTimelineEvent(ITimelineState timelineState, PotentialEvent slot)
 	{
 		ITimelineEvent e = Activator.CreateInstance(slot.TimelineEventType) as ITimelineEvent;
 		e.Setup(timelineState, slot.Data);
 		return e;
 	}
-}
 
-public struct PotentialEventSlot
-{
-	public Type TimelineEventType;
-	public ITimelineEventData Data;
-	public KeyValuePair<string, bool>[] KeyConditions;
-
-	public PotentialEventSlot(Type eventType, ITimelineEventData eventData)
+	private struct ConditionalPotentialEventData
 	{
-		TimelineEventType = eventType;
-		Data = eventData;
-		KeyConditions = new KeyValuePair<string, bool>[] { };
-	}
+		public PotentialEvent PotentialEvent;
+		public KeyValuePair<string, bool>[] KeyConditions;
 
-	public PotentialEventSlot(Type eventType, ITimelineEventData eventData, KeyValuePair<string, bool>[] keyConditions)
-	{
-		TimelineEventType = eventType;
-		Data = eventData;
-		KeyConditions = keyConditions;
-	}
-
-	public bool IsValidToConditions(ITimelineState timelineState)
-	{
-		if(KeyConditions == null)
-			return true;
-
-		foreach(var pair in KeyConditions)
+		public ConditionalPotentialEventData(PotentialEvent potentialEvent, KeyValuePair<string, bool>[] keyConditions)
 		{
-			if(timelineState.GetKey(pair.Key) != pair.Value)
-			{
-				return false;
-			}
+			PotentialEvent = potentialEvent;
+			KeyConditions = keyConditions;
 		}
 
-		return true;
+		public bool IsValidToConditions(ITimelineState timelineState)
+		{
+			if(KeyConditions == null)
+				return true;
+
+			foreach(var pair in KeyConditions)
+			{
+				if(timelineState.GetKey(pair.Key) != pair.Value)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
 	}
 }

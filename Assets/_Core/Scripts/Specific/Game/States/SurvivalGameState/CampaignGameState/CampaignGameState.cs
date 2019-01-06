@@ -15,7 +15,7 @@
 
 		private void SetupTimeline()
 		{
-			Timeline.EnqueueTimelineSlot(TimelineEventSlot<GameModel>.CreateDefaultPotentialEventSlot<MobsTimelineEvent, MobTimelineEventData>(
+			Timeline.EnqueueTimelineSlot(PotentialEvent.Create<GameModel, MobsTimelineEvent, MobTimelineEventData>(
 			new MobTimelineEventData()
 			{
 				UseKillsProgressor = false,
@@ -30,7 +30,7 @@
 				}
 			}));
 
-			Timeline.EnqueueTimelineSlot(TimelineEventSlot<GameModel>.CreateDefaultPotentialEventSlot<MobsTimelineEvent, MobTimelineEventData>(
+			Timeline.EnqueueTimelineSlot(PotentialEvent.Create<GameModel, MobsTimelineEvent, MobTimelineEventData>(
 			new MobTimelineEventData()
 			{
 				UseKillsProgressor = true,

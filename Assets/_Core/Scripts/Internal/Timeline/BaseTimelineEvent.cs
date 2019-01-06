@@ -133,11 +133,6 @@ public interface ITimelineEvent : IReadableTimelineEvent
 	void Setup(ITimelineState timelineState, ITimelineEventData data);
 }
 
-public interface ITimelineEventData
-{
-
-}
-
 public interface IReadableTimelineEvent
 {
 	event Action<ITimelineEvent> EventEndedEvent;
@@ -148,4 +143,9 @@ public interface IReadableTimelineEvent
 	}
 
 	BaseTimelineEventProgressor[] GetProgressors();
+}
+
+public interface ITimelineEventData
+{
+
 }
