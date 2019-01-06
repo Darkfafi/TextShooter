@@ -39,11 +39,18 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 			_waitTime -= deltaTime * timeScale;
 		}
 
-		if(_spawnInstructions.Count > 0 && _waitTime <= 0f)
+		if(_waitTime <= 0f)
 		{
-			MobsSpawnData instruction = _spawnInstructions.Dequeue();
-			instruction.SpawnEnemies(UniqueEventId, Game);
-			_waitTime = instruction.TimeForEnemies;
+			if(_spawnInstructions.Count > 0)
+			{
+				MobsSpawnData instruction = _spawnInstructions.Dequeue();
+				instruction.SpawnEnemies(UniqueEventId, Game);
+				_waitTime = instruction.TimeForEnemies;
+			}
+			else if(ProgressorsInUse == 0)
+			{
+				EndEvent();
+			}
 		}
 	}
 
