@@ -1,4 +1,7 @@
-﻿namespace SurvivalGame
+﻿using System;
+using System.Xml;
+
+namespace SurvivalGame
 {
 	public class CampaignGameState : SubGameState<SurvivalGameState, GameModel>
 	{
@@ -7,42 +10,44 @@
 			get; private set;
 		}
 
-		protected override void OnSetupState()
+		public string CampaignXmlString
 		{
-			Timeline = new Timeline<GameModel>(MasterGame);
-			SetupTimeline();
+			get; private set;
 		}
 
-		private void SetupTimeline()
+		protected override void OnSetupState()
 		{
-			Timeline.EnqueueTimelineSlot(PotentialEvent.Create<GameModel, MobsTimelineEvent, MobTimelineEventData>(
-			new MobTimelineEventData()
-			{
-				UseKillsProgressor = false,
-				TimeForMobsInSeconds = 3,
-				MobSpawnInstructions = new SpawnData[] 
-				{
-					new SpawnData()
-					{
-						EnemyType = "A",
-						Amount = 5,
-					},
-				}
-			}));
 
-			Timeline.EnqueueTimelineSlot(PotentialEvent.Create<GameModel, MobsTimelineEvent, MobTimelineEventData>(
-			new MobTimelineEventData()
+		}
+
+		public void SetCampaignString(string campaignXmlString)
+		{
+			if(string.IsNullOrEmpty(CampaignXmlString) && !string.IsNullOrEmpty(campaignXmlString))
 			{
-				UseKillsProgressor = true,
-				MobSpawnInstructions = new SpawnData[]
+				CampaignXmlString = campaignXmlString;
+				XmlDocument xmlDoc = new XmlDocument();
+				xmlDoc.LoadXml(campaignXmlString);
+
+				foreach(XmlNode node in xmlDoc.DocumentElement.ChildNodes)
 				{
-					new SpawnData()
+					if(node.Name == "timeline")
 					{
-						EnemyType = "Cool",
-						Amount = 3,
-					},
+
+						Timeline = XmlToTimeline.ParseXml(MasterGame, node, GetDataParserForType);
+					}
 				}
-			}));
+			}
+		}
+
+		private ITimelineEventDataParser GetDataParserForType(string eventType)
+		{
+			switch(eventType)
+			{
+				case "mobs":
+					return new MobsDataParser();
+			}
+
+			return null;
 		}
 
 		protected override void OnStartState()

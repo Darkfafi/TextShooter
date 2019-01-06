@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml;
 
 public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimelineEventData where U : class, IGame
 {

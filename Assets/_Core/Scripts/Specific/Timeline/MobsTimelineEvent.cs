@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Xml;
 using UnityEngine;
 
-public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameModel>
+public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameModel>
 {
 	private Queue<SpawnData> _spawnInstructions;
 	private string _mobTimelineEventSpawnId;
@@ -9,7 +10,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameMod
 	private int _totalSpawnTimeInSeconds;
 	private float _waitTime;
 
-	protected override void PreActivate(TimelineState<GameModel> timelineState, MobTimelineEventData data)
+	protected override void PreActivate(TimelineState<GameModel> timelineState, MobsTimelineEventData data)
 	{
 		// Reset Values
 		_waitTime = 0f;
@@ -25,7 +26,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameMod
 		{
 			_spawnInstructions.Enqueue(dataSpawnInstructions[i]);
 			_totalEnemiesToSpawn += dataSpawnInstructions[i].Amount;
-			_totalSpawnTimeInSeconds += dataSpawnInstructions[i].PauseInSeconds;
+			_totalSpawnTimeInSeconds += dataSpawnInstructions[i].TimeForEnemies;
 		}
 	}
 
@@ -45,11 +46,11 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameMod
 		{
 			SpawnData instruction = _spawnInstructions.Dequeue();
 			instruction.SpawnEnemies(_mobTimelineEventSpawnId, Game);
-			_waitTime = instruction.PauseInSeconds;
+			_waitTime = instruction.TimeForEnemies;
 		}
 	}
 
-	protected override BaseTimelineEventProgressor[] SetupProgressors(TimelineState<GameModel> timelineState, MobTimelineEventData data)
+	protected override BaseTimelineEventProgressor[] SetupProgressors(TimelineState<GameModel> timelineState, MobsTimelineEventData data)
 	{
 		List<BaseTimelineEventProgressor> progressors = new List<BaseTimelineEventProgressor>();
 		if(EventData.UseKillsProgressor)
@@ -72,7 +73,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameMod
 	}
 }
 
-public struct MobTimelineEventData : ITimelineEventData
+public struct MobsTimelineEventData : ITimelineEventData
 {
 	public int TimeForMobsInSeconds;
 	public bool UseKillsProgressor;
@@ -83,7 +84,7 @@ public struct SpawnData
 {
 	public string EnemyType;
 	public int Amount;
-	public int PauseInSeconds;
+	public int TimeForEnemies;
 
 	public void SpawnEnemies(string eventSpawnId, GameModel game, float spawnMargin = 1f)
 	{
@@ -108,5 +109,61 @@ public struct SpawnData
 			enemy.ModelTags.AddTag(eventSpawnId);
 		}
 		
+	}
+}
+
+public struct MobsDataParser : ITimelineEventDataParser
+{
+	public ITimelineEventData ParseFromXmlDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
+	{
+		MobsTimelineEventData data = new MobsTimelineEventData();
+		List<SpawnData> spawnInstructions = new List<SpawnData>();
+		timelineEventType = typeof(MobsTimelineEvent);
+
+		foreach(XmlNode node in xmlDataNode)
+		{
+			if(node.Name == "spawn")
+			{
+				string enemyType = null;
+				int amount = 1;
+				int timeForEnemies = 0;
+				foreach(XmlNode spawnNode in node)
+				{
+					switch(spawnNode.Name)
+					{
+						case "enemyType":
+							enemyType = spawnNode.InnerText;
+							break;
+						case "amount":
+							amount = int.Parse(spawnNode.InnerText);
+							break;
+						case "timeForEnemies":
+							timeForEnemies = int.Parse(spawnNode.InnerText);
+							break;
+					}
+				}
+				spawnInstructions.Add(new SpawnData()
+				{
+					EnemyType = enemyType,
+					Amount = amount,
+					TimeForEnemies = timeForEnemies
+				});
+			}
+			else if(node.Name == "progressor")
+			{
+				switch(node.InnerText)
+				{
+					case "time":
+						data.TimeForMobsInSeconds = int.Parse(node.Attributes["value"].InnerText);
+						break;
+					case "kills":
+						data.UseKillsProgressor = true;
+						break;
+				}
+			}
+		}
+
+		data.MobSpawnInstructions = spawnInstructions.ToArray();
+		return data;
 	}
 }
