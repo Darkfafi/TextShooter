@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimelineEventData where U : class, IGame
 {
@@ -25,8 +26,16 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		get; private set;
 	}
 
-	private Action<ITimelineEvent> _eventEndedCallback;
+	public int ProgressorsInUse
+	{
+		get
+		{
+			return _progressors.Count;
+		}
+	}
 
+	private Action<ITimelineEvent> _eventEndedCallback;
+	private List<BaseTimelineEventProgressor> _progressors = new List<BaseTimelineEventProgressor>();
 	private bool _isDataSet = false;
 
 	public void Setup(TimelineState<U> timelineState, T data)
@@ -37,6 +46,15 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		_isDataSet = true;
 		TimelineState = timelineState;
 		EventData = data;
+
+		PreActivate(timelineState, data);
+		_progressors.Clear();
+		_progressors.AddRange(SetupProgressors(timelineState, data));
+	}
+
+	public BaseTimelineEventProgressor[] GetProgressors()
+	{
+		return _progressors.ToArray();
 	}
 
 	public void Setup(ITimelineState timelineState, ITimelineEventData data)
@@ -57,6 +75,13 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		_eventEndedCallback = eventEndedCallback;
 
 		IsActive = true;
+
+		for(int i = 0; i < _progressors.Count; i++)
+		{
+			_progressors[i].GoalMatchedEvent += OnGoalMatchedEvent;
+			_progressors[i].StartProgressor();
+		}
+
 		EventActivated();
 	}
 
@@ -66,11 +91,23 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 			return;
 
 		IsActive = false;
+
+		for(int i = 0; i < _progressors.Count; i++)
+		{
+			_progressors[i].GoalMatchedEvent -= OnGoalMatchedEvent;
+			_progressors[i].EndProgressor();
+		}
+
+		_progressors.Clear();
+
 		EventDeactivated();
 		_eventEndedCallback = null;
 	}
 
-	public abstract TimelineEventProgressor[] GetProgressors();
+	private void OnGoalMatchedEvent(BaseTimelineEventProgressor progressor)
+	{
+		EndEvent();
+	}
 
 	protected void EndEvent()
 	{
@@ -80,7 +117,9 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		}
 	}
 
+	protected abstract void PreActivate(TimelineState<U> timelineState, T data);
 	protected abstract void EventActivated();
+	protected abstract BaseTimelineEventProgressor[] SetupProgressors(TimelineState<U> timelineState, T data);
 	protected abstract void EventDeactivated();
 }
 
@@ -90,6 +129,8 @@ public interface ITimelineEvent : IReadableTimelineEvent
 	void ActivateEvent(Action<ITimelineEvent> eventEndedCallback);
 	void DeactivateEvent();
 	void Setup(ITimelineState timelineState, ITimelineEventData data);
+
+	BaseTimelineEventProgressor[] GetProgressors();
 }
 
 public interface ITimelineEventData
@@ -103,6 +144,4 @@ public interface IReadableTimelineEvent
 	{
 		get;
 	}
-
-	TimelineEventProgressor[] GetProgressors();
 }

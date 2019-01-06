@@ -1,9 +1,9 @@
 ﻿using System;
 
-public class TimelineEventProgressor
+public abstract class BaseTimelineEventProgressor
 {
-	public event Action<TimelineEventProgressor> GoalMatchedEvent;
-	public event Action<TimelineEventProgressor> GoalUnmatchedEvent;
+	public event Action<BaseTimelineEventProgressor> GoalMatchedEvent;
+	public event Action<BaseTimelineEventProgressor> GoalUnmatchedEvent;
 
 	public bool IsGoalMatched
 	{
@@ -30,58 +30,13 @@ public class TimelineEventProgressor
 		get; private set;
 	}
 
-	public TimelineEventProgressor(int goalValue)
+	public BaseTimelineEventProgressor(int goalValue)
 	{
 		GoalValue = goalValue;
 	}
 
-	public static bool AreAllGoalsMatched(params TimelineEventProgressor[] progressors)
-	{
-		for(int i = 0; i < progressors.Length; i++)
-		{
-			if(!progressors[i].IsGoalMatched)
-				return false;
-		}
-
-		return true;
-	}
-
-	public static int GetAllCurrentValue(params TimelineEventProgressor[] progressors)
-	{
-		int value = 0;
-		for(int i = 0; i < progressors.Length; i++)
-		{
-			value += progressors[i].CurrentValue;
-		}
-		return value;
-	}
-
-	public static int GetAllGoalValue(params TimelineEventProgressor[] progressors)
-	{
-		int value = 0;
-		for(int i = 0; i < progressors.Length; i++)
-		{
-			value += progressors[i].GoalValue;
-		}
-		return value;
-	}
-
-	public static float GetAllCompletionNormalized(params TimelineEventProgressor[] progressors)
-	{
-		int currentValue = 0;
-		int goalValue = 0;
-
-		for(int i = 0; i < progressors.Length; i++)
-		{
-			currentValue += progressors[i].CurrentValue;
-			goalValue += progressors[i].GoalValue;
-		}
-
-		if(goalValue == 0)
-			return 0f;
-
-		return currentValue / goalValue;
-	}
+	public abstract void StartProgressor();
+	public abstract void EndProgressor();
 
 	public float CompletionNormalized
 	{
@@ -94,7 +49,7 @@ public class TimelineEventProgressor
 		}
 	}
 
-	public void UpdateValue(int value)
+	protected void UpdateValue(int value)
 	{
 		CurrentValue = value;
 		if(CurrentValue >= GoalValue)
