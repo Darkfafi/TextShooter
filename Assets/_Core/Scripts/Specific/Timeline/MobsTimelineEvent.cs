@@ -5,7 +5,6 @@ using UnityEngine;
 public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameModel>
 {
 	private Queue<MobsSpawnData> _spawnInstructions;
-	private string _mobTimelineEventSpawnId;
 	private int _totalEnemiesToSpawn;
 	private int _totalSpawnTimeInSeconds;
 	private float _waitTime;
@@ -16,8 +15,6 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		_waitTime = 0f;
 		_totalSpawnTimeInSeconds = 0;
 		_totalEnemiesToSpawn = 0;
-
-		_mobTimelineEventSpawnId = string.Concat(GetType().FullName, GetHashCode().ToString(), Random.Range(0, 100));
 
 		// Setup Spawn Instructions Queue
 		_spawnInstructions = new Queue<MobsSpawnData>();
@@ -45,26 +42,18 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		if(_spawnInstructions.Count > 0 && _waitTime <= 0f)
 		{
 			MobsSpawnData instruction = _spawnInstructions.Dequeue();
-			instruction.SpawnEnemies(_mobTimelineEventSpawnId, Game);
+			instruction.SpawnEnemies(UniqueEventId, Game);
 			_waitTime = instruction.TimeForEnemies;
 		}
 	}
 
-	protected override BaseTimelineEventProgressor[] SetupProgressors(TimelineState<GameModel> timelineState, MobsTimelineEventData data)
+	protected override BaseTimelineEventProgressor[] SetupProgressorsSupported()
 	{
-		List<BaseTimelineEventProgressor> progressors = new List<BaseTimelineEventProgressor>();
-		if(EventData.UseKillsProgressor)
+		return new BaseTimelineEventProgressor[]
 		{
-			progressors.Add(new KillsProgressor(TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_KILLS, _mobTimelineEventSpawnId, _totalEnemiesToSpawn));
-		}
-
-		if(EventData.TimeForMobsInSeconds > 0 || progressors.Count == 0)
-		{
-			progressors.Add(new TimeProgressor(TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_TIME, Game.TimekeeperModel, _totalSpawnTimeInSeconds + EventData.TimeForMobsInSeconds));
-		}
-		
-
-		return progressors.ToArray();
+			new KillsProgressor(UniqueEventId, _totalEnemiesToSpawn),
+			new TimeProgressor(Game.TimekeeperModel, _totalSpawnTimeInSeconds)
+		};
 	}
 
 	protected override void EventDeactivated()
@@ -75,8 +64,6 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 
 public class MobsTimelineEventData : BaseTimelineEventData
 {
-	public int TimeForMobsInSeconds;
-	public bool UseKillsProgressor;
 	public MobsSpawnData[] MobSpawnInstructions;
 }
 
@@ -149,19 +136,6 @@ public class MobsDataParser : BaseTimelineEventDataParser
 					Amount = amount,
 					TimeForEnemies = timeForEnemies
 				});
-			}
-			else if(node.Name == TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_PROGRESSOR)
-			{
-				switch(node.InnerText)
-				{
-					case TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_TIME:
-						string valueText = node.Attributes[TimelineSpecificGlobals.ATTRIBUTE_MOBS_EVENT_DATA_PROGRESSOR_VALUE] == null ? "0" : node.Attributes[TimelineSpecificGlobals.ATTRIBUTE_MOBS_EVENT_DATA_PROGRESSOR_VALUE].InnerText;
-						data.TimeForMobsInSeconds = int.Parse(valueText);
-						break;
-					case TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_KILLS:
-						data.UseKillsProgressor = true;
-						break;
-				}
 			}
 		}
 

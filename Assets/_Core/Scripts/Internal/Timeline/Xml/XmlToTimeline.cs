@@ -176,6 +176,11 @@ public abstract class BaseTimelineEventDataParser
 						break;
 				}
 			}
+			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_PROGRESSOR)
+			{
+				string value = node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE] == null ? "" : node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE].InnerText;
+				data.AddProgressorByName(node.InnerText, value);
+			}
 		}
 
 		return data;

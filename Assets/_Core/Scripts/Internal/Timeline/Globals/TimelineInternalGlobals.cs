@@ -24,4 +24,8 @@
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_VALUE_RANDOM = "random";
 
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_PROGRESSOR = "progressor";
+
+	// Event/(Default or Condition)/Data
+	public const string NODE_EVENT_INTERNAL_DATA_PROGRESSOR = "progressor";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE = "value";
 }

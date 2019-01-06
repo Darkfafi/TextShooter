@@ -1,15 +1,23 @@
 ﻿public class KillsProgressor : BaseTimelineEventProgressor
 {
+	public override string ProgressorName
+	{
+		get
+		{
+			return TimelineSpecificGlobals.PROGRESSOR_NAME_KILLS;
+		}
+	}
+
 	private EntityFilter<EnemyModel> _spawnedEnemyTrackerFilter;
 	private string _eventEnemyTag;
 	private int _enemiesSpawned;
 
-	public KillsProgressor(string progressorName, string eventEnemyTag, int goalKills) : base(progressorName, goalKills)
+	public KillsProgressor(string eventEnemyTag, int goalKills) : base(goalKills)
 	{
 		_eventEnemyTag = eventEnemyTag;
 	}
 
-	public override void StartProgressor()
+	public override void StartProgressor(string optionalValueString)
 	{
 		_enemiesSpawned = 0;
 		_spawnedEnemyTrackerFilter = EntityFilter<EnemyModel>.Create(FilterRules.CreateHasAnyTagsFilter(_eventEnemyTag));

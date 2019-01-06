@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml;
 
 public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTimelineEventData where U : class, IGame
 {
 	public event Action<ITimelineEvent> EventEndedEvent;
+
+	public string UniqueEventId
+	{
+		get; private set;
+	}
 
 	public bool IsActive
 	{
@@ -45,13 +49,23 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		if(_isDataSet)
 			return;
 
+		UniqueEventId = string.Concat(GetType().FullName, GetHashCode().ToString(), UnityEngine.Random.Range(0, 1338));
+
 		_isDataSet = true;
 		TimelineState = timelineState;
 		EventData = data;
 
 		PreActivate(timelineState, data);
 		_progressors.Clear();
-		_progressors.AddRange(SetupProgressors(timelineState, data));
+
+		BaseTimelineEventProgressor[] progressorsSupported = SetupProgressorsSupported();
+		for(int i = 0; i < progressorsSupported.Length; i++)
+		{
+			if(EventData.IsProgressorToAdd(progressorsSupported[i].ProgressorName))
+			{
+				_progressors.Add(progressorsSupported[i]);
+			}
+		}
 	}
 
 	public BaseTimelineEventProgressor[] GetProgressors()
@@ -84,7 +98,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		for(int i = 0; i < _progressors.Count; i++)
 		{
 			_progressors[i].GoalMatchedEvent += OnGoalMatchedEvent;
-			_progressors[i].StartProgressor();
+			_progressors[i].StartProgressor(EventData.GetProgressorOptionalValueString(_progressors[i].ProgressorName));
 		}
 
 		EventActivated();
@@ -137,7 +151,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 
 	protected abstract void PreActivate(TimelineState<U> timelineState, T data);
 	protected abstract void EventActivated();
-	protected abstract BaseTimelineEventProgressor[] SetupProgressors(TimelineState<U> timelineState, T data);
+	protected abstract BaseTimelineEventProgressor[] SetupProgressorsSupported();
 	protected abstract void EventDeactivated();
 }
 
@@ -152,7 +166,12 @@ public interface ITimelineEvent : IReadableTimelineEvent
 public interface IReadableTimelineEvent
 {
 	event Action<ITimelineEvent> EventEndedEvent;
-	
+
+	string UniqueEventId
+	{
+		get;
+	}
+
 	bool IsActive
 	{
 		get;
@@ -182,6 +201,27 @@ public abstract class BaseTimelineEventData
 	private List<KeyValuePair<string, bool>> _keysToSetStartEvent = new List<KeyValuePair<string, bool>>();
 	private List<KeyValuePair<string, bool>> _keysToSetEndEvent = new List<KeyValuePair<string, bool>>();
 	private Dictionary<string, List<KeyValuePair<string, bool>>> _keysToSetAtEndOfProgressors = new Dictionary<string, List<KeyValuePair<string, bool>>>();
+	private Dictionary<string, string> _progressorsToAdd = new Dictionary<string, string>();
+
+	public void AddProgressorByName(string progressorName, string optionalValue)
+	{
+		if(!_progressorsToAdd.ContainsKey(progressorName))
+			_progressorsToAdd.Add(progressorName, optionalValue);
+	}
+
+	public bool IsProgressorToAdd(string progressorName)
+	{
+		return _progressorsToAdd.ContainsKey(progressorName);
+	}
+
+	public string GetProgressorOptionalValueString(string progressorName)
+	{
+		string value = "";
+		if(_progressorsToAdd.TryGetValue(progressorName, out value))
+			return value;
+
+		return value;
+	}
 
 	public void AddKeyToSetAtStartEvent(string key, bool value)
 	{

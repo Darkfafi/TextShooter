@@ -1,15 +1,19 @@
 ﻿public class TimeProgressor : BaseTimelineEventProgressor
 {
+	public override string ProgressorName
+	{
+		get
+		{
+			return TimelineSpecificGlobals.PROGRESSOR_NAME_TIME;
+		}
+	}
+
 	private TimekeeperModel _timekeeperModel;
 	private float _secondCounter = 0f;
 
-	public TimeProgressor(string progressorName, TimekeeperModel timekeeperModel, int endTimeInSeconds) : base(progressorName, endTimeInSeconds)
+	public TimeProgressor(TimekeeperModel timekeeperModel, int endTimeInSeconds) : base(endTimeInSeconds)
 	{
 		_timekeeperModel = timekeeperModel;
-		if(endTimeInSeconds <= 0)
-		{
-			UpdateValue(-1);
-		}
 	}
 
 	~TimeProgressor()
@@ -17,8 +21,17 @@
 		_timekeeperModel = null;
 	}
 
-	public override void StartProgressor()
+	public override void StartProgressor(string optionalValueString)
 	{
+		int value = 0;
+		int.TryParse(optionalValueString, out value);
+		GoalValue += value;
+
+		if(GoalValue <= 0)
+		{
+			UpdateValue(-1);
+		}
+
 		if(CurrentValue < 0) // No time given, end immediately.
 			UpdateValue(CurrentValue + 1);
 		else

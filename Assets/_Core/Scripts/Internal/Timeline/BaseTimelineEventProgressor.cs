@@ -10,14 +10,14 @@ public abstract class BaseTimelineEventProgressor
 		get; private set;
 	}
 
-	public string ProgressorName
+	public abstract string ProgressorName
 	{
-		get; private set;
+		get;
 	}
 
 	public int GoalValue
 	{
-		get; private set;
+		get; protected set;
 	}
 
 	public int CurrentValue
@@ -25,13 +25,12 @@ public abstract class BaseTimelineEventProgressor
 		get; private set;
 	}
 
-	public BaseTimelineEventProgressor(string progressorName, int goalValue)
+	public BaseTimelineEventProgressor(int goalValue)
 	{
-		ProgressorName = progressorName;
 		GoalValue = goalValue;
 	}
 
-	public abstract void StartProgressor();
+	public abstract void StartProgressor(string optionalValueString);
 	public abstract void EndProgressor();
 
 	public float CompletionNormalized
