@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameModel>
 {
-	private Queue<SpawnData> _spawnInstructions;
+	private Queue<MobsSpawnData> _spawnInstructions;
 	private string _mobTimelineEventSpawnId;
 	private int _totalEnemiesToSpawn;
 	private int _totalSpawnTimeInSeconds;
@@ -20,8 +20,8 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		_mobTimelineEventSpawnId = string.Concat(GetType().FullName, GetHashCode().ToString(), Random.Range(0, 100));
 
 		// Setup Spawn Instructions Queue
-		_spawnInstructions = new Queue<SpawnData>();
-		SpawnData[] dataSpawnInstructions = data.MobSpawnInstructions;
+		_spawnInstructions = new Queue<MobsSpawnData>();
+		MobsSpawnData[] dataSpawnInstructions = data.MobSpawnInstructions;
 		for(int i = 0; i < dataSpawnInstructions.Length; i++)
 		{
 			_spawnInstructions.Enqueue(dataSpawnInstructions[i]);
@@ -44,7 +44,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 
 		if(_spawnInstructions.Count > 0 && _waitTime <= 0f)
 		{
-			SpawnData instruction = _spawnInstructions.Dequeue();
+			MobsSpawnData instruction = _spawnInstructions.Dequeue();
 			instruction.SpawnEnemies(_mobTimelineEventSpawnId, Game);
 			_waitTime = instruction.TimeForEnemies;
 		}
@@ -77,10 +77,10 @@ public class MobsTimelineEventData : BaseTimelineEventData
 {
 	public int TimeForMobsInSeconds;
 	public bool UseKillsProgressor;
-	public SpawnData[] MobSpawnInstructions;
+	public MobsSpawnData[] MobSpawnInstructions;
 }
 
-public struct SpawnData
+public struct MobsSpawnData
 {
 	public string EnemyType;
 	public int Amount;
@@ -117,7 +117,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 	protected override BaseTimelineEventData ParseFromXmlSpecificDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
 	{
 		MobsTimelineEventData data = new MobsTimelineEventData();
-		List<SpawnData> spawnInstructions = new List<SpawnData>();
+		List<MobsSpawnData> spawnInstructions = new List<MobsSpawnData>();
 		timelineEventType = typeof(MobsTimelineEvent);
 
 		foreach(XmlNode node in xmlDataNode)
@@ -142,7 +142,8 @@ public class MobsDataParser : BaseTimelineEventDataParser
 							break;
 					}
 				}
-				spawnInstructions.Add(new SpawnData()
+
+				spawnInstructions.Add(new MobsSpawnData()
 				{
 					EnemyType = enemyType,
 					Amount = amount,
