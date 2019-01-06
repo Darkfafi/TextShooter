@@ -55,12 +55,12 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		List<BaseTimelineEventProgressor> progressors = new List<BaseTimelineEventProgressor>();
 		if(EventData.UseKillsProgressor)
 		{
-			progressors.Add(new KillsProgressor(_mobTimelineEventSpawnId, _totalEnemiesToSpawn));
+			progressors.Add(new KillsProgressor("kills", _mobTimelineEventSpawnId, _totalEnemiesToSpawn));
 		}
 
 		if(EventData.TimeForMobsInSeconds > 0 || progressors.Count == 0)
 		{
-			progressors.Add(new TimeProgressor(Game.TimekeeperModel, _totalSpawnTimeInSeconds + EventData.TimeForMobsInSeconds));
+			progressors.Add(new TimeProgressor("time", Game.TimekeeperModel, _totalSpawnTimeInSeconds + EventData.TimeForMobsInSeconds));
 		}
 		
 
@@ -73,7 +73,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 	}
 }
 
-public struct MobsTimelineEventData : ITimelineEventData
+public class MobsTimelineEventData : BaseTimelineEventData
 {
 	public int TimeForMobsInSeconds;
 	public bool UseKillsProgressor;
@@ -112,9 +112,9 @@ public struct SpawnData
 	}
 }
 
-public struct MobsDataParser : ITimelineEventDataParser
+public class MobsDataParser : BaseTimelineEventDataParser
 {
-	public ITimelineEventData ParseFromXmlDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
+	protected override BaseTimelineEventData ParseFromXmlSpecificDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
 	{
 		MobsTimelineEventData data = new MobsTimelineEventData();
 		List<SpawnData> spawnInstructions = new List<SpawnData>();
@@ -154,7 +154,8 @@ public struct MobsDataParser : ITimelineEventDataParser
 				switch(node.InnerText)
 				{
 					case "time":
-						data.TimeForMobsInSeconds = int.Parse(node.Attributes["value"].InnerText);
+						string valueText = node.Attributes["value"] == null ? "0" : node.Attributes["value"].InnerText;
+						data.TimeForMobsInSeconds = int.Parse(valueText);
 						break;
 					case "kills":
 						data.UseKillsProgressor = true;

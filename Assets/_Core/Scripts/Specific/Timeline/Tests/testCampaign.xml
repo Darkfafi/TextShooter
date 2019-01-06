@@ -6,29 +6,49 @@
       <default>
         <type>mobs</type>
         <data>
+          <setKey progressor="kills">Killed_All_First_Event</setKey>
           <progressor>kills</progressor>
+          <progressor value="5">time</progressor>
           <spawn>
             <enemyType>A</enemyType>
-            <amount>5</amount>
+            <amount>1</amount>
           </spawn>
           <spawn>
             <enemyType>B</enemyType>
+            <amount>1</amount>
+          </spawn>
+        </data>
+      </default>
+    </event>
+    <event>
+      <default>
+        <type>mobs</type>
+        <data>
+          <progressor>kills</progressor>
+          <spawn>
+            <enemyType>Sad 1</enemyType>
+            <amount>5</amount>
+          </spawn>
+          <spawn>
+            <enemyType>Sad 2</enemyType>
             <amount>2</amount>
           </spawn>
         </data>
       </default>
       <condition>
-        <conditionKey>A</conditionKey>
+        <conditionKey>Killed_All_First_Event</conditionKey>
         <type>mobs</type>
-        <progressor>kills</progressor>
-        <spawn>
-          <enemyType>KeyTest</enemyType>
-          <amount>5</amount>
-        </spawn>
-        <spawn>
-          <enemyType>KeyTest2</enemyType>
-          <amount>2</amount>
-        </spawn>
+        <data>
+          <progressor>kills</progressor>
+          <spawn>
+            <enemyType>Killed All 1</enemyType>
+            <amount>3</amount>
+          </spawn>
+          <spawn>
+            <enemyType>Killed All 2</enemyType>
+            <amount>1</amount>
+          </spawn>
+        </data>
       </condition>
     </event>
   </timeline>

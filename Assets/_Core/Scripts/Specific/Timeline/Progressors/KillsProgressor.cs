@@ -4,7 +4,7 @@
 	private string _eventEnemyTag;
 	private int _enemiesSpawned;
 
-	public KillsProgressor(string eventEnemyTag, int goalKills) : base(goalKills)
+	public KillsProgressor(string progressorName, string eventEnemyTag, int goalKills) : base(progressorName, goalKills)
 	{
 		_eventEnemyTag = eventEnemyTag;
 	}

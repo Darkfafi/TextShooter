@@ -15,11 +15,6 @@ public abstract class BaseTimelineEventProgressor
 		get; private set;
 	}
 
-	public int ProgressorType
-	{
-		get; private set;
-	}
-
 	public int GoalValue
 	{
 		get; private set;
@@ -30,8 +25,9 @@ public abstract class BaseTimelineEventProgressor
 		get; private set;
 	}
 
-	public BaseTimelineEventProgressor(int goalValue)
+	public BaseTimelineEventProgressor(string progressorName, int goalValue)
 	{
+		ProgressorName = progressorName;
 		GoalValue = goalValue;
 	}
 

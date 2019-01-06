@@ -7,22 +7,22 @@ public class PotentialEvent
 		get; private set;
 	}
 
-	public ITimelineEventData Data
+	public BaseTimelineEventData Data
 	{
 		get; private set;
 	}
 
-	public static PotentialEvent Create<T, U, I>(I eventData) where T : class, IGame where U : BaseTimelineEvent<I, T> where I : ITimelineEventData
+	public static PotentialEvent Create<T, U, I>(I eventData) where T : class, IGame where U : BaseTimelineEvent<I, T> where I : BaseTimelineEventData
 	{
 		return new PotentialEvent(typeof(U), eventData);
 	}
 
-	public static PotentialEvent Create(Type eventType, ITimelineEventData eventData)
+	public static PotentialEvent Create(Type eventType, BaseTimelineEventData eventData)
 	{
 		return new PotentialEvent(eventType, eventData);
 	}
 
-	private PotentialEvent(Type eventType, ITimelineEventData eventData)
+	private PotentialEvent(Type eventType, BaseTimelineEventData eventData)
 	{
 		TimelineEventType = eventType;
 		Data = eventData;

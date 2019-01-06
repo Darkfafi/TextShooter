@@ -3,7 +3,7 @@
 	private TimekeeperModel _timekeeperModel;
 	private float _secondCounter = 0f;
 
-	public TimeProgressor(TimekeeperModel timekeeperModel, int endTimeInSeconds) : base(endTimeInSeconds)
+	public TimeProgressor(string progressorName, TimekeeperModel timekeeperModel, int endTimeInSeconds) : base(progressorName, endTimeInSeconds)
 	{
 		_timekeeperModel = timekeeperModel;
 		if(endTimeInSeconds <= 0)

@@ -34,10 +34,10 @@ public class TimelineEventSlot<T> where T : class, IGame
 		return CreateTimelineEvent(timelineState, DefaultPotentialEvent);
 	}
 
-	private ITimelineEvent CreateTimelineEvent(ITimelineState timelineState, PotentialEvent slot)
+	private ITimelineEvent CreateTimelineEvent(ITimelineState timelineState, PotentialEvent potentialEvent)
 	{
-		ITimelineEvent e = Activator.CreateInstance(slot.TimelineEventType) as ITimelineEvent;
-		e.Setup(timelineState, slot.Data);
+		ITimelineEvent e = Activator.CreateInstance(potentialEvent.TimelineEventType) as ITimelineEvent;
+		e.Setup(timelineState, potentialEvent.Data);
 		return e;
 	}
 

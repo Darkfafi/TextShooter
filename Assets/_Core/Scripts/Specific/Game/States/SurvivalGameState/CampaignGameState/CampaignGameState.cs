@@ -39,7 +39,7 @@ namespace SurvivalGame
 			}
 		}
 
-		private ITimelineEventDataParser GetDataParserForType(string eventType)
+		private BaseTimelineEventDataParser GetDataParserForType(string eventType)
 		{
 			switch(eventType)
 			{

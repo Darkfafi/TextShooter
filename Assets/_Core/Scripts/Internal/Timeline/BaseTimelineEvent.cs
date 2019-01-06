@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml;
 
-public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimelineEventData where U : class, IGame
+public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTimelineEventData where U : class, IGame
 {
 	public event Action<ITimelineEvent> EventEndedEvent;
 
@@ -59,7 +59,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 		return _progressors.ToArray();
 	}
 
-	public void Setup(ITimelineState timelineState, ITimelineEventData data)
+	public void Setup(ITimelineState timelineState, BaseTimelineEventData data)
 	{
 		Setup((TimelineState<U>)timelineState, (T)data);
 	}
@@ -75,6 +75,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 			return;
 
 		IsActive = true;
+
+		foreach(var pair in EventData.KeysToSetStartEvent)
+		{
+			TimelineState.SetKey(pair.Key, pair.Value);
+		}
 
 		for(int i = 0; i < _progressors.Count; i++)
 		{
@@ -106,6 +111,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 
 	private void OnGoalMatchedEvent(BaseTimelineEventProgressor progressor)
 	{
+		foreach(var pair in EventData.GetKeysToSetAfterProgress(progressor.ProgressorName))
+		{
+			TimelineState.SetKey(pair.Key, pair.Value);
+		}
+
 		EndEvent();
 	}
 
@@ -113,6 +123,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : ITimeli
 	{
 		if(IsActive)
 		{
+			foreach(var pair in EventData.KeysToSetEndEvent)
+			{
+				TimelineState.SetKey(pair.Key, pair.Value);
+			}
+
 			if(EventEndedEvent != null)
 			{
 				EventEndedEvent(this);
@@ -131,7 +146,7 @@ public interface ITimelineEvent : IReadableTimelineEvent
 {
 	void ActivateEvent();
 	void DeactivateEvent();
-	void Setup(ITimelineState timelineState, ITimelineEventData data);
+	void Setup(ITimelineState timelineState, BaseTimelineEventData data);
 }
 
 public interface IReadableTimelineEvent
@@ -146,7 +161,56 @@ public interface IReadableTimelineEvent
 	BaseTimelineEventProgressor[] GetProgressors();
 }
 
-public interface ITimelineEventData
+public abstract class BaseTimelineEventData
 {
+	public KeyValuePair<string, bool>[] KeysToSetStartEvent
+	{
+		get
+		{
+			return _keysToSetStartEvent.ToArray();
+		}
+	}
 
+	public KeyValuePair<string, bool>[] KeysToSetEndEvent
+	{
+		get
+		{
+			return _keysToSetEndEvent.ToArray();
+		}
+	}
+
+	private List<KeyValuePair<string, bool>> _keysToSetStartEvent = new List<KeyValuePair<string, bool>>();
+	private List<KeyValuePair<string, bool>> _keysToSetEndEvent = new List<KeyValuePair<string, bool>>();
+	private Dictionary<string, List<KeyValuePair<string, bool>>> _keysToSetAtEndOfProgressors = new Dictionary<string, List<KeyValuePair<string, bool>>>();
+
+	public void AddKeyToSetAtStartEvent(string key, bool value)
+	{
+		_keysToSetStartEvent.Add(new KeyValuePair<string, bool>(key, value));
+	}
+
+	public void AddKeyToSetAtEndEvent(string key, bool value)
+	{
+		_keysToSetEndEvent.Add(new KeyValuePair<string, bool>(key, value));
+	}
+
+	public void AddKeyToSetAtEndOfProgressors(string progressName, string key, bool value)
+	{
+		if(_keysToSetAtEndOfProgressors.ContainsKey(progressName))
+		{
+			_keysToSetAtEndOfProgressors[progressName].Add(new KeyValuePair<string, bool>(key, value));
+		}
+		else
+		{
+			_keysToSetAtEndOfProgressors.Add(progressName, new List<KeyValuePair<string, bool>>() { new KeyValuePair<string, bool>(key, value) });
+		}
+	}
+
+	public KeyValuePair<string, bool>[] GetKeysToSetAfterProgress(string progress)
+	{
+		List<KeyValuePair<string, bool>> keysToSet = new List<KeyValuePair<string, bool>>();
+		if(!_keysToSetAtEndOfProgressors.TryGetValue(progress, out keysToSet))
+			return new KeyValuePair<string, bool>[] { };
+
+		return keysToSet.ToArray();
+	}
 }
