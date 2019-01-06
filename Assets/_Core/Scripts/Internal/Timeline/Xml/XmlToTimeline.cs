@@ -17,24 +17,24 @@ public static class XmlToTimeline
 		int eventNumber = 0;
 		foreach(XmlNode node in root.ChildNodes)
 		{
-			if(node.Name == "event")
+			if(node.Name == TimelineInternalGlobals.NODE_EVENT)
 			{
 				TimelineEventSlot<T> timelineEventSlot = null;
 
 				foreach(XmlNode innerEventNode in node)
 				{
-					if(innerEventNode.Name == "default")
+					if(innerEventNode.Name == TimelineInternalGlobals.NODE_EVENT_DEFAULT)
 					{
 						timelineEventSlot = new TimelineEventSlot<T>(ParseNodeToPotentialEvent(innerEventNode, getDataParserForTypeMethod));
 					}
-					else if(innerEventNode.Name == "condition")
+					else if(innerEventNode.Name == TimelineInternalGlobals.NODE_EVENT_CONDITION)
 					{
 						if(timelineEventSlot != null)
 						{
 							List<KeyValuePair<string, bool>> conditions = new List<KeyValuePair<string, bool>>();
 							foreach(XmlNode innerConditionEvent in innerEventNode)
 							{
-								if(innerConditionEvent.Name == "conditionKey")
+								if(innerConditionEvent.Name == TimelineInternalGlobals.NODE_EVENT_CONDITION_KEY)
 								{
 									bool condition;
 									if(!bool.TryParse(innerConditionEvent.Value, out condition))
@@ -87,16 +87,16 @@ public static class XmlToTimeline
 	{
 		BaseTimelineEventDataParser dataParser = null;
 		XmlNode xmlData = null;
-		string typeString = "'<No type node found>'";
+		string typeString = TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_NONE_FOUND;
 		foreach(XmlNode node in eventCaseNode.ChildNodes)
 		{
-			if(node.Name == "type")
+			if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_TYPE)
 			{
 				typeString = node.InnerText;
 				dataParser = getDataParserForTypeMethod(typeString);
 			}
 
-			if(node.Name == "data")
+			if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA)
 			{
 				xmlData = node;
 			}
@@ -126,17 +126,17 @@ public abstract class BaseTimelineEventDataParser
 
 		foreach(XmlNode node in xmlDataNode)
 		{
-			if(node.Name == "setKey")
+			if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_SET_KEY)
 			{
-				XmlNode setKeyTypeNode = node.Attributes["type"];
+				XmlNode setKeyTypeNode = node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_TYPE];
 				string keyName = node.InnerText;
 				bool value = true;
 
-				XmlNode valueNode = node.Attributes["value"];
+				XmlNode valueNode = node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_VALUE];
 				if(valueNode != null)
 				{
 
-					if(valueNode.InnerText == "random")
+					if(valueNode.InnerText == TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_VALUE_RANDOM)
 					{
 						value = UnityEngine.Random.Range(0, 2) == 1 ? false : true;
 					}
@@ -150,10 +150,10 @@ public abstract class BaseTimelineEventDataParser
 				}
 
 				string setKeyType;
-				XmlNode progressorNode = node.Attributes["progressor"];
+				XmlNode progressorNode = node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_PROGRESSOR];
 				if(setKeyTypeNode == null)
 				{
-					setKeyType = "progressor";
+					setKeyType = TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_PROGRESSOR;
 				}
 				else
 				{
@@ -162,13 +162,13 @@ public abstract class BaseTimelineEventDataParser
 
 				switch(setKeyType)
 				{
-					case "start":
+					case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_START:
 						data.AddKeyToSetAtStartEvent(keyName, value);
 						break;
-					case "end":
+					case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_END:
 						data.AddKeyToSetAtEndEvent(keyName, value);
 						break;
-					case "progressor":
+					case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_PROGRESSOR:
 						data.AddKeyToSetAtEndOfProgressors(progressorNode == null ? "" : progressorNode.InnerText, keyName, value);
 						break;
 					default:

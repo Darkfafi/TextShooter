@@ -55,12 +55,12 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		List<BaseTimelineEventProgressor> progressors = new List<BaseTimelineEventProgressor>();
 		if(EventData.UseKillsProgressor)
 		{
-			progressors.Add(new KillsProgressor("kills", _mobTimelineEventSpawnId, _totalEnemiesToSpawn));
+			progressors.Add(new KillsProgressor(TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_KILLS, _mobTimelineEventSpawnId, _totalEnemiesToSpawn));
 		}
 
 		if(EventData.TimeForMobsInSeconds > 0 || progressors.Count == 0)
 		{
-			progressors.Add(new TimeProgressor("time", Game.TimekeeperModel, _totalSpawnTimeInSeconds + EventData.TimeForMobsInSeconds));
+			progressors.Add(new TimeProgressor(TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_TIME, Game.TimekeeperModel, _totalSpawnTimeInSeconds + EventData.TimeForMobsInSeconds));
 		}
 		
 
@@ -122,7 +122,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 
 		foreach(XmlNode node in xmlDataNode)
 		{
-			if(node.Name == "spawn")
+			if(node.Name == TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN)
 			{
 				string enemyType = null;
 				int amount = 1;
@@ -131,13 +131,13 @@ public class MobsDataParser : BaseTimelineEventDataParser
 				{
 					switch(spawnNode.Name)
 					{
-						case "enemyType":
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_TYPE:
 							enemyType = spawnNode.InnerText;
 							break;
-						case "amount":
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT:
 							amount = int.Parse(spawnNode.InnerText);
 							break;
-						case "timeForEnemies":
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_TIME_FOR_ENEMIES:
 							timeForEnemies = int.Parse(spawnNode.InnerText);
 							break;
 					}
@@ -149,15 +149,15 @@ public class MobsDataParser : BaseTimelineEventDataParser
 					TimeForEnemies = timeForEnemies
 				});
 			}
-			else if(node.Name == "progressor")
+			else if(node.Name == TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_PROGRESSOR)
 			{
 				switch(node.InnerText)
 				{
-					case "time":
-						string valueText = node.Attributes["value"] == null ? "0" : node.Attributes["value"].InnerText;
+					case TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_TIME:
+						string valueText = node.Attributes[TimelineSpecificGlobals.ATTRIBUTE_MOBS_EVENT_DATA_PROGRESSOR_VALUE] == null ? "0" : node.Attributes[TimelineSpecificGlobals.ATTRIBUTE_MOBS_EVENT_DATA_PROGRESSOR_VALUE].InnerText;
 						data.TimeForMobsInSeconds = int.Parse(valueText);
 						break;
-					case "kills":
+					case TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_PROGRESSOR_KILLS:
 						data.UseKillsProgressor = true;
 						break;
 				}
