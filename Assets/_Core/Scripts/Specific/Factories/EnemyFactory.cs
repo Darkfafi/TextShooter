@@ -15,7 +15,7 @@ public static class EnemyFactory
 			// Set Skin, Speed, damage and words
 		}
 
-		enemyModel = new EnemyModel(timekeeperModel, "Test");
+		enemyModel = new EnemyModel(timekeeperModel, enemyType);
 		return enemyModel;
 	}
 }

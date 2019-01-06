@@ -1,16 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
+public class MobsTimelineEvent : BaseTimelineEvent<MobTimelineEventData, GameModel>
 {
-	public override int EventType
-	{
-		get
-		{
-			return TimelineEventGlobals.PROGRESS_TYPE_KILLS;
-		}
-	}
-
 	private TimelineEventProgressor _timeProgressor;
 	private TimelineEventProgressor _killsProgressor;
 
@@ -50,7 +42,7 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 		// Setup Spawn Instructions Queue
 		int enemyAmount = 0;
 		_spawnInstructions = new Queue<SpawnData>();
-		SpawnData[] spawnInstructionsParameter = EventParams.TimelineEventData.MobSpawnInstructions;
+		SpawnData[] spawnInstructionsParameter = EventData.MobSpawnInstructions;
 		for(int i = 0; i < spawnInstructionsParameter.Length; i++)
 		{
 			_spawnInstructions.Enqueue(spawnInstructionsParameter[i]);
@@ -58,18 +50,20 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 		}
 
 		// Setup Progressors
-		if(EventParams.TimelineEventData.UseKillsProgressor)
+		if(EventData.UseKillsProgressor)
 		{
 			_progressorInUse.Add(_killsProgressor = new TimelineEventProgressor(enemyAmount));
 		}
 
-		if(EventParams.TimelineEventData.TimeForMobsInSeconds > 0)
+		if(EventData.TimeForMobsInSeconds > 0)
 		{
-			_progressorInUse.Add(_timeProgressor = new TimelineEventProgressor(EventParams.TimelineEventData.TimeForMobsInSeconds));
+			_progressorInUse.Add(_timeProgressor = new TimelineEventProgressor(EventData.TimeForMobsInSeconds));
 		}
+
+		Game.TimekeeperModel.ListenToFrameTick(EventTickUpdate);
 	}
 
-	protected override void EventTickUpdate(float deltaTime, float timeScale)
+	private void EventTickUpdate(float deltaTime, float timeScale)
 	{
 		if(_waitTime >= 0f)
 		{
@@ -84,11 +78,11 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 
 			if(_spawnInstructions.Count == 0 && _progressorInUse.Count == 0)
 			{
-				EndEvent(true);
+				EndEvent();
 			}
 		}
 
-		if(EventParams.TimelineEventData.TimeForMobsInSeconds > 0)
+		if(EventData.TimeForMobsInSeconds > 0)
 		{
 			_secondCounter += deltaTime * timeScale;
 			if(_secondCounter >= 1f)
@@ -97,7 +91,7 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 				_timeProgressor.UpdateValue(_timeProgressor.CurrentValue + 1);
 				if(_timeProgressor.IsGoalMatched)
 				{
-					EndEvent(true);
+					EndEvent();
 				}
 			}
 		}
@@ -105,6 +99,8 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 
 	protected override void EventDeactivated()
 	{
+		Game.TimekeeperModel.UnlistenFromFrameTick(EventTickUpdate);
+
 		EnemyModel[] enemiesTracking = _spawnedEnemyTrackerFilter.GetAll();
 
 		for(int i = 0; i < enemiesTracking.Length; i++)
@@ -144,7 +140,7 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 				y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
 				Vector2 spawnPos = new Vector2(x, y);
 
-				EnemyModel enemy = EnemyFactory.CreateEnemy(timekeeperModel, spawnData.EnemyType);
+				EnemyModel enemy = EnemyFactory.CreateEnemy(Game.TimekeeperModel, spawnData.EnemyType);
 				_enemiesSpawned++;
 				enemy.ModelTransform.Position = spawnPos;
 				enemy.ModelTags.AddTag(_mobTimelineEventSpawnId);
@@ -154,7 +150,7 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 
 	private void OnTrackedEvent(EnemyModel enemy)
 	{
-		if(EventParams.TimelineEventData.UseKillsProgressor)
+		if(EventData.UseKillsProgressor)
 		{
 			enemy.DeathEvent += OnDeathEvent;
 		}
@@ -176,7 +172,7 @@ public class MobsTimelineEvent : TimelineEvent<MobTimelineEventData>
 		_killsProgressor.UpdateValue(_killsProgressor.GoalValue - (_spawnedEnemyTrackerFilter.GetAll((e) => !e.IsDead).Length + enemyAmountToGo));
 		if(_killsProgressor.IsGoalMatched)
 		{
-			EndEvent(true);
+			EndEvent();
 		}
 	}
 }

@@ -1,35 +1,48 @@
-﻿using System;
-
-namespace SurvivalGame
+﻿namespace SurvivalGame
 {
 	public class CampaignGameState : SubGameState<SurvivalGameState, GameModel>
 	{
-		public Timeline Timeline
+		public Timeline<GameModel> Timeline
 		{
 			get; private set;
 		}
 
 		protected override void OnSetupState()
 		{
-			Timeline = new Timeline(MasterGame.TimekeeperModel);
+			Timeline = new Timeline<GameModel>(MasterGame);
 			SetupTimeline();
 		}
 
 		private void SetupTimeline()
 		{
-			Timeline.EnqueueTimelineEvent<MobsTimelineEvent, MobTimelineEventData>(new MobTimelineEventData()
+			Timeline.EnqueueTimelineSlot(TimelineEventSlot<GameModel>.CreateDefaultPotentialEventSlot<MobsTimelineEvent, MobTimelineEventData>(
+			new MobTimelineEventData()
 			{
 				UseKillsProgressor = true,
-				TimeForMobsInSeconds = 5,
 				MobSpawnInstructions = new SpawnData[] 
 				{
 					new SpawnData()
 					{
-						EnemyType = "Boss",
-						Amount = 1,
+						EnemyType = "A",
+						Amount = 5,
 					},
 				}
-			});
+			}));
+
+			Timeline.EnqueueTimelineSlot(TimelineEventSlot<GameModel>.CreateDefaultPotentialEventSlot<MobsTimelineEvent, MobTimelineEventData>(
+			new MobTimelineEventData()
+			{
+				UseKillsProgressor = true,
+				TimeForMobsInSeconds = 5,
+				MobSpawnInstructions = new SpawnData[]
+				{
+					new SpawnData()
+					{
+						EnemyType = "Cool",
+						Amount = 3,
+					},
+				}
+			}));
 		}
 
 		protected override void OnStartState()
@@ -47,7 +60,7 @@ namespace SurvivalGame
 			Timeline.TimelineEventEndedEvent -= OnTimelineEventEndedEvent;
 		}
 
-		private void OnTimelineEventEndedEvent(IReadableTimelineEvent timelineEvent, bool success)
+		private void OnTimelineEventEndedEvent(IReadableTimelineEvent timelineEvent)
 		{
 			UnityEngine.Debug.LogFormat("End of event {0} reached!", timelineEvent.GetType().ToString());
 			Timeline.Up();

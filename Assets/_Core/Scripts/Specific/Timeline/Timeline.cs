@@ -1,22 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class Timeline : IReadableTimeline
+public class Timeline<T> : IReadableTimeline<T> where T : class, IGame 
 {
 	public delegate void TimelineEventHandler(IReadableTimelineEvent timelineEvent);
-	public delegate void TimelineEventSuccessHandler(IReadableTimelineEvent timelineEvent, bool success);
 	public event Action TimelineEndReachedEvent;
 	public event Action TimelineStartReachedEvent;
-	public event TimelineEventSuccessHandler TimelineEventEndedEvent;
+	public event TimelineEventHandler TimelineEventEndedEvent;
 	public event TimelineEventHandler TimelineUpwardsEvent;
 	public event TimelineEventHandler TimelineDownwardsEvent;
 	public event TimelineEventHandler NewTimelineEventEvent;
 
-	public IReadableTimelineEvent[] Events
+	public T Game
+	{
+		get; private set;
+	}
+
+	public TimelineState<T> TimelineState
+	{
+		get; private set;
+	}
+
+	public TimelineEventSlot<T>[] EventSlots
 	{
 		get
 		{
-			return _events.ToArray();
+			return _eventSlots.ToArray();
 		}
 	}
 
@@ -25,39 +34,55 @@ public class Timeline : IReadableTimeline
 		get; private set;
 	}
 
-	private List<ITimelineEvent> _events = new List<ITimelineEvent>();
-	private TimekeeperModel _timekeeperModel;
-
-	public Timeline(TimekeeperModel timekeeperModel)
+	public ITimelineEvent CurrentEvent
 	{
-		_timekeeperModel = timekeeperModel;
+		get; private set;
+	}
+
+	public TimelineEventSlot<T> CurrentEventSlot
+	{
+		get
+		{
+			if(TimelinePosition < 0 || TimelinePosition >= _eventSlots.Count)
+			{
+				return null;
+			}
+
+			return _eventSlots[TimelinePosition];
+		}
+	}
+
+	private List<TimelineEventSlot<T>> _eventSlots = new List<TimelineEventSlot<T>>();
+	private ITimelineEvent _currentEvent;
+
+	public Timeline(T game, params TimelineEventSlot<T>[] timelineEventSlots)
+	{
+		Game = game;
+		TimelineState = new TimelineState<T>(this);
 		TimelinePosition = -1;
+		EnqueueTimelineSlot(timelineEventSlots);
 	}
 
 	~Timeline()
 	{
 		UnsetCurrentTimelineEvent();
-		_events.Clear();
-		_events = null;
-		_timekeeperModel = null;
+		_eventSlots.Clear();
+		_eventSlots = null;
 	}
 
-	public void EnqueueTimelineEvent<U, T>(T data) where U : TimelineEvent<T> where T : ITimelineEventData
+	public void EnqueueTimelineSlot(PotentialEventSlot defaultPotentialEventSlot, params PotentialEventSlot[] conditionalPotentialEventSlot)
 	{
-		EnqueueTimelineEvent<U, T>(data, new KeyValuePair<string, object>[] { });
+		EnqueueTimelineSlot(new TimelineEventSlot<T>(defaultPotentialEventSlot, conditionalPotentialEventSlot));
 	}
 
-	public void EnqueueTimelineEvent<U, T>(T data, params KeyValuePair<string, object>[] keyValueParams) where U : TimelineEvent<T> where T : ITimelineEventData
+	public void EnqueueTimelineSlot(PotentialEventSlot defaultPotentialEventSlot)
 	{
-		TimelineEventParameters<T> timelineEventParams = new TimelineEventParameters<T>(data, keyValueParams);
-		U timelineEvent = Activator.CreateInstance<U>();
-		_events.Add(timelineEvent);
-		timelineEvent.Initialize(_timekeeperModel, timelineEventParams);
+		EnqueueTimelineSlot(new TimelineEventSlot<T>(defaultPotentialEventSlot));
 	}
 
-	public IReadableTimelineEvent GetCurrentTimelineEvent()
+	public void EnqueueTimelineSlot(params TimelineEventSlot<T>[] slots)
 	{
-		return GetCurrentEditableTimelineEvent();
+		_eventSlots.AddRange(slots);
 	}
 
 	public bool SetNewTimelinePosition(int timelineIndex)
@@ -67,15 +92,15 @@ public class Timeline : IReadableTimeline
 
 		UnsetCurrentTimelineEvent();
 		TimelinePosition = timelineIndex;
-		ITimelineEvent currentEvent = GetCurrentEditableTimelineEvent();
 
-		if(currentEvent != null)
+		if(CurrentEventSlot != null)
 		{
-			currentEvent.ActivateEvent(OnEventEndedCallback);
+			CurrentEvent = CurrentEventSlot.CreateTimelineEvent(TimelineState);
+			CurrentEvent.ActivateEvent(OnEventEndedCallback);
 
 			if(NewTimelineEventEvent != null)
 			{
-				NewTimelineEventEvent(currentEvent);
+				NewTimelineEventEvent(CurrentEvent);
 			}
 
 			return true;
@@ -86,13 +111,13 @@ public class Timeline : IReadableTimeline
 
 	public void Up()
 	{
-		if(TimelinePosition < _events.Count - 1)
+		if(TimelinePosition < _eventSlots.Count - 1)
 		{
 			if(SetNewTimelinePosition(TimelinePosition + 1))
 			{
 				if(TimelineUpwardsEvent != null)
 				{
-					TimelineUpwardsEvent(GetCurrentTimelineEvent());
+					TimelineUpwardsEvent(CurrentEvent);
 				}
 			}
 		}
@@ -113,7 +138,7 @@ public class Timeline : IReadableTimeline
 			{
 				if(TimelineDownwardsEvent != null)
 				{
-					TimelineDownwardsEvent(GetCurrentTimelineEvent());
+					TimelineDownwardsEvent(CurrentEvent);
 				}
 			}
 		}
@@ -128,53 +153,109 @@ public class Timeline : IReadableTimeline
 
 	private bool UnsetCurrentTimelineEvent()
 	{
-		ITimelineEvent e = GetCurrentEditableTimelineEvent();
-		if(e != null && e.IsActive)
+		if(CurrentEvent != null && CurrentEvent.IsActive)
 		{
-			e.DeactivateEvent();
+			CurrentEvent.DeactivateEvent();
 			return true;
 		}
 
 		return false;
 	}
 
-	private void OnEventEndedCallback(ITimelineEvent timelineEvent, bool success)
+	private void OnEventEndedCallback(ITimelineEvent timelineEvent)
 	{
-		if(GetCurrentTimelineEvent() == timelineEvent)
+		if(CurrentEvent == timelineEvent)
 		{
 			if(UnsetCurrentTimelineEvent())
 			{
 				if(TimelineEventEndedEvent != null)
 				{
-					TimelineEventEndedEvent(timelineEvent, success);
+					TimelineEventEndedEvent(timelineEvent);
 				}
 			}
 		}
 	}
-
-	private ITimelineEvent GetCurrentEditableTimelineEvent()
-	{
-		if(TimelinePosition < 0 || TimelinePosition >= _events.Count)
-		{
-			return null;
-		}
-
-		return _events[TimelinePosition];
-	}
 }
 
 
-public interface IReadableTimeline
+public interface IReadableTimeline<T> where T : class, IGame
 {
+	T Game
+	{
+		get;
+	}
+
+	TimelineState<T> TimelineState
+	{
+		get;
+	}
+
 	int TimelinePosition
 	{
 		get;
 	}
 
-	IReadableTimelineEvent[] Events
+	ITimelineEvent CurrentEvent
 	{
 		get;
 	}
 
-	IReadableTimelineEvent GetCurrentTimelineEvent();
+	TimelineEventSlot<T> CurrentEventSlot
+	{
+		get;
+	} 
+
+	TimelineEventSlot<T>[] EventSlots
+	{
+		get;
+	}
+}
+
+public struct TimelineState<T> : ITimelineState where T : class, IGame
+{
+	public IReadableTimeline<T> Timeline
+	{
+		get; private set;
+	}
+
+	private Dictionary<string, bool> _timelineKeys;
+
+	public TimelineState(Timeline<T> timeline)
+	{
+		_timelineKeys = new Dictionary<string, bool>();
+		Timeline = timeline;
+	}
+
+	public void ResetState()
+	{
+		_timelineKeys.Clear();
+	}
+
+	public bool GetKey(string key)
+	{
+		bool val;
+		if(_timelineKeys.TryGetValue(key, out val))
+			return val;
+
+		return false;
+	}
+
+	public void SetKey(string key, bool value)
+	{
+		if(_timelineKeys.ContainsKey(key))
+		{
+			_timelineKeys[key] = value;
+		}
+		else
+		{
+			_timelineKeys.Add(key, value);
+		}
+	}
+}
+
+public interface ITimelineState
+{
+	void ResetState();
+	bool GetKey(string key);
+	void SetKey(string key, bool value);
 }
