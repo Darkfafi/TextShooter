@@ -8,6 +8,7 @@
 	// Event/Condition
 	public const string NODE_EVENT_CONDITION = "condition";
 	public const string NODE_EVENT_CONDITION_KEY = "conditionKey";
+	public const string ATTRIBUTE_EVENT_CONDITION_KEY_VALUE = "value";
 	// Event/(Default or Condition)
 	public const string NODE_EVENT_INTERNAL_TYPE = "type";
 	public const string NODE_EVENT_INTERNAL_DATA = "data";

@@ -37,7 +37,9 @@ public static class XmlToTimeline
 								if(innerConditionEvent.Name == TimelineInternalGlobals.NODE_EVENT_CONDITION_KEY)
 								{
 									bool condition;
-									if(!bool.TryParse(innerConditionEvent.Value, out condition))
+									XmlNode valueNode = innerConditionEvent.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_CONDITION_KEY_VALUE];
+									string valueString = valueNode == null ? "true" : valueNode.InnerText;
+									if(!bool.TryParse(valueString, out condition))
 									{
 										condition = true;
 									}

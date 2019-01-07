@@ -54,9 +54,6 @@ public class TimelineEventSlot<T> where T : class, IGame
 
 		public bool IsValidToConditions(ITimelineState timelineState)
 		{
-			if(KeyConditions == null)
-				return true;
-
 			foreach(var pair in KeyConditions)
 			{
 				if(timelineState.GetKey(pair.Key) != pair.Value)
