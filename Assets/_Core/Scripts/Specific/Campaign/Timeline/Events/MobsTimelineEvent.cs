@@ -28,7 +28,14 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 
 	protected override void EventActivated()
 	{
-		Game.TimekeeperModel.ListenToFrameTick(EventTickUpdate);
+		if(_spawnInstructions.Count > 0)
+		{
+			Game.TimekeeperModel.ListenToFrameTick(EventTickUpdate);
+		}
+		else
+		{
+			EndEvent();
+		}
 	}
 
 	private void EventTickUpdate(float deltaTime, float timeScale)
