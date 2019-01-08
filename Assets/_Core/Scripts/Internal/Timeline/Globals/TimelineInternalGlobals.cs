@@ -19,14 +19,15 @@
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_NONE_FOUND = "<No type node found>";
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_START = "start";
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_END = "end";
-	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_PROGRESSOR = "progressor";
 
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_VALUE = "value";
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_VALUE_RANDOM = "random";
 
-	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_PROGRESSOR = "progressor";
-
 	// Event/(Default or Condition)/Data
 	public const string NODE_EVENT_INTERNAL_DATA_PROGRESSOR = "progressor";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SHOULD_END_EVENT = "shouldEndEvent";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SET_KEY = "setKey";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_KEY_VALUE = "keyValue";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_AT_VALUE = "atValue";
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE = "value";
 }

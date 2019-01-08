@@ -25,7 +25,7 @@
 	{
 		int value = 0;
 		int.TryParse(optionalValueString, out value);
-		GoalValue += value;
+		GoalValue = value;
 
 		if(GoalValue <= 0)
 		{

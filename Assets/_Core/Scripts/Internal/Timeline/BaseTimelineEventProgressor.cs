@@ -2,7 +2,9 @@
 
 public abstract class BaseTimelineEventProgressor
 {
+	public delegate void ProgressorValueHandler(BaseTimelineEventProgressor progressor, int oldValue);
 	public event Action<BaseTimelineEventProgressor> GoalMatchedEvent;
+	public event ProgressorValueHandler ProgressorValueUpdatedEvent;
 	public event Action<BaseTimelineEventProgressor> GoalUnmatchedEvent;
 
 	public bool IsGoalMatched
@@ -46,7 +48,14 @@ public abstract class BaseTimelineEventProgressor
 
 	protected void UpdateValue(int value)
 	{
+		int oldValue = CurrentValue;
 		CurrentValue = value;
+
+		if(ProgressorValueUpdatedEvent != null)
+		{
+			ProgressorValueUpdatedEvent(this, oldValue);
+		}
+
 		if(CurrentValue >= GoalValue)
 		{
 			if(!IsGoalMatched)

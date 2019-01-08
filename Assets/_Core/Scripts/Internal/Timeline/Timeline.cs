@@ -53,7 +53,6 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 	}
 
 	private List<TimelineEventSlot<T>> _eventSlots = new List<TimelineEventSlot<T>>();
-	private ITimelineEvent _currentEvent;
 
 	public Timeline(T game, params TimelineEventSlot<T>[] timelineEventSlots)
 	{

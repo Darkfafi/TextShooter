@@ -1,14 +1,13 @@
 <campaign>
-  <name> Test Campaign </name>
+  <name>Test Campaign</name>
   <description> Test Campaign for Mob events </description>
   <timeline>
     <event>
       <default>
         <type>mobs</type>
         <data>
-          <setKey progressor="kills">Killed_All_First_Event</setKey>
-          <progressor>kills</progressor>
-          <progressor value="5">time</progressor>
+          <progressor setKey="Killed_All_First_Event" atValue="1" shouldEndEvent="false">kills</progressor>
+          <progressor value="5" shouldEndEvent="false">time</progressor>
           <spawn>
             <enemyType>A</enemyType>
             <amount>1</amount>
@@ -50,6 +49,6 @@
           </spawn>
         </data>
       </condition>
-    </event>
+    </event>    
   </timeline>
 </campaign>

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Xml;
+﻿using System.Xml;
 
 namespace SurvivalGame
 {
 	public class CampaignGameState : SubGameState<SurvivalGameState, GameModel>
 	{
-		public Timeline<GameModel> Timeline
-		{
-			get; private set;
-		}
-
-		public string CampaignXmlString
+		public Campaign<GameModel> Campaign
 		{
 			get; private set;
 		}
@@ -22,58 +16,48 @@ namespace SurvivalGame
 
 		public void SetCampaignString(string campaignXmlString)
 		{
-			if(string.IsNullOrEmpty(CampaignXmlString) && !string.IsNullOrEmpty(campaignXmlString))
+			if(Campaign == null)
 			{
-				CampaignXmlString = campaignXmlString;
+				string name = "", description = "";
+				Timeline<GameModel> timeline = null;
 				XmlDocument xmlDoc = new XmlDocument();
 				xmlDoc.LoadXml(campaignXmlString);
 
 				foreach(XmlNode node in xmlDoc.DocumentElement.ChildNodes)
 				{
+					if(node.Name == "name")
+					{
+						name = node.InnerText;
+					}
+
+					if(node.Name == "description")
+					{
+						description = node.InnerText;
+					}
+
 					if(node.Name == "timeline")
 					{
 
-						Timeline = XmlToTimeline.ParseXml(MasterGame, node, GetDataParserForType);
+						timeline = XmlToTimeline.ParseXml(MasterGame, node, EventDataParsers.GetDataParserForType);
 					}
 				}
-			}
-		}
 
-		private BaseTimelineEventDataParser GetDataParserForType(string eventType)
-		{
-			switch(eventType)
-			{
-				case "mobs":
-					return new MobsDataParser();
+				Campaign = new Campaign<GameModel>(new CampaignData()
+				{
+					Name = name,
+					Description = description
+				}, timeline);
 			}
-
-			return null;
 		}
 
 		protected override void OnStartState()
 		{
-			Timeline.TimelineEndReachedEvent += OnEndReachedEvent;
-			Timeline.TimelineEventEndedEvent += OnTimelineEventEndedEvent;
-
-			// Start First Timeline Event
-			Timeline.SetNewTimelinePosition(0);
+			Campaign.StartCampaign();
 		}
 
 		protected override void OnEndState()
 		{
-			Timeline.TimelineEndReachedEvent -= OnEndReachedEvent;
-			Timeline.TimelineEventEndedEvent -= OnTimelineEventEndedEvent;
-		}
-
-		private void OnTimelineEventEndedEvent(IReadableTimelineEvent timelineEvent)
-		{
-			UnityEngine.Debug.LogFormat("End of event {0} reached!", timelineEvent.GetType().ToString());
-			Timeline.Up();
-		}
-
-		private void OnEndReachedEvent()
-		{
-			UnityEngine.Debug.Log("End of timeline reached!");
+			Campaign.EndCampaign();
 		}
 	}
 }

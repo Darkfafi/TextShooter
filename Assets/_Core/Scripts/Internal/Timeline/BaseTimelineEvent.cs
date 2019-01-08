@@ -33,12 +33,9 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		get; private set;
 	}
 
-	public int ProgressorsInUse
+	public int ProgressorsToEndEvent
 	{
-		get
-		{
-			return _progressors.Count;
-		}
+		get; private set;
 	}
 
 	private List<BaseTimelineEventProgressor> _progressors = new List<BaseTimelineEventProgressor>();
@@ -50,7 +47,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 			return;
 
 		UniqueEventId = string.Concat(GetType().FullName, GetHashCode().ToString(), UnityEngine.Random.Range(0, 1338));
-
+		ProgressorsToEndEvent = 0;
 		_isDataSet = true;
 		TimelineState = timelineState;
 		EventData = data;
@@ -63,6 +60,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		{
 			if(EventData.IsProgressorToAdd(progressorsSupported[i].ProgressorName))
 			{
+				if(EventData.GetProgressorEventData(progressorsSupported[i].ProgressorName).ShouldEndEventOnGoalReach)
+				{
+					ProgressorsToEndEvent++;
+				}
+
 				_progressors.Add(progressorsSupported[i]);
 			}
 		}
@@ -98,7 +100,8 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		for(int i = 0; i < _progressors.Count; i++)
 		{
 			_progressors[i].GoalMatchedEvent += OnGoalMatchedEvent;
-			_progressors[i].StartProgressor(EventData.GetProgressorOptionalValueString(_progressors[i].ProgressorName));
+			_progressors[i].ProgressorValueUpdatedEvent += OnProgressorValueUpdatedEvent;
+			_progressors[i].StartProgressor(EventData.GetProgressorEventData(_progressors[i].ProgressorName).OptionalStringValue);
 		}
 
 		EventActivated();
@@ -114,6 +117,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		for(int i = 0; i < _progressors.Count; i++)
 		{
 			_progressors[i].GoalMatchedEvent -= OnGoalMatchedEvent;
+			_progressors[i].ProgressorValueUpdatedEvent -= OnProgressorValueUpdatedEvent;
 			_progressors[i].EndProgressor();
 		}
 
@@ -123,14 +127,34 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		EventEndedEvent = null;
 	}
 
+	private void OnProgressorValueUpdatedEvent(BaseTimelineEventProgressor progressor, int oldValue)
+	{
+		BaseTimelineEventData.EventProgressorData eventProgressorData = EventData.GetProgressorEventData(progressor.ProgressorName);
+		if(eventProgressorData.ValueToSetKeyAt != BaseTimelineEventData.EventProgressorData.VALUE_AT_GOAL && eventProgressorData.ValueToSetKeyAt == progressor.CurrentValue)
+		{
+			if(!string.IsNullOrEmpty(eventProgressorData.KeyValuePairToSet.Key))
+			{
+				TimelineState.SetKey(eventProgressorData.KeyValuePairToSet.Key, eventProgressorData.KeyValuePairToSet.Value);
+			}
+		}
+	}
+
 	private void OnGoalMatchedEvent(BaseTimelineEventProgressor progressor)
 	{
-		foreach(var pair in EventData.GetKeysToSetAfterProgress(progressor.ProgressorName))
+		BaseTimelineEventData.EventProgressorData eventProgressorData = EventData.GetProgressorEventData(progressor.ProgressorName);
+
+		if(eventProgressorData.ValueToSetKeyAt == BaseTimelineEventData.EventProgressorData.VALUE_AT_GOAL)
 		{
-			TimelineState.SetKey(pair.Key, pair.Value);
+			if(!string.IsNullOrEmpty(eventProgressorData.KeyValuePairToSet.Key))
+			{
+				TimelineState.SetKey(eventProgressorData.KeyValuePairToSet.Key, eventProgressorData.KeyValuePairToSet.Value);
+			}
 		}
 
-		EndEvent();
+		if(eventProgressorData.ShouldEndEventOnGoalReach)
+		{
+			EndEvent();
+		}
 	}
 
 	protected void EndEvent()
@@ -178,79 +202,4 @@ public interface IReadableTimelineEvent
 	}
 
 	BaseTimelineEventProgressor[] GetProgressors();
-}
-
-public abstract class BaseTimelineEventData
-{
-	public KeyValuePair<string, bool>[] KeysToSetStartEvent
-	{
-		get
-		{
-			return _keysToSetStartEvent.ToArray();
-		}
-	}
-
-	public KeyValuePair<string, bool>[] KeysToSetEndEvent
-	{
-		get
-		{
-			return _keysToSetEndEvent.ToArray();
-		}
-	}
-
-	private List<KeyValuePair<string, bool>> _keysToSetStartEvent = new List<KeyValuePair<string, bool>>();
-	private List<KeyValuePair<string, bool>> _keysToSetEndEvent = new List<KeyValuePair<string, bool>>();
-	private Dictionary<string, List<KeyValuePair<string, bool>>> _keysToSetAtEndOfProgressors = new Dictionary<string, List<KeyValuePair<string, bool>>>();
-	private Dictionary<string, string> _progressorsToAdd = new Dictionary<string, string>();
-
-	public void AddProgressorByName(string progressorName, string optionalValue)
-	{
-		if(!_progressorsToAdd.ContainsKey(progressorName))
-			_progressorsToAdd.Add(progressorName, optionalValue);
-	}
-
-	public bool IsProgressorToAdd(string progressorName)
-	{
-		return _progressorsToAdd.ContainsKey(progressorName);
-	}
-
-	public string GetProgressorOptionalValueString(string progressorName)
-	{
-		string value = "";
-		if(_progressorsToAdd.TryGetValue(progressorName, out value))
-			return value;
-
-		return value;
-	}
-
-	public void AddKeyToSetAtStartEvent(string key, bool value)
-	{
-		_keysToSetStartEvent.Add(new KeyValuePair<string, bool>(key, value));
-	}
-
-	public void AddKeyToSetAtEndEvent(string key, bool value)
-	{
-		_keysToSetEndEvent.Add(new KeyValuePair<string, bool>(key, value));
-	}
-
-	public void AddKeyToSetAtEndOfProgressors(string progressName, string key, bool value)
-	{
-		if(_keysToSetAtEndOfProgressors.ContainsKey(progressName))
-		{
-			_keysToSetAtEndOfProgressors[progressName].Add(new KeyValuePair<string, bool>(key, value));
-		}
-		else
-		{
-			_keysToSetAtEndOfProgressors.Add(progressName, new List<KeyValuePair<string, bool>>() { new KeyValuePair<string, bool>(key, value) });
-		}
-	}
-
-	public KeyValuePair<string, bool>[] GetKeysToSetAfterProgress(string progress)
-	{
-		List<KeyValuePair<string, bool>> keysToSet = new List<KeyValuePair<string, bool>>();
-		if(!_keysToSetAtEndOfProgressors.TryGetValue(progress, out keysToSet))
-			return new KeyValuePair<string, bool>[] { };
-
-		return keysToSet.ToArray();
-	}
 }
