@@ -74,4 +74,4 @@ Event `mobs` data options:
 
 	Ending Types:
 		- default	// End without removing spawned enemies.
-		- `destroy` // Destroys all enemies created immediately when the event ends.
+		- `destroy`	// Destroys all enemies created immediately when the event ends.
