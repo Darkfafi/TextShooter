@@ -53,19 +53,19 @@ public abstract class BaseTimelineEventDataParser
 			}
 			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_PROGRESSOR)
 			{
-				BaseTimelineEventData.EventProgressorData.EventEndType endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
+				EventProgressorData.EventEndType endEventType = EventProgressorData.EventEndType.AtGoalReach;
 				if(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE] != null)
 				{
 					switch(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE].InnerText)
 					{
 						case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_NONE:
-							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.None;
+							endEventType = EventProgressorData.EventEndType.None;
 							break;
 						case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_AT_VALUE:
-							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtHitValue;
+							endEventType = EventProgressorData.EventEndType.AtHitValue;
 							break;
 						default:
-							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
+							endEventType = EventProgressorData.EventEndType.AtGoalReach;
 							break;
 					}
 				}
@@ -81,7 +81,7 @@ public abstract class BaseTimelineEventDataParser
 					keyToSet = new KeyValuePair<string, bool>(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SET_KEY].InnerText, keyValue);
 				}
 
-				int atValue = BaseTimelineEventData.EventProgressorData.VALUE_AT_GOAL;
+				int atValue = EventProgressorData.VALUE_AT_GOAL;
 				if(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_AT_VALUE] != null)
 				{
 					int.TryParse(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_AT_VALUE].InnerText, out atValue);
@@ -89,7 +89,7 @@ public abstract class BaseTimelineEventDataParser
 
 				string value = node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE] == null ? "" : node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE].InnerText;
 
-				BaseTimelineEventData.EventProgressorData progressorEventData = new BaseTimelineEventData.EventProgressorData()
+				EventProgressorData progressorEventData = new EventProgressorData()
 				{
 					KeyValuePairToSet = keyToSet,
 					ValueToSetKeyAt = atValue,

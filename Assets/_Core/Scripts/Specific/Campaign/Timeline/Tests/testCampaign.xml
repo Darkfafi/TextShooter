@@ -6,20 +6,21 @@
       <default>
         <type>mobs</type>
         <data>
-          <cleanAtEndingType>destroy</cleanAtEndingType>
+          <endingType>destroy</endingType>
           <progressor atValue="10" eventEndType="atValue">kills</progressor>
+          <progressor atValue="10" setKey="Killed_All_First_Event">kills</progressor>
           <spawn>
             <enemyType>A</enemyType>
-            <amount>50</amount>
-            <timeBetween>1</timeBetween>
+            <amount>30</amount>
+            <timeBetween>0.5</timeBetween>
             <delayAfterSpawn>1</delayAfterSpawn>
-            <side>left</side>
+            <side>top</side>
           </spawn>
           <spawn>
             <enemyType>B</enemyType>
-            <amount>50</amount>
+            <amount>10</amount>
             <timeBetween>1</timeBetween>
-            <side>right</side>
+            <side>bottom</side>
           </spawn>
         </data>
       </default>
@@ -46,11 +47,14 @@
           <progressor>kills</progressor>
           <spawn>
             <enemyType>Killed All 1</enemyType>
-            <amount>3</amount>
+            <amount>30</amount>
+            <side>any</side>
           </spawn>
           <spawn>
             <enemyType>Killed All 2</enemyType>
-            <amount>1</amount>
+            <side>any</side> 
+            <amount>30</amount>
+            <side>any</side>
           </spawn>
         </data>
       </condition>

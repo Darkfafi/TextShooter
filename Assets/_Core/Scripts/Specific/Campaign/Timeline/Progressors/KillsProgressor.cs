@@ -17,7 +17,7 @@
 		_eventEnemyTag = eventEnemyTag;
 	}
 
-	public override void StartProgressor(string optionalValueString)
+	public override void StartProgressor(string[] optionalValueString)
 	{
 		_enemiesSpawned = 0;
 		_spawnedEnemyTrackerFilter = EntityFilter<EnemyModel>.Create(FilterRules.CreateHasAnyTagsFilter(_eventEnemyTag));

@@ -68,9 +68,14 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		{
 			if(EventData.IsProgressorToAdd(progressorsSupported[i].ProgressorName))
 			{
-				if(EventData.GetProgressorEventData(progressorsSupported[i].ProgressorName).EndEventType != BaseTimelineEventData.EventProgressorData.EventEndType.None)
+				EventProgressorData[] progressorData = EventData.GetAllProgressorEventData(progressorsSupported[i].ProgressorName);
+
+				for(int j = 0; j < progressorData.Length; j++)
 				{
-					ProgressorsToEndEvent++;
+					if(progressorData[i].EndEventType != EventProgressorData.EventEndType.None)
+					{
+						ProgressorsToEndEvent++;
+					}
 				}
 
 				_progressors.Add(progressorsSupported[i]);
@@ -109,7 +114,20 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		{
 			_progressors[i].GoalMatchedEvent += OnGoalMatchedEvent;
 			_progressors[i].ProgressorValueUpdatedEvent += OnProgressorValueUpdatedEvent;
-			_progressors[i].StartProgressor(EventData.GetProgressorEventData(_progressors[i].ProgressorName).OptionalStringValue);
+
+			List<string> optionalValueStrings = new List<string>();
+			EventProgressorData[] eventProgressorData = EventData.GetAllProgressorEventData(_progressors[i].ProgressorName);
+
+			for(int j = 0; j < eventProgressorData.Length; j++)
+			{
+				string v = eventProgressorData[i].OptionalStringValue;
+				if(!string.IsNullOrEmpty(v))
+				{
+					optionalValueStrings.Add(v);
+				}
+			}
+
+			_progressors[i].StartProgressor(optionalValueStrings.ToArray());
 		}
 
 		EventActivated();
@@ -137,34 +155,59 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 
 	private void OnProgressorValueUpdatedEvent(BaseTimelineEventProgressor progressor, int oldValue)
 	{
-		BaseTimelineEventData.EventProgressorData eventProgressorData = EventData.GetProgressorEventData(progressor.ProgressorName);
-		if(eventProgressorData.ValueToSetKeyAt != BaseTimelineEventData.EventProgressorData.VALUE_AT_GOAL && eventProgressorData.ValueToSetKeyAt == progressor.CurrentValue)
-		{
-			if(!string.IsNullOrEmpty(eventProgressorData.KeyValuePairToSet.Key))
-			{
-				TimelineState.SetKey(eventProgressorData.KeyValuePairToSet.Key, eventProgressorData.KeyValuePairToSet.Value);
-			}
+		EventProgressorData[] eventProgressorData = EventData.GetAllProgressorEventData(progressor.ProgressorName);
 
-			if(eventProgressorData.EndEventType == BaseTimelineEventData.EventProgressorData.EventEndType.AtHitValue)
+		bool endEvent = false;
+
+		for(int i = 0; i < eventProgressorData.Length; i++)
+		{
+			EventProgressorData currentProgressorData = eventProgressorData[i];
+			if(currentProgressorData.ValueToSetKeyAt != EventProgressorData.VALUE_AT_GOAL && currentProgressorData.ValueToSetKeyAt == progressor.CurrentValue)
 			{
-				EndEvent();
+				if(!string.IsNullOrEmpty(currentProgressorData.KeyValuePairToSet.Key))
+				{
+					TimelineState.SetKey(currentProgressorData.KeyValuePairToSet.Key, currentProgressorData.KeyValuePairToSet.Value);
+				}
+
+				if(currentProgressorData.EndEventType == EventProgressorData.EventEndType.AtHitValue)
+				{
+					endEvent = true;
+				}
 			}
+		}
+
+		if(endEvent)
+		{
+			EndEvent();
 		}
 	}
 
 	private void OnGoalMatchedEvent(BaseTimelineEventProgressor progressor)
 	{
-		BaseTimelineEventData.EventProgressorData eventProgressorData = EventData.GetProgressorEventData(progressor.ProgressorName);
+		EventProgressorData[] eventProgressorData = EventData.GetAllProgressorEventData(progressor.ProgressorName);
 
-		if(eventProgressorData.ValueToSetKeyAt == BaseTimelineEventData.EventProgressorData.VALUE_AT_GOAL)
+		bool endEvent = false;
+
+		for(int i = 0; i < eventProgressorData.Length; i++)
 		{
-			if(!string.IsNullOrEmpty(eventProgressorData.KeyValuePairToSet.Key))
+			EventProgressorData currentProgressorData = eventProgressorData[i];
+
+			if(currentProgressorData.ValueToSetKeyAt == EventProgressorData.VALUE_AT_GOAL)
 			{
-				TimelineState.SetKey(eventProgressorData.KeyValuePairToSet.Key, eventProgressorData.KeyValuePairToSet.Value);
+				if(!string.IsNullOrEmpty(currentProgressorData.KeyValuePairToSet.Key))
+				{
+					TimelineState.SetKey(currentProgressorData.KeyValuePairToSet.Key, currentProgressorData.KeyValuePairToSet.Value);
+				}
+			}
+
+			if(currentProgressorData.EndEventType == EventProgressorData.EventEndType.AtGoalReach)
+			{
+				endEvent = true;
 			}
 		}
 
-		if(eventProgressorData.EndEventType == BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach)
+
+		if(endEvent)
 		{
 			EndEvent();
 		}
