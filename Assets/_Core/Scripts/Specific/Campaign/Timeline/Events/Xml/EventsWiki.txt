@@ -1,0 +1,77 @@
+﻿Events Wiki:
+
+Event Types:
+	- mobs
+
+Progressors:
+	- kills // Progression over the amount of kills made. Goal is the total amount the event will spawn.
+	- time	// Progression over time, optional value=`val` overrides the goal value given by the event, value=`+val` sums additional time to the goal time given by the event.
+
+Global event data options:
+	Node `setKey`
+	[
+		InnerText: 
+			Represents the key to set.
+		
+		Attributes
+		[
+			- type // Type of setKey operation.
+				Consts:
+					- start // Sets the given key at the start of the event.
+					- end	// Sets the given key at the end of the event.
+
+			- value // Value to set key to (`true` or `false`)
+				Consts:
+					- random (fills in `true` or `false` by a random chance of 50/50)
+		]
+	]
+
+	Node `progressor`
+	[
+		InnerText: 
+			Represents the name wished to be added (progressor should be in the supported list of the given event type)
+		
+		Attributes
+		[
+			- eventEndType // In what way the given progressor affects the ending of the event.
+				Consts:
+					- none		// To not affect the ending of the event in any way
+					- atValue	// To end the event when the progressor hits the value given to the `atValue` attribute
+
+			- setKey	// What key to set when the progressor ends or when the progressor hits the `atValue` attribute value.
+			- keyValue	//  What value to set the key at when the setKey operation is executed
+			- atValue	// At what value the progressor should set the given key (can also be used to end the event using `eventEndType`'s `atValue`)
+			- value		// Optional value which can be given to the progressor. Each type of progressor deals with the given value differently.
+		]
+	]
+
+	Node `endingType`
+	[
+		InnerText:
+			Represents the ending type which should be applied to the event when it ends. Each event has its own ending types which they support.
+	]
+
+
+Event `mobs` data options:
+	
+	Progressors supported: 
+		- `kills`	// Goal value is all the enemies which will be spawned by the event
+		- `time`	// Goal value is, by default, the duration of time it takes to spawn all the enemies on the screen.
+	
+	Node `spawn`
+	[
+		Node `enemyType`
+			InnerText: The enemy type to spawn in the given spawn instruction.
+		Node `amount`
+			InnerText: The amount of enemies to spawn of the given type in the given spawn instruction.
+		Node `timeBetween`
+			InnerText: The amount of time (in seconds as float) to wait in between each enemy spawn of the given enemy amount
+		Node `delayAfterSpawn`
+			InnerText: The amount of time to wait (in seconds as integer) to execute the next spawn node in the event. (Multiple spawn nodes can run simultaniously)
+		Node `side`:
+			InnerText: From which side to spawn the enemies (default `any`, options `any`, `top`, `right`, `bottom`, `left`)
+	]
+
+	Ending Types:
+		- default	// End without removing spawned enemies.
+		- `destroy` // Destroys all enemies created immediately when the event ends.
