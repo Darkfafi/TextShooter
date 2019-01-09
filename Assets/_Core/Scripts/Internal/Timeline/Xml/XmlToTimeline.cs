@@ -103,7 +103,7 @@ public static class XmlToTimeline
 	{
 		BaseTimelineEventDataParser dataParser = null;
 		XmlNode xmlData = null;
-		string typeString = TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_NONE_FOUND;
+		string typeString = TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_TYPE_NONE_FOUND;
 		foreach(XmlNode node in eventCaseNode.ChildNodes)
 		{
 			if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_TYPE)

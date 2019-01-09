@@ -2,15 +2,18 @@
 {
 	// -- XML -- \\
 	// <<-- MobsTimelineEvent -->> \\
+
 	// Event/MobsTimelineEvent/Data
 	public const string NODE_MOBS_EVENT_DATA_SPAWN = "spawn";
+
 	// Event/MobsTimelineEvent/Data/Spawn
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_TYPE = "enemyType";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT = "amount";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_DELAY_AFTER_SPAWN = "delayAfterSpawn";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_TIME_BETWEEN = "timeBetween";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_SIDE = "side";
-	public const string CONST_MOBS_EVENT_DATA_CLEANUP_DESTROY = "destroy";
+
+	public const string CONST_MOBS_EVENT_DATA_ENDING_TYPE_DESTROY = "destroy";
 
 
 	// Progressor Names 

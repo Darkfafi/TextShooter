@@ -11,12 +11,14 @@
 	public const string ATTRIBUTE_EVENT_CONDITION_KEY_VALUE = "value";
 	// Event/(Default or Condition)
 	public const string NODE_EVENT_INTERNAL_TYPE = "type";
+	public const string CONST_EVENT_INTERNAL_DATA_TYPE_NONE_FOUND = "<No type node found>";
+
 	public const string NODE_EVENT_INTERNAL_DATA = "data";
+
 	// Event/(Default or Condition)/Data
 	public const string NODE_EVENT_INTERNAL_DATA_SET_KEY = "setKey";
 
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_SET_KEY_TYPE = "type";
-	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_NONE_FOUND = "<No type node found>";
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_START = "start";
 	public const string CONST_EVENT_INTERNAL_DATA_SET_KEY_TYPE_END = "end";
 
@@ -36,5 +38,5 @@
 
 
 	// Event/(Default or Condition)/Data
-	public const string NODE_EVENT_INTERNAL_DATA_CLEAN_AT_ENDING_TYPE = "cleanAtEndingType";
+	public const string NODE_EVENT_INTERNAL_DATA_ENDING_TYPE = "endingType";
 }

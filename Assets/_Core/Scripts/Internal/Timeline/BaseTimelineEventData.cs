@@ -18,7 +18,7 @@ public abstract class BaseTimelineEventData
 		}
 	}
 
-	public string CleanEventAtEndingType
+	public string EndingType
 	{
 		get; private set;
 	}
@@ -38,9 +38,9 @@ public abstract class BaseTimelineEventData
 		return _progressorsToAdd.ContainsKey(progressorName);
 	}
 
-	public void SetCleanEventAtEndingType(string cleanAtEndingType)
+	public void SetEndingType(string endingType)
 	{
-		CleanEventAtEndingType = cleanAtEndingType;
+		EndingType = endingType;
 	}
 
 	public EventProgressorData GetProgressorEventData(string progressorName)

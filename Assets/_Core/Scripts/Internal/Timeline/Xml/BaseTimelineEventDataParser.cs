@@ -99,9 +99,9 @@ public abstract class BaseTimelineEventDataParser
 
 				data.AddProgressorByName(node.InnerText, progressorEventData);
 			}
-			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_CLEAN_AT_ENDING_TYPE)
+			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_ENDING_TYPE)
 			{
-				data.SetCleanEventAtEndingType(node.InnerText);
+				data.SetEndingType(node.InnerText);
 			}
 		}
 

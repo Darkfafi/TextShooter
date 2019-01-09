@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 
 public class MobsDataParser : BaseTimelineEventDataParser
@@ -40,6 +41,9 @@ public class MobsDataParser : BaseTimelineEventDataParser
 							break;
 					}
 				}
+
+				if(enemyType == null)
+					throw new Exception("No Enemy Type was defined for the spawn instruction");
 
 				spawnInstructions.Add(new MobsTimelineEventData.SpawnData()
 				{
