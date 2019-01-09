@@ -10,8 +10,8 @@
           <spawn>
             <enemyType>A</enemyType>
             <amount>5</amount>
-            <timeForEnemies>2</timeForEnemies>
             <timeBetween>1</timeBetween>
+            <delayAfterSpawn>2</delayAfterSpawn>
             <side>left</side>
           </spawn>
           <spawn>

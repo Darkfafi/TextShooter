@@ -25,7 +25,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		{
 			_spawnInstructions.Enqueue(dataSpawnInstructions[i]);
 			_totalEnemiesToSpawn += dataSpawnInstructions[i].Amount;
-			_totalSpawnTimeInSeconds += dataSpawnInstructions[i].TimeForEnemies;
+			_totalSpawnTimeInSeconds += dataSpawnInstructions[i].DelayAfterSpawnInSeconds;
 			float spawnTimeDuration = (dataSpawnInstructions[i].TimeBetweenInSeconds * dataSpawnInstructions[i].Amount) + _totalSpawnTimeInSeconds;
 			if(longestSpawnTime < spawnTimeDuration)
 				longestSpawnTime = spawnTimeDuration;
@@ -69,7 +69,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 				}
 			);
 
-			_waitTime = instruction.TimeForEnemies;
+			_waitTime = instruction.DelayAfterSpawnInSeconds;
 		}
 	}
 
@@ -186,7 +186,7 @@ public class MobsTimelineEventData : BaseTimelineEventData
 		public CameraUtils.Side SpawnSide;
 		public string EnemyType;
 		public int Amount;
-		public int TimeForEnemies;
+		public int DelayAfterSpawnInSeconds;
 		public float TimeBetweenInSeconds;
 	}
 }

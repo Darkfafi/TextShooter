@@ -15,7 +15,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 			{
 				string enemyType = null;
 				int amount = 1;
-				int timeForEnemies = 0;
+				int delayAfterSpawn = 0;
 				float timeBetween = 0.35f;
 				CameraUtils.Side spawnSide = CameraUtils.Side.Any;
 
@@ -29,8 +29,8 @@ public class MobsDataParser : BaseTimelineEventDataParser
 						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT:
 							int.TryParse(spawnNode.InnerText, out amount);
 							break;
-						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_TIME_FOR_ENEMIES:
-							int.TryParse(spawnNode.InnerText, out timeForEnemies);
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_DELAY_AFTER_SPAWN:
+							int.TryParse(spawnNode.InnerText, out delayAfterSpawn);
 							break;
 						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_TIME_BETWEEN:
 							float.TryParse(spawnNode.InnerText, out timeBetween);
@@ -45,7 +45,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 				{
 					EnemyType = enemyType,
 					Amount = amount,
-					TimeForEnemies = timeForEnemies,
+					DelayAfterSpawnInSeconds = delayAfterSpawn,
 					TimeBetweenInSeconds = timeBetween,
 					SpawnSide = spawnSide
 				});

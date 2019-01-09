@@ -7,7 +7,7 @@
 	// Event/MobsTimelineEvent/Data/Spawn
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_TYPE = "enemyType";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT = "amount";
-	public const string NODE_MOBS_EVENT_DATA_SPAWN_TIME_FOR_ENEMIES = "timeForEnemies";
+	public const string NODE_MOBS_EVENT_DATA_SPAWN_DELAY_AFTER_SPAWN = "delayAfterSpawn";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_TIME_BETWEEN = "timeBetween";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_SIDE = "side";
 
