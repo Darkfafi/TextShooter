@@ -10,6 +10,8 @@
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_DELAY_AFTER_SPAWN = "delayAfterSpawn";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_TIME_BETWEEN = "timeBetween";
 	public const string NODE_MOBS_EVENT_DATA_SPAWN_SIDE = "side";
+	public const string CONST_MOBS_EVENT_DATA_CLEANUP_DESTROY = "destroy";
+
 
 	// Progressor Names 
 	public const string PROGRESSOR_NAME_KILLS = "kills";

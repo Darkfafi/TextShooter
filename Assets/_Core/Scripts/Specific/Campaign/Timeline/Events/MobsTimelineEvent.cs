@@ -96,7 +96,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 
 	protected override void CleanupEventEffects(string cleanAtEndingType)
 	{
-		if(cleanAtEndingType == "destroy")
+		if(cleanAtEndingType == TimelineSpecificGlobals.CONST_MOBS_EVENT_DATA_CLEANUP_DESTROY)
 		{
 			EntityModel[] enemies = EntityTracker.Instance.GetAll<EntityModel>(e => e.ModelTags.HasTag(UniqueEventId));
 
