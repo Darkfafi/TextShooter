@@ -53,7 +53,7 @@ public abstract class BaseTimelineEventDataParser
 			}
 			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_PROGRESSOR)
 			{
-				BaseTimelineEventData.EventProgressorData.EventEndType endEventType =  BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
+				BaseTimelineEventData.EventProgressorData.EventEndType endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
 				if(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE] != null)
 				{
 					switch(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE].InnerText)
@@ -98,6 +98,10 @@ public abstract class BaseTimelineEventDataParser
 				};
 
 				data.AddProgressorByName(node.InnerText, progressorEventData);
+			}
+			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_CLEAN_AT_ENDING_TYPE)
+			{
+				data.SetCleanEventAtEndingType(node.InnerText);
 			}
 		}
 

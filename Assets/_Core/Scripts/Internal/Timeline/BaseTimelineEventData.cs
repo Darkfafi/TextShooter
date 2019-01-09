@@ -18,6 +18,11 @@ public abstract class BaseTimelineEventData
 		}
 	}
 
+	public string CleanEventAtEndingType
+	{
+		get; private set;
+	}
+
 	private List<KeyValuePair<string, bool>> _keysToSetStartEvent = new List<KeyValuePair<string, bool>>();
 	private List<KeyValuePair<string, bool>> _keysToSetEndEvent = new List<KeyValuePair<string, bool>>();
 	private Dictionary<string, EventProgressorData> _progressorsToAdd = new Dictionary<string, EventProgressorData>();
@@ -31,6 +36,11 @@ public abstract class BaseTimelineEventData
 	public bool IsProgressorToAdd(string progressorName)
 	{
 		return _progressorsToAdd.ContainsKey(progressorName);
+	}
+
+	public void SetCleanEventAtEndingType(string cleanAtEndingType)
+	{
+		CleanEventAtEndingType = cleanAtEndingType;
 	}
 
 	public EventProgressorData GetProgressorEventData(string progressorName)

@@ -33,4 +33,8 @@
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_KEY_VALUE = "keyValue";
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_AT_VALUE = "atValue";
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_VALUE = "value";
+
+
+	// Event/(Default or Condition)/Data
+	public const string NODE_EVENT_INTERNAL_DATA_CLEAN_AT_ENDING_TYPE = "cleanAtEndingType";
 }

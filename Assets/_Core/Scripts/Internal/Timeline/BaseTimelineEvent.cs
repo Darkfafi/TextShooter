@@ -179,6 +179,8 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 				TimelineState.SetKey(pair.Key, pair.Value);
 			}
 
+			CleanupEventEffects(EventData.CleanEventAtEndingType);
+
 			if(EventEndedEvent != null)
 			{
 				EventEndedEvent(this);
@@ -189,6 +191,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 	protected abstract void PreActivate(TimelineState<U> timelineState, T data);
 	protected abstract void EventActivated();
 	protected abstract BaseTimelineEventProgressor[] SetupProgressorsSupported();
+	protected abstract void CleanupEventEffects(string cleanAtEndingType);
 	protected abstract void EventDeactivated();
 }
 

@@ -94,6 +94,19 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		_runningSpawners.Clear();
 	}
 
+	protected override void CleanupEventEffects(string cleanAtEndingType)
+	{
+		if(cleanAtEndingType == "destroy")
+		{
+			EntityModel[] enemies = EntityTracker.Instance.GetAll<EntityModel>(e => e.ModelTags.HasTag(UniqueEventId));
+
+			for(int i = 0; i < enemies.Length; i++)
+			{
+				enemies[i].Destroy();
+			}
+		}
+	}
+
 	private class Spawner
 	{
 		private GameModel _game;
