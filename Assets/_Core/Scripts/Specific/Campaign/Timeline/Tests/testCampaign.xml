@@ -6,15 +6,16 @@
       <default>
         <type>mobs</type>
         <data>
-          <progressor setKey="Killed_All_First_Event" atValue="1" shouldEndEvent="false">kills</progressor>
-          <progressor value="5" shouldEndEvent="false">time</progressor>
+          <progressor value="+5">time</progressor>
           <spawn>
             <enemyType>A</enemyType>
-            <amount>1</amount>
+            <amount>5</amount>
+            <timeForEnemies>2</timeForEnemies>
+            <timeBetween>1</timeBetween>
           </spawn>
           <spawn>
             <enemyType>B</enemyType>
-            <amount>1</amount>
+            <amount>5</amount>
           </spawn>
         </data>
       </default>

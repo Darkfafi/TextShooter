@@ -56,7 +56,14 @@ public abstract class BaseTimelineEventData
 	{
 		public const int VALUE_AT_GOAL = -1337;
 
-		public bool ShouldEndEventOnGoalReach;
+		public enum EventEndType
+		{
+			None = -1,
+			AtHitValue = 1,
+			AtGoalReach = 2
+		}
+
+		public EventEndType EndEventType;
 		public int ValueToSetKeyAt;
 		public KeyValuePair<string, bool> KeyValuePairToSet;
 		public string OptionalStringValue;

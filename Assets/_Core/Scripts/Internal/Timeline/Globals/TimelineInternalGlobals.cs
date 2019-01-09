@@ -25,7 +25,10 @@
 
 	// Event/(Default or Condition)/Data
 	public const string NODE_EVENT_INTERNAL_DATA_PROGRESSOR = "progressor";
-	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SHOULD_END_EVENT = "shouldEndEvent";
+	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE = "eventEndType";
+	public const string CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_NONE = "none";
+	public const string CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_AT_VALUE = "atValue";
+
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SET_KEY = "setKey";
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_KEY_VALUE = "keyValue";
 	public const string ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_AT_VALUE = "atValue";

@@ -53,10 +53,21 @@ public abstract class BaseTimelineEventDataParser
 			}
 			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_PROGRESSOR)
 			{
-				bool shouldEndEventOnGoalReach = true;
-				if(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SHOULD_END_EVENT] != null)
+				BaseTimelineEventData.EventProgressorData.EventEndType endEventType =  BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
+				if(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE] != null)
 				{
-					bool.TryParse(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_SHOULD_END_EVENT].InnerText, out shouldEndEventOnGoalReach);
+					switch(node.Attributes[TimelineInternalGlobals.ATTRIBUTE_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE].InnerText)
+					{
+						case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_NONE:
+							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.None;
+							break;
+						case TimelineInternalGlobals.CONST_EVENT_INTERNAL_DATA_PROGRESSOR_EVENT_END_TYPE_AT_VALUE:
+							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtHitValue;
+							break;
+						default:
+							endEventType = BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach;
+							break;
+					}
 				}
 
 				KeyValuePair<string, bool> keyToSet = default(KeyValuePair<string, bool>);
@@ -82,7 +93,7 @@ public abstract class BaseTimelineEventDataParser
 				{
 					KeyValuePairToSet = keyToSet,
 					ValueToSetKeyAt = atValue,
-					ShouldEndEventOnGoalReach = shouldEndEventOnGoalReach,
+					EndEventType = endEventType,
 					OptionalStringValue = value,
 				};
 

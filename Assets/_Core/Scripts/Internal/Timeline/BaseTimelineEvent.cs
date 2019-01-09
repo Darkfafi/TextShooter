@@ -38,6 +38,14 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		get; private set;
 	}
 
+	public bool HasEventEndingProgressors
+	{
+		get
+		{
+			return ProgressorsToEndEvent > 0;
+		}
+	}
+
 	private List<BaseTimelineEventProgressor> _progressors = new List<BaseTimelineEventProgressor>();
 	private bool _isDataSet = false;
 
@@ -60,7 +68,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		{
 			if(EventData.IsProgressorToAdd(progressorsSupported[i].ProgressorName))
 			{
-				if(EventData.GetProgressorEventData(progressorsSupported[i].ProgressorName).ShouldEndEventOnGoalReach)
+				if(EventData.GetProgressorEventData(progressorsSupported[i].ProgressorName).EndEventType != BaseTimelineEventData.EventProgressorData.EventEndType.None)
 				{
 					ProgressorsToEndEvent++;
 				}
@@ -136,6 +144,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 			{
 				TimelineState.SetKey(eventProgressorData.KeyValuePairToSet.Key, eventProgressorData.KeyValuePairToSet.Value);
 			}
+
+			if(eventProgressorData.EndEventType == BaseTimelineEventData.EventProgressorData.EventEndType.AtHitValue)
+			{
+				EndEvent();
+			}
 		}
 	}
 
@@ -151,7 +164,7 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 			}
 		}
 
-		if(eventProgressorData.ShouldEndEventOnGoalReach)
+		if(eventProgressorData.EndEventType == BaseTimelineEventData.EventProgressorData.EventEndType.AtGoalReach)
 		{
 			EndEvent();
 		}
