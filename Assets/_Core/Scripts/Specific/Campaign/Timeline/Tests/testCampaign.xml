@@ -12,10 +12,12 @@
             <amount>5</amount>
             <timeForEnemies>2</timeForEnemies>
             <timeBetween>1</timeBetween>
+            <side>left</side>
           </spawn>
           <spawn>
             <enemyType>B</enemyType>
             <amount>5</amount>
+            <side>right</side>
           </spawn>
         </data>
       </default>

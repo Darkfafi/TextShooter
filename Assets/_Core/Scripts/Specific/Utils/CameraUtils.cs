@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class CameraUtils
 {
 	public enum Side
 	{
-		Top, Right, Bottom, Left, Any
+		Any,
+		Top, Right, Bottom, Left
 	}
 
 	public static Vector2 GetOutOfMaxOrthographicLocation(this CameraModel camera, Side side, float marginOutsideCamera = 1f)
@@ -36,5 +35,24 @@ public static class CameraUtils
 		y = (Mathf.Lerp(0, distY, y)) * yMult;
 
 		return new Vector2(x, y);
+	}
+
+	public static Side ParseToCameraSide(string cameraSideString, Side defaultValue)
+	{
+		switch(cameraSideString)
+		{
+			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_ANY:
+				return Side.Any;
+			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_TOP:
+				return Side.Top;
+			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_RIGHT:
+				return Side.Right;
+			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_BOTTOM:
+				return Side.Bottom;
+			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_LEFT:
+				return Side.Left;
+			default:
+				return defaultValue;
+		}
 	}
 }
