@@ -24,8 +24,19 @@
 	public override void StartProgressor(string optionalValueString)
 	{
 		int value = 0;
-		int.TryParse(optionalValueString, out value);
-		GoalValue = value;
+		string[] result = optionalValueString.Split('+');
+		string parseableValue = result.Length > 0 ? result[result.Length - 1] : "";
+		if(int.TryParse(parseableValue, out value))
+		{
+			if(result.Length <= 1)
+			{
+				GoalValue = value;
+			}
+			else
+			{
+				GoalValue += value;
+			}
+		}
 
 		if(GoalValue <= 0)
 		{

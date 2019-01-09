@@ -12,7 +12,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 	{
 		// Reset Values
 		_waitTime = 0f;
-		_totalSpawnTimeInSeconds = 0;
+		_totalSpawnTimeInSeconds = 1;
 		_totalEnemiesToSpawn = 0;
 
 		// Setup Spawn Instructions Queue
