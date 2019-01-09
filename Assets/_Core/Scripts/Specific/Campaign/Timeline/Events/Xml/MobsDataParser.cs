@@ -6,7 +6,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 	protected override BaseTimelineEventData ParseFromXmlSpecificDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
 	{
 		MobsTimelineEventData data = new MobsTimelineEventData();
-		List<MobsSpawnData> spawnInstructions = new List<MobsSpawnData>();
+		List<MobsTimelineEventData.SpawnData> spawnInstructions = new List<MobsTimelineEventData.SpawnData>();
 		timelineEventType = typeof(MobsTimelineEvent);
 
 		foreach(XmlNode node in xmlDataNode)
@@ -16,6 +16,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 				string enemyType = null;
 				int amount = 1;
 				int timeForEnemies = 0;
+				float timeBetween = 0.35f;
 				foreach(XmlNode spawnNode in node)
 				{
 					switch(spawnNode.Name)
@@ -24,19 +25,23 @@ public class MobsDataParser : BaseTimelineEventDataParser
 							enemyType = spawnNode.InnerText;
 							break;
 						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT:
-							amount = int.Parse(spawnNode.InnerText);
+							int.TryParse(spawnNode.InnerText, out amount);
 							break;
 						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_TIME_FOR_ENEMIES:
-							timeForEnemies = int.Parse(spawnNode.InnerText);
+							int.TryParse(spawnNode.InnerText, out timeForEnemies);
+							break;
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_TIME_BETWEEN:
+							float.TryParse(spawnNode.InnerText, out timeBetween);
 							break;
 					}
 				}
 
-				spawnInstructions.Add(new MobsSpawnData()
+				spawnInstructions.Add(new MobsTimelineEventData.SpawnData()
 				{
 					EnemyType = enemyType,
 					Amount = amount,
-					TimeForEnemies = timeForEnemies
+					TimeForEnemies = timeForEnemies,
+					TimeBetweenInSeconds = timeBetween
 				});
 			}
 		}

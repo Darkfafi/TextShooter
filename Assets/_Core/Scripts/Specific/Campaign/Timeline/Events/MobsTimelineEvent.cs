@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameModel>
 {
-	private Queue<MobsSpawnData> _spawnInstructions;
+	private Queue<MobsTimelineEventData.SpawnData> _spawnInstructions;
+	private List<Spawner> _runningSpawners = new List<Spawner>();
 	private int _totalEnemiesToSpawn;
 	private int _totalSpawnTimeInSeconds;
 	private float _waitTime;
@@ -16,14 +18,20 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		_totalEnemiesToSpawn = 0;
 
 		// Setup Spawn Instructions Queue
-		_spawnInstructions = new Queue<MobsSpawnData>();
-		MobsSpawnData[] dataSpawnInstructions = data.MobSpawnInstructions;
+		_spawnInstructions = new Queue<MobsTimelineEventData.SpawnData>();
+		MobsTimelineEventData.SpawnData[] dataSpawnInstructions = data.MobSpawnInstructions;
+		float longestSpawnTime = 0f;
 		for(int i = 0; i < dataSpawnInstructions.Length; i++)
 		{
 			_spawnInstructions.Enqueue(dataSpawnInstructions[i]);
 			_totalEnemiesToSpawn += dataSpawnInstructions[i].Amount;
 			_totalSpawnTimeInSeconds += dataSpawnInstructions[i].TimeForEnemies;
+			float spawnTimeDuration = (dataSpawnInstructions[i].TimeBetweenInSeconds * dataSpawnInstructions[i].Amount) + _totalSpawnTimeInSeconds;
+			if(longestSpawnTime < spawnTimeDuration)
+				longestSpawnTime = spawnTimeDuration;
 		}
+
+		_totalSpawnTimeInSeconds = Mathf.CeilToInt(longestSpawnTime);
 	}
 
 	protected override void EventActivated()
@@ -40,23 +48,28 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 
 	private void EventTickUpdate(float deltaTime, float timeScale)
 	{
-		if(_waitTime >= 0f)
+		if(_waitTime > 0f)
 		{
 			_waitTime -= deltaTime * timeScale;
 		}
-
-		if(_waitTime <= 0f)
+		else if(_spawnInstructions.Count > 0)
 		{
-			if(_spawnInstructions.Count > 0)
-			{
-				MobsSpawnData instruction = _spawnInstructions.Dequeue();
-				instruction.SpawnEnemies(UniqueEventId, Game);
-				_waitTime = instruction.TimeForEnemies;
-			}
-			else if(ProgressorsToEndEvent == 0)
-			{
-				EndEvent();
-			}
+			MobsTimelineEventData.SpawnData instruction = _spawnInstructions.Dequeue();
+			Spawner spawner = new Spawner(UniqueEventId, Game, instruction);
+			_runningSpawners.Add(spawner);
+			spawner.Execute(
+				(e)=> 
+				{
+					e.Clean();
+					_runningSpawners.Remove(e);
+					if(_runningSpawners.Count == 0 && !HasEventEndingProgressors)
+					{
+						EndEvent();
+					}
+				}
+			);
+
+			_waitTime = instruction.TimeForEnemies;
 		}
 	}
 
@@ -72,42 +85,107 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 	protected override void EventDeactivated()
 	{
 		Game.TimekeeperModel.UnlistenFromFrameTick(EventTickUpdate);
+
+		for(int i = _runningSpawners.Count - 1; i >= 0; i--)
+		{
+			_runningSpawners[i].Clean();
+		}
+
+		_runningSpawners.Clear();
+	}
+
+	private class Spawner
+	{
+		private GameModel _game;
+		private MobsTimelineEventData.SpawnData _mobsSpawnData;
+
+		private bool _isRunning = false;
+		private Action<Spawner> _spawnerEndedCallback;
+
+		private float _timeTillNextSpawnInSeconds;
+		private int _current = 0;
+		private string _eventSpawnId;
+
+		public Spawner(string eventSpawnId, GameModel game, MobsTimelineEventData.SpawnData spawnData)
+		{
+			_eventSpawnId = eventSpawnId;
+			_game = game;
+			_mobsSpawnData = spawnData;
+		}
+
+		public void Execute(Action<Spawner> onSpawnerEndedCallback)
+		{
+			if(_isRunning)
+				return;
+
+			_isRunning = true;
+
+			_current = 0;
+			_timeTillNextSpawnInSeconds = 0f;
+			_spawnerEndedCallback = onSpawnerEndedCallback;
+			_game.TimekeeperModel.ListenToFrameTick(OnTick);
+		}
+
+		public void End()
+		{
+			if(!_isRunning)
+				return;
+
+			_isRunning = false;
+			_game.TimekeeperModel.UnlistenFromFrameTick(OnTick);
+
+			if(_spawnerEndedCallback != null)
+				_spawnerEndedCallback(this);
+		}
+
+		public void Clean()
+		{
+			End();
+			_game = null;
+		}
+
+		private void OnTick(float deltaTime, float timeScale)
+		{
+			if(_timeTillNextSpawnInSeconds > 0f)
+			{
+				_timeTillNextSpawnInSeconds -= deltaTime * timeScale;
+			}
+			else
+			{
+				_timeTillNextSpawnInSeconds += _mobsSpawnData.TimeBetweenInSeconds;
+				Spawn();
+			}
+		}
+
+		private void Spawn()
+		{
+			if(_current < _mobsSpawnData.Amount)
+			{
+				EnemyModel enemy = EnemyFactory.CreateEnemy(_game.TimekeeperModel, _mobsSpawnData.EnemyType);
+				enemy.ModelTransform.Position = _game.GameCamera.GetOutOfMaxOrthographicLocation(CameraUtils.Side.Any);
+				enemy.ModelTags.AddTag(_eventSpawnId);
+				_current++;
+
+				if(_current >= _mobsSpawnData.Amount)
+					End();
+			}
+			else
+			{
+				End();
+			}
+		}
 	}
 }
 
 public class MobsTimelineEventData : BaseTimelineEventData
 {
-	public MobsSpawnData[] MobSpawnInstructions;
-}
+	public SpawnData[] MobSpawnInstructions;
 
-public struct MobsSpawnData
-{
-	public string EnemyType;
-	public int Amount;
-	public int TimeForEnemies;
-
-	public void SpawnEnemies(string eventSpawnId, GameModel game, float spawnMargin = 1f)
+	public struct SpawnData
 	{
-		CameraModel gameCamera = game.GameCamera;
-		float spawnDistY = game.GameCamera.MaxOrtographicSize + spawnMargin;
-		float spawnDistX = spawnDistY * Screen.width / Screen.height;
-
-		for(int i = 0; i < Amount; i++)
-		{
-			float distanceVarienceValue = Random.value * 2f;
-			bool fullX = Random.value > 0.5f;
-			int xMult = Random.value > 0.5f ? 1 : -1;
-			int yMult = Random.value > 0.5f ? 1 : -1;
-			float x = ((fullX) ? 1 : Random.value);
-			float y = ((!fullX) ? 1 : Random.value);
-			x = (Mathf.Lerp(0, spawnDistX, x) + distanceVarienceValue) * xMult;
-			y = (Mathf.Lerp(0, spawnDistY, y) + distanceVarienceValue) * yMult;
-			Vector2 spawnPos = new Vector2(x, y);
-
-			EnemyModel enemy = EnemyFactory.CreateEnemy(game.TimekeeperModel, EnemyType);
-			enemy.ModelTransform.Position = spawnPos;
-			enemy.ModelTags.AddTag(eventSpawnId);
-		}
-		
+		public string EnemyType;
+		public int Amount;
+		public int TimeForEnemies;
+		public float TimeBetweenInSeconds;
 	}
 }
