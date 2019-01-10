@@ -73,13 +73,17 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		}
 	}
 
-	protected override BaseTimelineEventProgressor[] SetupProgressorsSupported()
+	protected override BaseTimelineEventProgressor CreateSupportedProgressor(string progressorName)
 	{
-		return new BaseTimelineEventProgressor[]
+		switch(progressorName)
 		{
-			new KillsProgressor(UniqueEventId, _totalEnemiesToSpawn),
-			new TimeProgressor(Game.TimekeeperModel, _totalSpawnTimeInSeconds)
-		};
+			case TimelineSpecificGlobals.PROGRESSOR_NAME_KILLS:
+				return new KillsProgressor(UniqueEventId, _totalEnemiesToSpawn);
+			case TimelineSpecificGlobals.PROGRESSOR_NAME_TIME:
+				return new TimeProgressor(Game.TimekeeperModel, _totalSpawnTimeInSeconds);
+			default:
+				return null;
+		}
 	}
 
 	protected override void EventDeactivated()

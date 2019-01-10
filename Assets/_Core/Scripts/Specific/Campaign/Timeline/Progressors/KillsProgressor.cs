@@ -17,7 +17,7 @@
 		_eventEnemyTag = eventEnemyTag;
 	}
 
-	public override void StartProgressor(string[] optionalValueString)
+	public override void StartProgressor(string optionalValueString)
 	{
 		_enemiesSpawned = 0;
 		_spawnedEnemyTrackerFilter = EntityFilter<EnemyModel>.Create(FilterRules.CreateHasAnyTagsFilter(_eventEnemyTag));
@@ -57,8 +57,11 @@
 
 	private void OnDeathEvent(EnemyModel enemy)
 	{
-		enemy.DeathEvent -= OnDeathEvent;
-		int enemyAmountToGo = (GoalValue - _enemiesSpawned);
-		UpdateValue(GoalValue - (_spawnedEnemyTrackerFilter.GetAll((e) => !e.IsDead).Length + enemyAmountToGo));
+		if(_spawnedEnemyTrackerFilter != null)
+		{
+			enemy.DeathEvent -= OnDeathEvent;
+			int enemyAmountToGo = (GoalValue - _enemiesSpawned);
+			UpdateValue(GoalValue - (_spawnedEnemyTrackerFilter.GetAll((e) => !e.IsDead).Length + enemyAmountToGo));
+		}
 	}
 }

@@ -10,7 +10,7 @@ public struct EventProgressorData
 		AtHitValue = 1,
 		AtGoalReach = 2
 	}
-
+	public string ProgressorName;
 	public EventEndType EndEventType;
 	public int ValueToSetKeyAt;
 	public KeyValuePair<string, bool> KeyValuePairToSet;

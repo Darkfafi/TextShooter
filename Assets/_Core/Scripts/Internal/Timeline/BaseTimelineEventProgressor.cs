@@ -32,7 +32,7 @@ public abstract class BaseTimelineEventProgressor
 		GoalValue = goalValue;
 	}
 
-	public abstract void StartProgressor(string[] optionalValueStrings);
+	public abstract void StartProgressor(string optionalValueStrings);
 	public abstract void EndProgressor();
 
 	public float CompletionNormalized

@@ -25,21 +25,11 @@ public abstract class BaseTimelineEventData
 
 	private List<KeyValuePair<string, bool>> _keysToSetStartEvent = new List<KeyValuePair<string, bool>>();
 	private List<KeyValuePair<string, bool>> _keysToSetEndEvent = new List<KeyValuePair<string, bool>>();
-	private Dictionary<string, List<EventProgressorData>> _progressorsToAdd = new Dictionary<string, List<EventProgressorData>>();
+	private List<EventProgressorData> _eventProgressorData = new List<EventProgressorData>();
 
-	public void AddProgressorByName(string progressorName, EventProgressorData eventProgressorData)
+	public void AddEventProgressorData(EventProgressorData eventProgressorData)
 	{
-		if(!_progressorsToAdd.ContainsKey(progressorName))
-		{
-			_progressorsToAdd.Add(progressorName, new List<EventProgressorData>());
-		}
-
-		_progressorsToAdd[progressorName].Add(eventProgressorData);
-	}
-
-	public bool IsProgressorToAdd(string progressorName)
-	{
-		return _progressorsToAdd.ContainsKey(progressorName);
+		_eventProgressorData.Add(eventProgressorData);
 	}
 
 	public void SetEndingType(string endingType)
@@ -47,13 +37,9 @@ public abstract class BaseTimelineEventData
 		EndingType = endingType;
 	}
 
-	public EventProgressorData[] GetAllProgressorEventData(string progressorName)
+	public EventProgressorData[] GetAllEventProgressorData()
 	{
-		List<EventProgressorData> progressorData;
-		if(_progressorsToAdd.TryGetValue(progressorName, out progressorData))
-			return progressorData.ToArray();
-
-		return new EventProgressorData[] { };
+		return _eventProgressorData.ToArray();
 	}
 
 	public void AddKeyToSetAtStartEvent(string key, bool value)

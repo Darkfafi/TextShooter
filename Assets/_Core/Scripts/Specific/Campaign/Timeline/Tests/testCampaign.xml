@@ -7,8 +7,9 @@
         <type>mobs</type>
         <data>
           <endingType>destroy</endingType>
+          <progressor atValue="10" setKey="Killed_All_First_Event1">kills</progressor>
+          <progressor atValue="10" setKey="Killed_All_First_Event2">kills</progressor>
           <progressor atValue="10" eventEndType="atValue">kills</progressor>
-          <progressor atValue="10" setKey="Killed_All_First_Event">kills</progressor>
           <spawn>
             <enemyType>A</enemyType>
             <amount>30</amount>
@@ -41,7 +42,8 @@
         </data>
       </default>
       <condition>
-        <conditionKey>Killed_All_First_Event</conditionKey>
+        <conditionKey>Killed_All_First_Event1</conditionKey>
+        <conditionKey>Killed_All_First_Event2</conditionKey>
         <type>mobs</type>
         <data>
           <progressor>kills</progressor>

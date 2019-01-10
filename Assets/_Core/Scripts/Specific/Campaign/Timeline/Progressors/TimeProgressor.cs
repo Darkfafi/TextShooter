@@ -21,23 +21,20 @@
 		_timekeeperModel = null;
 	}
 
-	public override void StartProgressor(string[] optionalValueString)
+	public override void StartProgressor(string optionalValueString)
 	{
-		if(optionalValueString.Length > 0)
+		int value = 0;
+		string[] result = optionalValueString.Split('+');
+		string parseableValue = result.Length > 0 ? result[result.Length - 1] : "";
+		if(int.TryParse(parseableValue, out value))
 		{
-			int value = 0;
-			string[] result = optionalValueString[optionalValueString.Length - 1].Split('+');
-			string parseableValue = result.Length > 0 ? result[result.Length - 1] : "";
-			if(int.TryParse(parseableValue, out value))
+			if(result.Length <= 1)
 			{
-				if(result.Length <= 1)
-				{
-					GoalValue = value;
-				}
-				else
-				{
-					GoalValue += value;
-				}
+				GoalValue = value;
+			}
+			else
+			{
+				GoalValue += value;
 			}
 		}
 

@@ -91,13 +91,14 @@ public abstract class BaseTimelineEventDataParser
 
 				EventProgressorData progressorEventData = new EventProgressorData()
 				{
+					ProgressorName = node.InnerText,
 					KeyValuePairToSet = keyToSet,
 					ValueToSetKeyAt = atValue,
 					EndEventType = endEventType,
 					OptionalStringValue = value,
 				};
 
-				data.AddProgressorByName(node.InnerText, progressorEventData);
+				data.AddEventProgressorData(progressorEventData);
 			}
 			else if(node.Name == TimelineInternalGlobals.NODE_EVENT_INTERNAL_DATA_ENDING_TYPE)
 			{
