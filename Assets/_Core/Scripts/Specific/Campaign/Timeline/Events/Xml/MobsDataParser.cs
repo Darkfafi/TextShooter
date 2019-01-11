@@ -4,7 +4,7 @@ using System.Xml;
 
 public class MobsDataParser : BaseTimelineEventDataParser
 {
-	protected override BaseTimelineEventData ParseFromXmlSpecificDataNode(XmlNode xmlDataNode, out System.Type timelineEventType)
+	protected override BaseTimelineEventData ParseFromXmlSpecificDataNode(XmlNode xmlDataNode, out Type timelineEventType)
 	{
 		MobsTimelineEventData data = new MobsTimelineEventData();
 		List<MobsTimelineEventData.SpawnData> spawnInstructions = new List<MobsTimelineEventData.SpawnData>();

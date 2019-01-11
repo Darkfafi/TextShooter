@@ -88,6 +88,11 @@ public abstract class BaseTimelineEvent<T, U> : ITimelineEvent where T : BaseTim
 		return progressors;
 	}
 
+	public bool TryGetEventProgressorDataFor(BaseTimelineEventProgressor progressor, out EventProgressorData progressorData)
+	{
+		return _progressorsToDataMap.TryGetValue(progressor, out progressorData);
+	}
+
 	public void Setup(ITimelineState timelineState, BaseTimelineEventData data)
 	{
 		Setup((TimelineState<U>)timelineState, (T)data);
@@ -228,5 +233,6 @@ public interface IReadableTimelineEvent
 		get;
 	}
 
+	bool TryGetEventProgressorDataFor(BaseTimelineEventProgressor progressor, out EventProgressorData progressorData);
 	BaseTimelineEventProgressor[] GetProgressors();
 }
