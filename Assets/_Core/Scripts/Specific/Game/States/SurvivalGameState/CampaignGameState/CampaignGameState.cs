@@ -1,6 +1,4 @@
-﻿using System.Xml;
-
-namespace SurvivalGame
+﻿namespace SurvivalGame
 {
 	public class CampaignGameState : SubGameState<SurvivalGameState, GameModel>
 	{
@@ -18,35 +16,7 @@ namespace SurvivalGame
 		{
 			if(Campaign == null)
 			{
-				string name = "", description = "";
-				Timeline<GameModel> timeline = null;
-				XmlDocument xmlDoc = new XmlDocument();
-				xmlDoc.LoadXml(campaignXmlString);
-
-				foreach(XmlNode node in xmlDoc.DocumentElement.ChildNodes)
-				{
-					if(node.Name == "name")
-					{
-						name = node.InnerText;
-					}
-
-					if(node.Name == "description")
-					{
-						description = node.InnerText;
-					}
-
-					if(node.Name == "timeline")
-					{
-
-						timeline = XmlToTimeline.ParseXml(MasterGame, node, EventDataParsers.GetDataParserForType);
-					}
-				}
-
-				Campaign = new Campaign<GameModel>(new CampaignData()
-				{
-					Name = name,
-					Description = description
-				}, timeline);
+				Campaign = XmlToCampaign.ParseXml(MasterGame, campaignXmlString);
 			}
 		}
 
