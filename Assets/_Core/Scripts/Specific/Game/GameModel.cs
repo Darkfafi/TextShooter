@@ -7,12 +7,17 @@ public class GameModel : BaseModel, IGame
 		get; private set;
 	}
 
-	public GameStateManager<GameModel> GameStateManager
+	public TimekeeperModel TimekeeperModel
 	{
 		get; private set;
 	}
 
-	public TimekeeperModel TimekeeperModel
+	public GameFactories Factories
+	{
+		get; private set;
+	}
+
+	public GameStateManager<GameModel> GameStateManager
 	{
 		get; private set;
 	}
@@ -20,8 +25,9 @@ public class GameModel : BaseModel, IGame
 	public GameModel(float orthographicSize)
 	{
 		GameCamera = new CameraModel(orthographicSize, orthographicSize);
-		GameStateManager = new GameStateManager<GameModel>(this);
 		TimekeeperModel = new TimekeeperModel();
+		Factories = new GameFactories(this);
+		GameStateManager = new GameStateManager<GameModel>(this);
 	}
 
 	protected override void OnModelReady()
@@ -33,7 +39,10 @@ public class GameModel : BaseModel, IGame
 	{
 		GameStateManager.Clean();
 		TimekeeperModel.Destroy();
+		GameCamera.Destroy();
+		GameCamera = null;
 		GameStateManager = null;
 		TimekeeperModel = null;
+		Factories = null;
 	}
 }
