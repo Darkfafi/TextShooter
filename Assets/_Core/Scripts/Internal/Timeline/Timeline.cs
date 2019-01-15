@@ -6,10 +6,10 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 	public delegate void TimelineEventHandler(IReadableTimelineEvent timelineEvent);
 	public event Action TimelineEndReachedEvent;
 	public event Action TimelineStartReachedEvent;
+	public event TimelineEventHandler TimelineEventStartedEvent;
 	public event TimelineEventHandler TimelineEventEndedEvent;
 	public event TimelineEventHandler TimelineUpwardsEvent;
 	public event TimelineEventHandler TimelineDownwardsEvent;
-	public event TimelineEventHandler NewTimelineEventEvent;
 
 	public T Game
 	{
@@ -95,9 +95,9 @@ public class Timeline<T> : IReadableTimeline<T> where T : class, IGame
 			CurrentEvent.EventEndedEvent += OnEventEndedEvent;
 			CurrentEvent.ActivateEvent();
 
-			if(NewTimelineEventEvent != null)
+			if(TimelineEventStartedEvent != null)
 			{
-				NewTimelineEventEvent(CurrentEvent);
+				TimelineEventStartedEvent(CurrentEvent);
 			}
 
 			return true;

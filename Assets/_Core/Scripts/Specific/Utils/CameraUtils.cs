@@ -8,6 +8,12 @@ public static class CameraUtils
 		Top, Right, Bottom, Left
 	}
 
+	public const string SIDE_ANY = "any";
+	public const string SIDE_TOP = "top";
+	public const string SIDE_RIGHT = "right";
+	public const string SIDE_BOTTOM = "bottom";
+	public const string SIDE_LEFT = "left";
+
 	public static Vector2 GetOutOfMaxOrthographicLocation(this CameraModel camera, Side side, float marginOutsideCamera = 1f)
 	{
 		float distY = camera.MaxOrtographicSize + marginOutsideCamera;
@@ -41,15 +47,15 @@ public static class CameraUtils
 	{
 		switch(cameraSideString)
 		{
-			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_ANY:
+			case SIDE_ANY:
 				return Side.Any;
-			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_TOP:
+			case SIDE_TOP:
 				return Side.Top;
-			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_RIGHT:
+			case SIDE_RIGHT:
 				return Side.Right;
-			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_BOTTOM:
+			case SIDE_BOTTOM:
 				return Side.Bottom;
-			case TimelineSpecificGlobals.CONST_CAMERA_UTIL_SIDE_LEFT:
+			case SIDE_LEFT:
 				return Side.Left;
 			default:
 				return defaultValue;
