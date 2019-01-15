@@ -19,6 +19,7 @@ public class EntityView : MonoBaseView
 		ViewDeltaTransform.Scale = Vector3.zero;
 
 		SelfModel = MVCUtil.GetModel<EntityModel>(this);
+		UpdateTransformComponent();
 	}
 
 	protected override void OnViewDestroy()
@@ -28,6 +29,12 @@ public class EntityView : MonoBaseView
 	}
 
 	protected virtual void Update()
+	{
+		UpdateTransformComponent();
+	}
+
+
+	private void UpdateTransformComponent()
 	{
 		if(ViewDeltaTransform != null && SelfModel != null && !SelfModel.IsDestroyed && !IgnoreModelTransform)
 		{

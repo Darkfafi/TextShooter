@@ -24,12 +24,12 @@ public class GameView : MonoBaseView
 		// Setup Camera
 		Controller.Link(gm.GameCamera, _cameraView);
 
+		// Setup TimKkeeper
+		Controller.Link(gm.TimekeeperModel, _timekeeperView);
+
 		// Setup GameModel
 		gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
 		Controller.Link(gm, this);
-
-		// Setup TimKkeeper
-		Controller.Link(gm.TimekeeperModel, _timekeeperView);
 	}
 }
