@@ -51,8 +51,8 @@ public class TargetSystem : BaseModelComponent
 			return;
 
 		FilterRules.OpenConstructOnFilterRules(filterRules);
-		FilterRules.AddComponentToConstruct<WordsHolder>();
-		FilterRules.AddComponentToConstruct<WordsHp>();
+		FilterRules.AddComponentToConstruct<WordsHolder>(false);
+		FilterRules.AddComponentToConstruct<WordsHp>(false);
 		FilterRules.CloseConstruct(out filterRules);
 
 		_targetsFilter = EntityFilter<EntityModel>.Create(filterRules);

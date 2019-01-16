@@ -3,21 +3,35 @@ using System.Collections.Generic;
 
 public class ModelComponents : IComponentsHolder
 {
+	public enum ModelComponentsAction
+	{
+		AddComponent,
+		RemoveComponent,
+		EnableComponent,
+		DisableComponent
+	}
+
+	public delegate bool ComponentActionHandler(ModelComponentsAction action, Type componentType);
+
 	public event Action<BaseModelComponent> AddedComponentEvent;
 	public event Action<BaseModelComponent> RemovedComponentEvent;
+	public event Action<BaseModelComponent, bool> ChangedComponentEnabledStateEvent;
 
 	public BaseModel Model
 	{
 		get; private set;
 	}
 
-	private HashSet<BaseModelComponent> _components = new HashSet<BaseModelComponent>();
+	private HashSet<BaseModelComponent> _activeComponents = new HashSet<BaseModelComponent>();
+	private HashSet<BaseModelComponent> _inactiveComponents = new HashSet<BaseModelComponent>();
 	private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
 	private bool _isReady = false;
+	private ComponentActionHandler _canPerformActionChecker;
 
-	public ModelComponents(BaseModel model)
+	public ModelComponents(BaseModel model, ComponentActionHandler canPerformActionChecker)
 	{
 		Model = model;
+		_canPerformActionChecker = canPerformActionChecker;
 	}
 
 	public void SignalReady()
@@ -28,7 +42,12 @@ public class ModelComponents : IComponentsHolder
 		_isReady = true;
 
 		// Ready all already added components
-		foreach(BaseModelComponent component in _components)
+		foreach(BaseModelComponent component in _activeComponents)
+		{
+			component.SignalReady();
+		}
+
+		foreach(BaseModelComponent component in _inactiveComponents)
 		{
 			component.SignalReady();
 		}
@@ -36,31 +55,42 @@ public class ModelComponents : IComponentsHolder
 
 	public void Clean()
 	{
-		foreach(BaseModelComponent component in _components)
+		foreach(BaseModelComponent component in _activeComponents)
+		{
+			InternalRemoveComponent(component, true);
+		}
+
+		foreach(BaseModelComponent component in _inactiveComponents)
 		{
 			InternalRemoveComponent(component, true);
 		}
 
 		for(int i = _removingComponents.Count - 1; i >= 0; i--)
 		{
-			_components.Remove(_removingComponents[i]);
+			_activeComponents.Remove(_removingComponents[i]);
+			_inactiveComponents.Remove(_removingComponents[i]);
 		}
 
-		_components.Clear();
+		_inactiveComponents.Clear();
+		_activeComponents.Clear();
 		_removingComponents.Clear();
 
 		AddedComponentEvent = null;
 		RemovedComponentEvent = null;
 
-		_components = null;
+		_inactiveComponents = null;
+		_activeComponents = null;
 		_removingComponents = null;
 		Model = null;
 	}
 
 	public T AddComponent<T>() where T : BaseModelComponent
 	{
+		if(!_canPerformActionChecker(ModelComponentsAction.AddComponent, typeof(T)))
+			return null;
+
 		BaseModelComponent c = Activator.CreateInstance<T>();
-		_components.Add(c);
+		_activeComponents.Add(c);
 		c.Initialize(this);
 
 		if(AddedComponentEvent != null)
@@ -76,32 +106,124 @@ public class ModelComponents : IComponentsHolder
 		return c as T;
 	}
 
+	public bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent
+	{
+		return TryIsEnabledCheck(GetComponent<T>(), out isEnabled);
+	}
+
+	public bool TryIsEnabledCheck(BaseModelComponent component, out bool isEnabled)
+	{
+		if(component == null)
+		{
+			isEnabled = false;
+			return false;
+		}
+
+		if(_activeComponents.Contains(component))
+		{
+			isEnabled = true;
+		}
+		else if(_inactiveComponents.Contains(component))
+		{
+			isEnabled = false;
+		}
+		else
+		{
+			isEnabled = false;
+			return false;
+		}
+
+		return true;
+	}
+
+	public void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent
+	{
+		SetComponentEnabledState(GetComponent<T>(), enabledState);
+	}
+
+	public void SetComponentEnabledState(BaseModelComponent component, bool enabledState)
+	{
+		if(component == null)
+			return;
+
+		if(enabledState)
+			if(!_canPerformActionChecker(ModelComponentsAction.EnableComponent, component.GetType()))
+				return;
+		else if(!_canPerformActionChecker(ModelComponentsAction.DisableComponent, component.GetType()))
+				return;
+
+		bool hasComponent = false;
+		if(_activeComponents.Contains(component))
+		{
+			hasComponent = true;
+			if(enabledState)
+				return;
+		}
+
+		if(_inactiveComponents.Contains(component))
+		{
+			hasComponent = true;
+			if(!enabledState)
+				return;
+		}
+
+		if(!hasComponent || component.IsEnabled == enabledState)
+			return;
+
+		if(enabledState)
+		{
+			_inactiveComponents.Remove(component);
+			_activeComponents.Add(component);
+		}
+		else
+		{
+			_activeComponents.Remove(component);
+			_inactiveComponents.Add(component);
+		}
+
+		if(ChangedComponentEnabledStateEvent != null)
+		{
+			ChangedComponentEnabledStateEvent(component, enabledState);
+		}
+	}
+
 	public void RemoveComponent<T>() where T : BaseModelComponent
 	{
-		BaseModelComponent c = GetComponentOfType(typeof(T));
+		BaseModelComponent c = GetComponentOfType(typeof(T), true);
 		InternalRemoveComponent(c);
 	}
 
 	public T GetComponent<T>() where T : BaseModelComponent
 	{
-		return GetComponentOfType(typeof(T)) as T;
+		return GetComponentOfType(typeof(T), true) as T;
 	}
 
-	public bool HasComponent<T>() where T : BaseModelComponent
+	public bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent
 	{
-		return GetComponent<T>() != null;
+		return HasComponent(typeof(T), incInactiveComponents);
 	}
 
-	public bool HasComponent(Type componentType)
+	public bool HasComponent(Type componentType, bool incInactiveComponents = true)
 	{
-		return GetComponentOfType(componentType) != null;
+		return GetComponentOfType(componentType, incInactiveComponents) != null;
 	}
 
-	private BaseModelComponent GetComponentOfType(Type type)
+	private BaseModelComponent GetComponentOfType(Type type, bool incInactiveComponents)
 	{
-		foreach(BaseModelComponent component in _components)
+		if(incInactiveComponents)
 		{
-			if(type.IsAssignableFrom(component.GetType()))
+			foreach(BaseModelComponent component in _inactiveComponents)
+			{
+				if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
+				{
+					return component;
+				}
+			}
+		}
+
+		foreach(BaseModelComponent component in _activeComponents)
+		{
+			if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
 			{
 				return component;
 			}
@@ -112,23 +234,27 @@ public class ModelComponents : IComponentsHolder
 
 	private void InternalRemoveComponent(BaseModelComponent component, bool selfClean = false)
 	{
-		if(component != null && !_removingComponents.Contains(component))
+		if(component != null && _canPerformActionChecker(ModelComponentsAction.RemoveComponent, component.GetType()))
 		{
-			_removingComponents.Add(component);
-
-			if(RemovedComponentEvent != null)
+			if(!_removingComponents.Contains(component))
 			{
-				RemovedComponentEvent(component);
+				_removingComponents.Add(component);
+
+				if(RemovedComponentEvent != null)
+				{
+					RemovedComponentEvent(component);
+				}
+
+				component.Deinitialize();
 			}
 
-			component.Deinitialize();
-		}
-
-		if(!selfClean)
-		{
-			for(int i = _removingComponents.Count - 1; i >= 0; i--)
+			if(!selfClean)
 			{
-				_components.Remove(_removingComponents[i]);
+				for(int i = _removingComponents.Count - 1; i >= 0; i--)
+				{
+					_activeComponents.Remove(_removingComponents[i]);
+					_inactiveComponents.Remove(_removingComponents[i]);
+				}
 			}
 		}
 	}
@@ -140,6 +266,8 @@ public interface IComponentsHolder
 	T AddComponent<T>() where T : BaseModelComponent;
 	void RemoveComponent<T>() where T : BaseModelComponent;
 	T GetComponent<T>() where T : BaseModelComponent;
-	bool HasComponent<T>() where T : BaseModelComponent;
-	bool HasComponent(Type componentType);
+	bool TryIsEnabledCheck<T>(out bool isActive) where T : BaseModelComponent;
+	void SetComponentEnabledState<T>(bool activeState) where T : BaseModelComponent;
+	bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent;
+	bool HasComponent(Type componentType, bool incInactiveComponents = true);
 }

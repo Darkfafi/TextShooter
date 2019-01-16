@@ -4,10 +4,12 @@ public class EntityTracker : ModelHolder<EntityModel>
 {
 	public delegate void EntityTagHandler(EntityModel entity, string tag);
 	public delegate void EntityComponentHandler(EntityModel entity, BaseModelComponent component);
+	public delegate void EntityComponentEnabledStateHandler(EntityModel entity, BaseModelComponent component, bool enabledState);
 	public event EntityTagHandler EntityAddedTagEvent;
 	public event EntityTagHandler EntityRemovedTagEvent;
 	public event EntityComponentHandler EntityAddedComponentEvent;
 	public event EntityComponentHandler EntityRemovedComponentEvent;
+	public event EntityComponentEnabledStateHandler EntityChangedEnabledStateOfComponentEvent;
 
 	public static EntityTracker Instance
 	{
@@ -39,6 +41,7 @@ public class EntityTracker : ModelHolder<EntityModel>
 				model.ModelTags.TagRemovedEvent += OnTagRemovedEvent;
 				model.AddedComponentToModelEvent += OnComponentAddedEvent;
 				model.RemovedComponentFromModelEvent += OnComponentRemovedEvent;
+				model.ChangedComponentEnabledStateFromModelEvent += OnChangedComponentEnabledStateFromModelEvent;
 			}
 		}
 	}
@@ -52,6 +55,7 @@ public class EntityTracker : ModelHolder<EntityModel>
 			model.ModelTags.TagRemovedEvent -= OnTagRemovedEvent;
 			model.AddedComponentToModelEvent -= OnComponentAddedEvent;
 			model.RemovedComponentFromModelEvent -= OnComponentRemovedEvent;
+			model.ChangedComponentEnabledStateFromModelEvent -= OnChangedComponentEnabledStateFromModelEvent;
 		}
 	}
 
@@ -89,6 +93,14 @@ public class EntityTracker : ModelHolder<EntityModel>
 		if(EntityRemovedComponentEvent != null)
 		{
 			EntityRemovedComponentEvent((EntityModel)entity, component);
+		}
+	}
+
+	private void OnChangedComponentEnabledStateFromModelEvent(BaseModel entity, BaseModelComponent component, bool enabledState)
+	{
+		if(EntityChangedEnabledStateOfComponentEvent != null)
+		{
+			EntityChangedEnabledStateOfComponentEvent((EntityModel)entity, component, enabledState);
 		}
 	}
 }

@@ -8,6 +8,7 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	public event Action<BaseModel> DestroyEvent;
 	public event Action<BaseModel, BaseModelComponent> AddedComponentToModelEvent;
 	public event Action<BaseModel, BaseModelComponent> RemovedComponentFromModelEvent;
+	public event Action<BaseModel, BaseModelComponent, bool> ChangedComponentEnabledStateFromModelEvent;
 	public event Action<BaseModel> ModelReadyEvent;
 
 	public bool IsDestroyed
@@ -31,9 +32,10 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	public BaseModel()
 	{
 		MethodPermitter = new MethodPermitter();
-		_components = new ModelComponents(this);
+		_components = new ModelComponents(this, ComponentActionValidation);
 		_components.AddedComponentEvent += OnAddedComponentEvent;
 		_components.RemovedComponentEvent += OnRemovedComponentEvent;
+		_components.ChangedComponentEnabledStateEvent += OnChangedComponentEnabledStateEvent;
 
 	}
 
@@ -62,6 +64,7 @@ public abstract class BaseModel : IModel, IComponentsHolder
 
 		_components.AddedComponentEvent -= OnAddedComponentEvent;
 		_components.RemovedComponentEvent -= OnRemovedComponentEvent;
+		_components.ChangedComponentEnabledStateEvent -= OnChangedComponentEnabledStateEvent;
 
 		_components.Clean();
 		_components = null;
@@ -92,6 +95,21 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	{
 	}
 
+	protected virtual bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType)
+	{
+		return true;
+	}
+
+	public bool TryIsEnabledCheck<T>(out bool isActive) where T : BaseModelComponent
+	{
+		return _components.TryIsEnabledCheck<T>(out isActive);
+	}
+
+	public void SetComponentEnabledState<T>(bool activeState) where T : BaseModelComponent
+	{
+		_components.SetComponentEnabledState<T>(activeState);
+	}
+
 	public T AddComponent<T>() where T : BaseModelComponent
 	{
 		return _components.AddComponent<T>();
@@ -107,14 +125,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return _components.GetComponent<T>();
 	}
 
-	public bool HasComponent<T>() where T : BaseModelComponent
+	public bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent
 	{
-		return _components.HasComponent<T>();
+		return _components.HasComponent<T>(incInactiveComponents);
 	}
 
-	public bool HasComponent(Type componentType)
+	public bool HasComponent(Type componentType, bool incInactiveComponents = true)
 	{
-		return _components.HasComponent(componentType);
+		return _components.HasComponent(componentType, incInactiveComponents);
 	}
 
 	private void OnAddedComponentEvent(BaseModelComponent component)
@@ -130,6 +148,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		if(RemovedComponentFromModelEvent != null)
 		{
 			RemovedComponentFromModelEvent(this, component);
+		}
+	}
+
+	private void OnChangedComponentEnabledStateEvent(BaseModelComponent component, bool activeState)
+	{
+		if(ChangedComponentEnabledStateFromModelEvent != null)
+		{
+			ChangedComponentEnabledStateFromModelEvent(this, component, activeState);
 		}
 	}
 }

@@ -17,8 +17,8 @@ public class TargetingWordItemModificationModel : BaseModel
 	public TargetingWordItemModificationModel(WordsDisplayerModel wordsDisplayerModel)
 	{
 		FilterRules targetingEntityModelRules;
-		FilterRules.OpenConstructHasAnyTags(Tags.DISPLAY_TARGETING);
-		FilterRules.AddComponentToConstruct<TargetSystem>();
+		FilterRules.OpenConstructHasAllTags(Tags.DISPLAY_TARGETING);
+		FilterRules.AddComponentToConstruct<TargetSystem>(false);
 		FilterRules.CloseConstruct(out targetingEntityModelRules);
 
 		_targetingEntityModels = EntityFilter<EntityModel>.Create(targetingEntityModelRules);

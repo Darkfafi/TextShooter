@@ -75,7 +75,7 @@ public class TurretModel : EntityModel
 		_timekeeper.ListenToFrameTick(Update);
 
 		TargetSystem = AddComponent<TargetSystem>();
-		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAnyTagsFilter(Tags.ENEMY));
+		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAllTagsFilter(Tags.ENEMY));
 
 		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
 

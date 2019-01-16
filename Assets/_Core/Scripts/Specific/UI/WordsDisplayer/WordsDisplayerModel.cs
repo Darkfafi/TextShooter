@@ -19,8 +19,8 @@ public class WordsDisplayerModel : BaseModel
 		_timekeeper = timekeeper;
 
 		FilterRules wordHoldingEntityFilter;
-		FilterRules.OpenConstructHasAnyTags(Tags.DISPLAY_WORD);
-		FilterRules.AddComponentToConstruct<WordsHolder>();
+		FilterRules.OpenConstructHasAllTags(Tags.DISPLAY_WORD);
+		FilterRules.AddComponentToConstruct<WordsHolder>(false);
 		FilterRules.CloseConstruct(out wordHoldingEntityFilter);
 
 		WordsHoldingEntities = EntityFilter<EntityModel>.Create(wordHoldingEntityFilter);

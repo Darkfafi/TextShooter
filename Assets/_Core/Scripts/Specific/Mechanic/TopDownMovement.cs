@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TopDownMovement : BaseModelComponent
 {
@@ -98,6 +95,9 @@ public class TopDownMovement : BaseModelComponent
 
 	public void MoveTo(Vector2 position, float speed)
 	{
+		if(!IsEnabled)
+			return;
+
 		StartPosition = _transformToAffect.Position;
 		CurrentTarget = position;
 		_timePassed = 0f;
@@ -129,7 +129,7 @@ public class TopDownMovement : BaseModelComponent
 
 	private void Update(float deltaTime, float timeScale)
 	{
-		if(IsMoving && Parent != null && !Parent.IsDestroyed)
+		if(IsEnabled && IsMoving && Parent != null && !Parent.IsDestroyed)
 		{
 			_timePassed += deltaTime * timeScale;
 			_duration = _delta.magnitude / MovementSpeed;
