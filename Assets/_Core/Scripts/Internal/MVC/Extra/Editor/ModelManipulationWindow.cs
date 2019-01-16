@@ -80,27 +80,27 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
 		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo activeComponentsFieldInfo = typeof(ModelComponents).GetField("_activeComponents", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo inactiveComponentsFieldInfo = typeof(ModelComponents).GetField("_inactiveComponents", BindingFlags.NonPublic | BindingFlags.Instance);
-		HashSet<BaseModelComponent> activeComponentsOfModel = (HashSet<BaseModelComponent>)activeComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
-		HashSet<BaseModelComponent> inactiveComponentsOfModel = (HashSet<BaseModelComponent>)inactiveComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		FieldInfo enabledComponentsFieldInfo = typeof(ModelComponents).GetField("_enabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo disabledComponentsFieldInfo = typeof(ModelComponents).GetField("_disabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		HashSet<BaseModelComponent> enabledComponentsOfModel = (HashSet<BaseModelComponent>)enabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		HashSet<BaseModelComponent> disabledComponentsOfModel = (HashSet<BaseModelComponent>)disabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
 
 		GUILayout.Label("Model Components: ");
 
-		if(activeComponentsOfModel != null)
+		if(enabledComponentsOfModel != null)
 		{
-			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components (E({0}), D({1}))", activeComponentsOfModel.Count, inactiveComponentsOfModel.Count)))
+			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components (E({0}), D({1}))", enabledComponentsOfModel.Count, disabledComponentsOfModel.Count)))
 			{
 				EditorGUILayout.BeginVertical();
 
-				foreach(BaseModelComponent component in activeComponentsOfModel)
+				foreach(BaseModelComponent component in enabledComponentsOfModel)
 				{
 					GUIStyle s = new GUIStyle(GUI.skin.label);
 					s.normal.textColor = new Color(0.2f, 0.4f, 0.75f);
 					GUILayout.Label(" (E) " + component, s);
 				}
 
-				foreach(BaseModelComponent component in inactiveComponentsOfModel)
+				foreach(BaseModelComponent component in disabledComponentsOfModel)
 				{
 					GUIStyle s = new GUIStyle(GUI.skin.label);
 					s.normal.textColor = new Color(0.4f, 0.2f, 0.75f);
