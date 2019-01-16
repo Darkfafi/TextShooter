@@ -80,23 +80,33 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
 		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo componentsFieldInfo = typeof(ModelComponents).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		HashSet<BaseModelComponent> componentsOfModel = (HashSet<BaseModelComponent>)componentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		FieldInfo activeComponentsFieldInfo = typeof(ModelComponents).GetField("_activeComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo inactiveComponentsFieldInfo = typeof(ModelComponents).GetField("_inactiveComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		HashSet<BaseModelComponent> activeComponentsOfModel = (HashSet<BaseModelComponent>)activeComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		HashSet<BaseModelComponent> inactiveComponentsOfModel = (HashSet<BaseModelComponent>)inactiveComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
 
 		GUILayout.Label("Model Components: ");
 
-		if(componentsOfModel != null)
+		if(activeComponentsOfModel != null)
 		{
-			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components ({0})", componentsOfModel.Count)))
+			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components (E({0}), D({1}))", activeComponentsOfModel.Count, inactiveComponentsOfModel.Count)))
 			{
 				EditorGUILayout.BeginVertical();
 
-				foreach(BaseModelComponent component in componentsOfModel)
+				foreach(BaseModelComponent component in activeComponentsOfModel)
 				{
 					GUIStyle s = new GUIStyle(GUI.skin.label);
-					s.normal.textColor = new Color(0.2f, 0.2f, 0.75f);
-					GUILayout.Label(" * " + component, s);
+					s.normal.textColor = new Color(0.2f, 0.4f, 0.75f);
+					GUILayout.Label(" (E) " + component, s);
 				}
+
+				foreach(BaseModelComponent component in inactiveComponentsOfModel)
+				{
+					GUIStyle s = new GUIStyle(GUI.skin.label);
+					s.normal.textColor = new Color(0.4f, 0.2f, 0.75f);
+					GUILayout.Label(" (D) " + component, s);
+				}
+
 				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.Space();
@@ -133,8 +143,8 @@ public class ModelManipulationWindow : EditorWindow
                 {
                     EditorGUILayout.BeginHorizontal();
                     GUIStyle s = new GUIStyle(GUI.skin.label);
-                    s.normal.textColor = new Color(0.5f, 0.3f, 0.6f);
-                    GUILayout.Label(" * " + tags[i], s);
+                    s.normal.textColor = new Color(0.6f, 0.3f, 0.6f);
+                    GUILayout.Label(" - " + tags[i], s);
                     s = new GUIStyle(GUI.skin.button);
                     s.normal.textColor = Color.red;
                     if (GUILayout.Button("x", s, GUILayout.Width(25)))
