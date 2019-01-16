@@ -2,28 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIModel : BaseModel
+public class StateMachineComponent : BaseModelComponent
 {
-	public event Action<AIState> StateSetEvent;
-
-	public bool AIActive
-	{
-		get; private set;
-	}
-
-	private Dictionary<Type, AIState> _states = new Dictionary<Type, AIState>();
-
+	public event Action<StateMachineState> StateSetEvent;
+	private Dictionary<Type, StateMachineState> _states = new Dictionary<Type, StateMachineState>();
 	private StateStatus _currentStateStatus = new StateStatus();
-
-	public void SetAIActiveState(bool activeState)
-	{
-		AIActive = activeState;
-	}
-
-	public AIModel(bool activeState = true)
-	{
-		AIActive = activeState;
-	}
 
 	public Type CurrentStateType
 	{
@@ -41,7 +24,7 @@ public class AIModel : BaseModel
 		}
 	}
 
-	public void SetState<T>() where T : AIState
+	public void SetState<T>() where T : StateMachineState
 	{
 		Type t = typeof(T);
 		if(!_states.ContainsKey(t))
@@ -70,7 +53,7 @@ public class AIModel : BaseModel
 
 	}
 
-	public void SetupState<T>(T state) where T : AIState
+	public void SetupState<T>(T state) where T : StateMachineState
 	{
 		Type t = typeof(T);
 		if(t == null)
@@ -92,7 +75,7 @@ public class AIModel : BaseModel
 	private struct StateStatus
 	{
 		public Type StateType;
-		public AIState State;
+		public StateMachineState State;
 
 		public bool IsValidState
 		{
@@ -104,7 +87,7 @@ public class AIModel : BaseModel
 	}
 }
 
-public abstract class AIState
+public abstract class StateMachineState
 {
 	public abstract void Activate();
 	public abstract void Deactivate();

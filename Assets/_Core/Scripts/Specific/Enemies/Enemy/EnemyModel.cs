@@ -14,16 +14,6 @@ public class EnemyModel : EntityModel
 		get; private set;
 	}
 
-	public AIModel AIModel
-	{
-		get; private set;
-	}
-
-	public int Damage
-	{
-		get; private set;
-	}
-
 	public bool IsDead
 	{
 		get
@@ -34,24 +24,15 @@ public class EnemyModel : EntityModel
 
 	public EnemyModel(TimekeeperModel timekeeper, string currentWord, params string[] nextWords)
 	{
-		Damage = 1;
-
 		AddComponent<TopDownMovement>().Setup(timekeeper);
 		WordsHolder = AddComponent<WordsHolder>();
 		WordsHolder.Setup(currentWord, nextWords);
 		WordsHp = AddComponent<WordsHp>();
 
-		AIModel = new AIModel();
-
 		WordsHolder.WordCycledEvent += OnWordCycledEvent;
 
 		ModelTags.AddTag(Tags.ENEMY);
 		ModelTags.AddTag(Tags.DISPLAY_WORD);
-	}
-
-	public void SetDamage(int damage)
-	{
-		Damage = damage;
 	}
 
 	protected override void OnModelDestroy()
@@ -72,6 +53,7 @@ public class EnemyModel : EntityModel
 			{
 				DeathEvent(this);
 			}
+
 			Destroy();
 		}
 	}
