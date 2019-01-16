@@ -22,8 +22,8 @@ public class ModelComponents : IComponentsHolder
 		get; private set;
 	}
 
-	private HashSet<BaseModelComponent> _activeComponents = new HashSet<BaseModelComponent>();
-	private HashSet<BaseModelComponent> _inactiveComponents = new HashSet<BaseModelComponent>();
+	private HashSet<BaseModelComponent> _enabledComponents = new HashSet<BaseModelComponent>();
+	private HashSet<BaseModelComponent> _disabledComponents = new HashSet<BaseModelComponent>();
 	private List<BaseModelComponent> _removingComponents = new List<BaseModelComponent>();
 	private bool _isReady = false;
 	private ComponentActionHandler _canPerformActionChecker;
@@ -42,12 +42,12 @@ public class ModelComponents : IComponentsHolder
 		_isReady = true;
 
 		// Ready all already added components
-		foreach(BaseModelComponent component in _activeComponents)
+		foreach(BaseModelComponent component in _enabledComponents)
 		{
 			component.SignalReady();
 		}
 
-		foreach(BaseModelComponent component in _inactiveComponents)
+		foreach(BaseModelComponent component in _disabledComponents)
 		{
 			component.SignalReady();
 		}
@@ -55,31 +55,31 @@ public class ModelComponents : IComponentsHolder
 
 	public void Clean()
 	{
-		foreach(BaseModelComponent component in _activeComponents)
+		foreach(BaseModelComponent component in _enabledComponents)
 		{
 			InternalRemoveComponent(component, true);
 		}
 
-		foreach(BaseModelComponent component in _inactiveComponents)
+		foreach(BaseModelComponent component in _disabledComponents)
 		{
 			InternalRemoveComponent(component, true);
 		}
 
 		for(int i = _removingComponents.Count - 1; i >= 0; i--)
 		{
-			_activeComponents.Remove(_removingComponents[i]);
-			_inactiveComponents.Remove(_removingComponents[i]);
+			_enabledComponents.Remove(_removingComponents[i]);
+			_disabledComponents.Remove(_removingComponents[i]);
 		}
 
-		_inactiveComponents.Clear();
-		_activeComponents.Clear();
+		_disabledComponents.Clear();
+		_enabledComponents.Clear();
 		_removingComponents.Clear();
 
 		AddedComponentEvent = null;
 		RemovedComponentEvent = null;
 
-		_inactiveComponents = null;
-		_activeComponents = null;
+		_disabledComponents = null;
+		_enabledComponents = null;
 		_removingComponents = null;
 		Model = null;
 	}
@@ -90,7 +90,7 @@ public class ModelComponents : IComponentsHolder
 			return null;
 
 		BaseModelComponent c = Activator.CreateInstance<T>();
-		_activeComponents.Add(c);
+		_enabledComponents.Add(c);
 		c.Initialize(this);
 
 		if(AddedComponentEvent != null)
@@ -119,11 +119,11 @@ public class ModelComponents : IComponentsHolder
 			return false;
 		}
 
-		if(_activeComponents.Contains(component))
+		if(_enabledComponents.Contains(component))
 		{
 			isEnabled = true;
 		}
-		else if(_inactiveComponents.Contains(component))
+		else if(_disabledComponents.Contains(component))
 		{
 			isEnabled = false;
 		}
@@ -153,14 +153,14 @@ public class ModelComponents : IComponentsHolder
 				return;
 
 		bool hasComponent = false;
-		if(_activeComponents.Contains(component))
+		if(_enabledComponents.Contains(component))
 		{
 			hasComponent = true;
 			if(enabledState)
 				return;
 		}
 
-		if(_inactiveComponents.Contains(component))
+		if(_disabledComponents.Contains(component))
 		{
 			hasComponent = true;
 			if(!enabledState)
@@ -172,13 +172,13 @@ public class ModelComponents : IComponentsHolder
 
 		if(enabledState)
 		{
-			_inactiveComponents.Remove(component);
-			_activeComponents.Add(component);
+			_disabledComponents.Remove(component);
+			_enabledComponents.Add(component);
 		}
 		else
 		{
-			_activeComponents.Remove(component);
-			_inactiveComponents.Add(component);
+			_enabledComponents.Remove(component);
+			_disabledComponents.Add(component);
 		}
 
 		if(ChangedComponentEnabledStateEvent != null)
@@ -198,21 +198,21 @@ public class ModelComponents : IComponentsHolder
 		return GetComponentOfType(typeof(T), true) as T;
 	}
 
-	public bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent
+	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent
 	{
-		return HasComponent(typeof(T), incInactiveComponents);
+		return HasComponent(typeof(T), incDisabledComponents);
 	}
 
-	public bool HasComponent(Type componentType, bool incInactiveComponents = true)
+	public bool HasComponent(Type componentType, bool incDisabledComponents = true)
 	{
-		return GetComponentOfType(componentType, incInactiveComponents) != null;
+		return GetComponentOfType(componentType, incDisabledComponents) != null;
 	}
 
-	private BaseModelComponent GetComponentOfType(Type type, bool incInactiveComponents)
+	private BaseModelComponent GetComponentOfType(Type type, bool incDisabledComponents)
 	{
-		if(incInactiveComponents)
+		if(incDisabledComponents)
 		{
-			foreach(BaseModelComponent component in _inactiveComponents)
+			foreach(BaseModelComponent component in _disabledComponents)
 			{
 				if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
 				{
@@ -221,7 +221,7 @@ public class ModelComponents : IComponentsHolder
 			}
 		}
 
-		foreach(BaseModelComponent component in _activeComponents)
+		foreach(BaseModelComponent component in _enabledComponents)
 		{
 			if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
 			{
@@ -252,22 +252,21 @@ public class ModelComponents : IComponentsHolder
 			{
 				for(int i = _removingComponents.Count - 1; i >= 0; i--)
 				{
-					_activeComponents.Remove(_removingComponents[i]);
-					_inactiveComponents.Remove(_removingComponents[i]);
+					_enabledComponents.Remove(_removingComponents[i]);
+					_disabledComponents.Remove(_removingComponents[i]);
 				}
 			}
 		}
 	}
 }
 
-
 public interface IComponentsHolder
 {
 	T AddComponent<T>() where T : BaseModelComponent;
 	void RemoveComponent<T>() where T : BaseModelComponent;
 	T GetComponent<T>() where T : BaseModelComponent;
-	bool TryIsEnabledCheck<T>(out bool isActive) where T : BaseModelComponent;
-	void SetComponentEnabledState<T>(bool activeState) where T : BaseModelComponent;
-	bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent;
-	bool HasComponent(Type componentType, bool incInactiveComponents = true);
+	bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent;
+	void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent;
+	bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent;
+	bool HasComponent(Type componentType, bool incDisabledComponents = true);
 }

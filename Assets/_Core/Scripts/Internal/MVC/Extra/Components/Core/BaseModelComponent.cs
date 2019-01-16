@@ -67,16 +67,16 @@ public abstract class BaseModelComponent
 			return;
 
 		Components = parent;
-		Components.ChangedComponentEnabledStateEvent += OnChangedComponentActiveStateEvent;
+		Components.ChangedComponentEnabledStateEvent += OnChangedComponentEnabledStateEvent;
 		ComponentState = ModelComponentState.Initialized;
 		Added();
 	}
 
-	public void SetActiveState(bool activeState)
+	public void SetEnabledState(bool enabledState)
 	{
 		if(Components != null)
 		{
-			Components.SetComponentEnabledState(this, activeState);
+			Components.SetComponentEnabledState(this, enabledState);
 		}
 	}
 
@@ -111,7 +111,7 @@ public abstract class BaseModelComponent
 		if(IsEnabled && wasActive)
 			Disabled();
 
-		Components.ChangedComponentEnabledStateEvent -= OnChangedComponentActiveStateEvent;
+		Components.ChangedComponentEnabledStateEvent -= OnChangedComponentEnabledStateEvent;
 		Components = null;
 	}
 
@@ -131,13 +131,13 @@ public abstract class BaseModelComponent
 	{
 	}
 
-	private void OnChangedComponentActiveStateEvent(BaseModelComponent component, bool activeState)
+	private void OnChangedComponentEnabledStateEvent(BaseModelComponent component, bool enabledState)
 	{
 		if(component == this)
 		{
-			if(!_isEnabled.HasValue || _isEnabled.Value != activeState)
+			if(!_isEnabled.HasValue || _isEnabled.Value != enabledState)
 			{
-				IsEnabled = activeState;
+				IsEnabled = enabledState;
 				if(IsEnabled)
 				{
 					Enabled();

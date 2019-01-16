@@ -20,7 +20,7 @@ public class EnemyView : EntityView
 		if(Input.GetKeyDown(KeyCode.LeftControl))
 		{
 			if(MVCUtil.GetModel<EnemyModel>(this).HasComponent<TopDownMovement>())
-				MVCUtil.GetModel<EnemyModel>(this).GetComponent<TopDownMovement>().SetActiveState(!MVCUtil.GetModel<EnemyModel>(this).GetComponent<TopDownMovement>().IsEnabled);
+				MVCUtil.GetModel<EnemyModel>(this).GetComponent<TopDownMovement>().SetEnabledState(!MVCUtil.GetModel<EnemyModel>(this).GetComponent<TopDownMovement>().IsEnabled);
 		}
 
 		if(Input.GetKeyDown(KeyCode.LeftAlt))

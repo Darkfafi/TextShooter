@@ -100,14 +100,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return true;
 	}
 
-	public bool TryIsEnabledCheck<T>(out bool isActive) where T : BaseModelComponent
+	public bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent
 	{
-		return _components.TryIsEnabledCheck<T>(out isActive);
+		return _components.TryIsEnabledCheck<T>(out isEnabled);
 	}
 
-	public void SetComponentEnabledState<T>(bool activeState) where T : BaseModelComponent
+	public void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent
 	{
-		_components.SetComponentEnabledState<T>(activeState);
+		_components.SetComponentEnabledState<T>(enabledState);
 	}
 
 	public T AddComponent<T>() where T : BaseModelComponent
@@ -125,14 +125,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return _components.GetComponent<T>();
 	}
 
-	public bool HasComponent<T>(bool incInactiveComponents = true) where T : BaseModelComponent
+	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent
 	{
-		return _components.HasComponent<T>(incInactiveComponents);
+		return _components.HasComponent<T>(incDisabledComponents);
 	}
 
-	public bool HasComponent(Type componentType, bool incInactiveComponents = true)
+	public bool HasComponent(Type componentType, bool incDisabledComponents = true)
 	{
-		return _components.HasComponent(componentType, incInactiveComponents);
+		return _components.HasComponent(componentType, incDisabledComponents);
 	}
 
 	private void OnAddedComponentEvent(BaseModelComponent component)
@@ -151,11 +151,11 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		}
 	}
 
-	private void OnChangedComponentEnabledStateEvent(BaseModelComponent component, bool activeState)
+	private void OnChangedComponentEnabledStateEvent(BaseModelComponent component, bool enabledState)
 	{
 		if(ChangedComponentEnabledStateFromModelEvent != null)
 		{
-			ChangedComponentEnabledStateFromModelEvent(this, component, activeState);
+			ChangedComponentEnabledStateFromModelEvent(this, component, enabledState);
 		}
 	}
 }
