@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class TargetSystem : BaseModelComponent
+public class Targeting
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
 	public delegate void CharTargetHandler(EntityModel target, char newChar, char requiredChar, int index);
 	public delegate void TargetHandler(EntityModel target);
+	public delegate void TargetingEnabledState(Targeting targeting, bool enabledState);
 	public event NewOldTargetHandler TargetSetEvent;
 	public event CharTargetHandler TargetCharTypedEvent;
 	public event TargetHandler TargetCompletedEvent;
+	public event TargetingEnabledState TargetingEnabledStateChangedEvent;
 
 	public int CurrentShootIndex
 	{
@@ -40,15 +43,24 @@ public class TargetSystem : BaseModelComponent
 		}
 	}
 
+	public Vector3 OriginPosition
+	{
+		get; private set;
+	}
+	
+	public bool IsEnabled
+	{
+		get; private set;
+	}
+
 	private List<EntityModel> _completedTargetList = new List<EntityModel>();
 
 	private CharInputModel _charInputModel;
 	private EntityFilter<EntityModel> _targetsFilter;
 
-	public void SetupTargetSystem(CharInputModel charInputModel, FilterRules filterRules)
+	public Targeting(CharInputModel charInputModel, FilterRules filterRules)
 	{
-		if(_targetsFilter != null)
-			return;
+		IsEnabled = true;
 
 		FilterRules.OpenConstructOnFilterRules(filterRules);
 		FilterRules.AddComponentToConstruct<WordsHolder>(false);
@@ -62,9 +74,42 @@ public class TargetSystem : BaseModelComponent
 		_charInputModel.InputEvent += OnInputEvent;
 	}
 
+	~Targeting()
+	{
+		if(_charInputModel != null)
+		{
+			_charInputModel.InputEvent -= OnInputEvent;
+		}
+
+		_charInputModel = null;
+
+		CurrentTypingTarget = null;
+		BuildupShootString = null;
+
+		_targetsFilter.UntrackedEvent -= OnUntrackedEvent;
+		_targetsFilter.Clean();
+		_targetsFilter = null;
+
+		_completedTargetList.Clear();
+		_completedTargetList = null;
+	}
+
 	public bool IsTargetCompleted(EntityModel target)
 	{
 		return _completedTargetList.Contains(target);
+	}
+
+	public void SetEnabledState(bool enabledState)
+	{
+		if(IsEnabled == enabledState)
+			return;
+
+		IsEnabled = enabledState;
+
+		if(TargetingEnabledStateChangedEvent != null)
+		{
+			TargetingEnabledStateChangedEvent(this, enabledState);
+		}
 	}
 
 	public List<EntityModel> GetAllTargets(bool includingCurrentTyping)
@@ -80,6 +125,9 @@ public class TargetSystem : BaseModelComponent
 
 	private void OnInputEvent(char c)
 	{
+		if(!IsEnabled)
+			return;
+
 		if(CurrentTypingTarget == null || CurrentTypingTarget.IsDestroyed || CurrentTypingTarget.GetComponent<WordsHp>().IsDead)
 		{
 			EntityModel target = _targetsFilter.GetFirst(
@@ -98,8 +146,8 @@ public class TargetSystem : BaseModelComponent
 
 			}, (a, b) =>
 			{
-				float distA = (a.ModelTransform.Position - Parent.GetComponent<ModelTransform>().Position).magnitude;
-				float distB = (b.ModelTransform.Position - Parent.GetComponent<ModelTransform>().Position).magnitude;
+				float distA = (a.ModelTransform.Position - OriginPosition).magnitude;
+				float distB = (b.ModelTransform.Position - OriginPosition).magnitude;
 				return (int)(distA - distB);
 			});
 
@@ -128,6 +176,11 @@ public class TargetSystem : BaseModelComponent
 		}
 	}
 
+	public void SetOriginPosition(Vector3 position)
+	{
+		OriginPosition = position;
+	}
+
 	private void OnUntrackedEvent(EntityModel entity)
 	{
 		if(entity == null)
@@ -136,26 +189,6 @@ public class TargetSystem : BaseModelComponent
 		_completedTargetList.Remove(entity);
 		entity.GetComponent<WordsHolder>().WordCycledEvent -= OnWordCycledEvent;
 		entity.GetComponent<WordsHp>().WordCharHitEvent -= OnWordCharHitEvent;
-	}
-
-	protected override void Removed()
-	{
-		if(_charInputModel != null)
-		{
-			_charInputModel.InputEvent -= OnInputEvent;
-		}
-
-		_charInputModel = null;
-
-		CurrentTypingTarget = null;
-		BuildupShootString = null;
-
-		_targetsFilter.UntrackedEvent -= OnUntrackedEvent;
-		_targetsFilter.Clean();
-		_targetsFilter = null;
-
-		_completedTargetList.Clear();
-		_completedTargetList = null;
 	}
 
 	private void CompleteCurrentTypingTarget()

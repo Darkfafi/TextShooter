@@ -205,16 +205,18 @@ public class ModelComponents : IComponentsHolder
 
 	public bool HasComponent(Type componentType, bool incDisabledComponents = true)
 	{
-		return GetComponentOfType(componentType, incDisabledComponents) != null;
+		return GetComponentOfType(componentType, incDisabledComponents, false) != null;
 	}
 
-	private BaseModelComponent GetComponentOfType(Type type, bool incDisabledComponents)
+	private BaseModelComponent GetComponentOfType(Type type, bool incDisabledComponents, bool incRemovingComponents = true)
 	{
 		if(incDisabledComponents)
 		{
 			foreach(BaseModelComponent component in _disabledComponents)
 			{
-				if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
+				if(!incRemovingComponents && _removingComponents.Contains(component))
+					continue;
+				if(type.IsAssignableFrom(component.GetType()))
 				{
 					return component;
 				}
@@ -223,7 +225,10 @@ public class ModelComponents : IComponentsHolder
 
 		foreach(BaseModelComponent component in _enabledComponents)
 		{
-			if(!_removingComponents.Contains(component) && type.IsAssignableFrom(component.GetType()))
+			if(!incRemovingComponents && _removingComponents.Contains(component))
+				continue;
+
+			if(type.IsAssignableFrom(component.GetType()))
 			{
 				return component;
 			}

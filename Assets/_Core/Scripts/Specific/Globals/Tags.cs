@@ -1,7 +1,6 @@
-﻿
-public static class Tags
+﻿public static class Tags
 {
-	public const string ENEMY = "Enemy";
+	public const string TARGETABLE = "Targetable";
+	public const string TARGETING_USER = "TargetingUser";
 	public const string DISPLAY_WORD = "DisplayWord";
-	public const string DISPLAY_TARGETING = "DisplayTargeting";
 }

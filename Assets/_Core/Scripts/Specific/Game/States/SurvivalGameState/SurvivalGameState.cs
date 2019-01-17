@@ -27,19 +27,26 @@
 			get; private set;
 		}
 
+		private TargetingSystem _targetingSystem;
+
 		protected override void OnSetupState()
 		{
 			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
 
-			// Setup UI
-			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
-			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(WordsDisplayerModel);
-
 			// Input
 			CharInputModel = new CharInputModel();
 
+			// Setup Global Mechanics
+
+			// -- Game -- \\
+			_targetingSystem = new TargetingSystem(CharInputModel, Game.TimekeeperModel);
+
+			// -- UI -- \\
+			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
+			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(_targetingSystem.Targeting, WordsDisplayerModel);
+
 			// Setup Player
-			TurretModel = new TurretModel(Game.TimekeeperModel, CharInputModel);
+			TurretModel = new TurretModel(Game.TimekeeperModel);
 		}
 
 		public void StartGame()
@@ -54,7 +61,26 @@
 
 		protected override void OnEndState()
 		{
+			// Input
+			CharInputModel.Destroy();
+			CharInputModel = null;
 
+			// Setup Global Mechanics
+
+			// -- Game -- \\
+			_targetingSystem.Clean();
+			_targetingSystem = null;
+
+			// -- UI -- \\
+			WordsDisplayerModel.Destroy();
+			WordsDisplayerModel = null;
+
+			TargetingWordItemModificationModel.Destroy();
+			TargetingWordItemModificationModel = null;
+
+			// Setup Player
+			TurretModel.Destroy();
+			TurretModel = null;
 		}
 	}
 }

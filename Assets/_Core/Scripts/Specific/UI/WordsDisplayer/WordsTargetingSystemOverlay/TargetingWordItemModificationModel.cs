@@ -3,30 +3,24 @@
 public class TargetingWordItemModificationModel : BaseModel
 {
 	public delegate void TargetWordUIItemHandler(WordUIDisplayItemModel item, int index);
-	public delegate void TargetingHandler(TargetSystem newTargetingSystem, TargetSystem previousTargetingSystem);
 	public event TargetWordUIItemHandler CharAtItemIndexTypedEvent;
-	public event Action<TargetSystem, WordUIDisplayItemModel> RegisteredItemAddedEvent;
-	public event Action<TargetSystem, WordUIDisplayItemModel> RegisteredItemRemovedEvent;
-	public event TargetingHandler TargetingSystemChangedEvent;
+	public event Action<Targeting, WordUIDisplayItemModel> RegisteredItemAddedEvent;
+	public event Action<Targeting, WordUIDisplayItemModel> RegisteredItemRemovedEvent;
+	public event Action<Targeting, bool> TargetingEnabledStateChangedEvent;
 
 	private WordsDisplayerModel _wordsDisplayerModel;
-	private EntityFilter<EntityModel> _targetingEntityModels;
+	private Targeting _targeting;
 
-	private TargetSystem _activeTargetSystems;
-
-	public TargetingWordItemModificationModel(WordsDisplayerModel wordsDisplayerModel)
+	public TargetingWordItemModificationModel(Targeting targeting, WordsDisplayerModel wordsDisplayerModel)
 	{
-		FilterRules targetingEntityModelRules;
-		FilterRules.OpenConstructHasAllTags(Tags.DISPLAY_TARGETING);
-		FilterRules.AddComponentToConstruct<TargetSystem>(false);
-		FilterRules.CloseConstruct(out targetingEntityModelRules);
-
-		_targetingEntityModels = EntityFilter<EntityModel>.Create(targetingEntityModelRules);
-		_targetingEntityModels.TrackedEvent += OnTrackedEvent;
-		_targetingEntityModels.UntrackedEvent += OnUntrackedEvent;
-
 		_wordsDisplayerModel = wordsDisplayerModel;
 		_wordsDisplayerModel.AddedDisplayItemEvent += OnAddedDisplayItemEvent;
+
+		_targeting = targeting;
+		_targeting.TargetCharTypedEvent += OnTargetCharTypedEvent;
+		_targeting.TargetsFilter.TrackedEvent += OnTargetTrackedEvent;
+		_targeting.TargetsFilter.UntrackedEvent += OnTargetUntrackedEvent;
+		_targeting.TargetingEnabledStateChangedEvent += OnEnabledStateChangedEvent;
 	}
 
 	public WordUIDisplayItemModel GetWordUIItemForEntityModel(EntityModel entityModel)
@@ -41,86 +35,48 @@ public class TargetingWordItemModificationModel : BaseModel
 
 	protected override void OnModelDestroy()
 	{
-		_targetingEntityModels.TrackedEvent -= OnTrackedEvent;
-		_targetingEntityModels.UntrackedEvent -= OnUntrackedEvent;
-		_targetingEntityModels.Clean();
-		_targetingEntityModels = null;
-
 		_wordsDisplayerModel.AddedDisplayItemEvent -= OnAddedDisplayItemEvent;
 		_wordsDisplayerModel = null;
+
+		_targeting.TargetCharTypedEvent -= OnTargetCharTypedEvent;
+		_targeting.TargetsFilter.TrackedEvent -= OnTargetTrackedEvent;
+		_targeting.TargetsFilter.UntrackedEvent -= OnTargetUntrackedEvent;
+		_targeting.TargetingEnabledStateChangedEvent -= OnEnabledStateChangedEvent;
+		_targeting = null;
 	}
 
 	private void OnAddedDisplayItemEvent(WordUIDisplayItemModel item)
 	{
-		if(_activeTargetSystems != null)
+		if(_targeting != null)
 		{
-			if(_activeTargetSystems.TargetsFilter.Has(item.EntityModelLinkedTo))
+			if(_targeting.TargetsFilter.Has(item.EntityModelLinkedTo))
 			{
 				if(RegisteredItemAddedEvent != null)
 				{
-					RegisteredItemAddedEvent(_activeTargetSystems, item);
+					RegisteredItemAddedEvent(_targeting, item);
 				}
-			}
-		}
-	}
-
-	private void OnTrackedEvent(EntityModel entity)
-	{
-		if(_activeTargetSystems != null)
-		{
-			return;
-		}
-
-		TargetSystem targetSystem = entity.GetComponent<TargetSystem>();
-		TargetSystem pre = _activeTargetSystems;
-		_activeTargetSystems = targetSystem;
-		_activeTargetSystems.TargetCharTypedEvent += OnTargetCharTypedEvent;
-		_activeTargetSystems.TargetsFilter.TrackedEvent += OnTargetTrackedEvent;
-		_activeTargetSystems.TargetsFilter.UntrackedEvent += OnTargetUntrackedEvent;
-
-		if(TargetingSystemChangedEvent != null)
-		{
-			TargetingSystemChangedEvent(targetSystem, pre);
-		}
-	}
-
-	private void OnUntrackedEvent(EntityModel entity)
-	{
-		TargetSystem targetSystem = entity.GetComponent<TargetSystem>();
-
-		if(_activeTargetSystems == targetSystem)
-		{
-			TargetSystem pre = _activeTargetSystems;
-			_activeTargetSystems.TargetCharTypedEvent -= OnTargetCharTypedEvent;
-			_activeTargetSystems.TargetsFilter.TrackedEvent -= OnTargetTrackedEvent;
-			_activeTargetSystems.TargetsFilter.UntrackedEvent -= OnTargetUntrackedEvent;
-			_activeTargetSystems = null;
-
-			if(TargetingSystemChangedEvent != null)
-			{
-				TargetingSystemChangedEvent(null, pre);
 			}
 		}
 	}
 
 	private void OnTargetTrackedEvent(EntityModel target)
 	{
-		if(_activeTargetSystems != null)
+		if(_targeting != null)
 		{
 			if(RegisteredItemAddedEvent != null)
 			{
-				RegisteredItemAddedEvent(_activeTargetSystems, GetWordUIItemForEntityModel(target));
+				RegisteredItemAddedEvent(_targeting, GetWordUIItemForEntityModel(target));
 			}
 		}
 	}
 
 	private void OnTargetUntrackedEvent(EntityModel target)
 	{
-		if(_activeTargetSystems != null)
+		if(_targeting != null)
 		{
 			if(RegisteredItemRemovedEvent != null)
 			{
-				RegisteredItemRemovedEvent(_activeTargetSystems, GetWordUIItemForEntityModel(target));
+				RegisteredItemRemovedEvent(_targeting, GetWordUIItemForEntityModel(target));
 			}
 		}
 	}
@@ -134,6 +90,14 @@ public class TargetingWordItemModificationModel : BaseModel
 			{
 				CharAtItemIndexTypedEvent(item, index);
 			}
+		}
+	}
+
+	private void OnEnabledStateChangedEvent(Targeting targeting, bool enabled)
+	{
+		if(TargetingEnabledStateChangedEvent != null)
+		{
+			TargetingEnabledStateChangedEvent(_targeting, enabled);
 		}
 	}
 }

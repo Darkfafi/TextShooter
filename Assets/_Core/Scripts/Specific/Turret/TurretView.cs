@@ -25,7 +25,6 @@ public class TurretView : EntityView
 		_model = MVCUtil.GetModel<TurretModel>(this);
 		DisableFlare();
 		_model.GunFiredEvent += OnGunFiredEvent;
-		_model.TargetSetEvent += OnTargetSetEvent;
 		_model.RangeChangedEvent += OnRangeChangedEvent;
 		_model.GunActiveStateChangedEvent += OnGunActiveStateChangedEvent;
 
@@ -38,7 +37,6 @@ public class TurretView : EntityView
 		if(_model != null)
 		{
 			_model.GunFiredEvent -= OnGunFiredEvent;
-			_model.TargetSetEvent -= OnTargetSetEvent;
 			_model.RangeChangedEvent -= OnRangeChangedEvent;
 			_model.GunActiveStateChangedEvent -= OnGunActiveStateChangedEvent;
 			_model = null;
@@ -94,10 +92,5 @@ public class TurretView : EntityView
 	private void VisualizeRange(float range)
 	{
 		_rangeIndicator.transform.DOScale(range * 2f, 0.8f).SetEase(Ease.OutElastic, 1.2f, 1);
-	}
-
-	private void OnTargetSetEvent(EntityModel newTarget, EntityModel previousTarget)
-	{
-		//TODO: PLAY COOL SOUND AND SHIT
 	}
 }

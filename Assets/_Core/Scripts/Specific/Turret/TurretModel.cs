@@ -1,10 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-public class TurretModel : EntityModel
+public class TurretModel : EntityModel, ITargetingUser
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
-	public event NewOldTargetHandler TargetSetEvent;
 	public event Action<IFireWordGun> FireWordGunChangedEvent;
 	public event Action<float> RangeChangedEvent;
 	public event Action<float> CooldownChangedEvent;
@@ -15,13 +14,13 @@ public class TurretModel : EntityModel
 	{
 		get
 		{
-			if(TargetSystem == null)
+			if(Targeting == null)
 				return null;
 
-			return TargetSystem.TargetsFilter.GetFirst(
+			return Targeting.TargetsFilter.GetFirst(
 				(e) => 
 				{
-					if(!TargetSystem.IsTargetCompleted(e))
+					if(!Targeting.IsTargetCompleted(e))
 						return false;
 
 					return true;
@@ -34,7 +33,7 @@ public class TurretModel : EntityModel
 		}
 	}
 
-	public TargetSystem TargetSystem
+	public Targeting Targeting
 	{
 		get; private set;
 	}
@@ -65,19 +64,30 @@ public class TurretModel : EntityModel
 		get; private set;
 	}
 
-	private TimekeeperModel _timekeeper;
+	public bool AddTargetingUserTagOnCreation
+	{
+		get
+		{
+			return true;
+		}
+	}
 
+	public Vector3 TargetingUserPosition
+	{
+		get
+		{
+			return ModelTransform.Position;
+		}
+	}
+
+	private TimekeeperModel _timekeeper;
+	private float _rotationTillResultTile = 0f;
 	private BaseFireWordGun _fireWordGun;
 
-	public TurretModel(TimekeeperModel timekeeper, CharInputModel charInputModel)
+	public TurretModel(TimekeeperModel timekeeper)
 	{
 		_timekeeper = timekeeper;
 		_timekeeper.ListenToFrameTick(Update);
-
-		TargetSystem = AddComponent<TargetSystem>();
-		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAllTagsFilter(Tags.ENEMY));
-
-		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
 
 		SetFireWordGun(new InstantFireWordGun(0.25f, 5f, timekeeper));
 		SetGunActiveState(true);
@@ -92,7 +102,7 @@ public class TurretModel : EntityModel
 
 		_fireWordGun = null;
 
-		TargetSystem = null;
+		Targeting = null;
 	}
 
 	private void Update(float deltaTime, float timeScale)
@@ -107,9 +117,10 @@ public class TurretModel : EntityModel
 				float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
 
 				angleToTarget = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
-
+				_rotationTillResultTile += deltaTime * timeScale;
 				if(Mathf.Abs(Mathf.DeltaAngle(angleToTarget, TurretNeckRotation)) < 10f)
 				{
+					_rotationTillResultTile = 0f;
 					WordsHp currentTargetWordsHp = CurrentTarget.GetComponent<WordsHp>();
 					if(_fireWordGun.Fire(currentTargetWordsHp, currentTargetWordsHp.CurrentTargetWord))
 					{
@@ -122,7 +133,7 @@ public class TurretModel : EntityModel
 			}
 		}
 
-		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
+		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f * (1f + _rotationTillResultTile));
 	}
 
 	// Setters and Getters
@@ -176,5 +187,10 @@ public class TurretModel : EntityModel
 				CooldownChangedEvent(Cooldown);
 			}
 		}
+	}
+
+	public void SetCurrentTargeting(Targeting targeting)
+	{
+		Targeting = targeting;
 	}
 }

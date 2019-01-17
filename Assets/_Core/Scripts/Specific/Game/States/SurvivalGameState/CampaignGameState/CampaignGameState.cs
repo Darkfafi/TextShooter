@@ -28,6 +28,7 @@
 		protected override void OnEndState()
 		{
 			Campaign.EndCampaign();
+			Campaign = null;
 		}
 	}
 }
