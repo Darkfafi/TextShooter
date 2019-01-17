@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 public class EnemyModel : EntityModel
 {
@@ -22,16 +23,22 @@ public class EnemyModel : EntityModel
 		}
 	}
 
-	public EnemyModel(TimekeeperModel timekeeper, string currentWord, params string[] nextWords)
+	public EnemyModel(TimekeeperModel timekeeper, Vector3 position) : base(position)
 	{
 		AddComponent<TopDownMovement>().Setup(timekeeper);
+		ModelTags.AddTag(Tags.DISPLAY_WORD);
+	}
+
+	public void Initialize(string currentWord, params string[] nextWords)
+	{
+		if(WordsHolder != null)
+			return;
+
 		WordsHolder = AddComponent<WordsHolder>();
 		WordsHolder.Setup(currentWord, nextWords);
 		WordsHp = AddComponent<WordsHp>();
 
 		WordsHolder.WordCycledEvent += OnWordCycledEvent;
-
-		ModelTags.AddTag(Tags.DISPLAY_WORD);
 	}
 
 	protected override void OnModelDestroy()
@@ -40,8 +47,8 @@ public class EnemyModel : EntityModel
 
 		WordsHolder.WordCycledEvent -= OnWordCycledEvent;
 
-		WordsHp = null;
 		WordsHolder = null;
+		WordsHp = null;
 	}
 
 	private void OnWordCycledEvent(string previousWord, string newWord, WordsHolder wordsHolder)

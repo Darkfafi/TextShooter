@@ -178,8 +178,12 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		{
 			if(_current < _mobsSpawnData.Amount)
 			{
-				EnemyModel enemy = _game.Factories.EnemyFactory.Create(new EnemyFactoryData(_mobsSpawnData.EnemyType));
-				enemy.ModelTransform.Position = _game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide);
+				EnemyModel enemy = _game.Factories.EnemyFactory.Create(
+					new EnemyFactoryData(
+						_mobsSpawnData.EnemyType,
+						_game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide)
+					)
+				);
 				enemy.ModelTags.AddTag(_eventSpawnId);
 				enemy.ModelTags.AddTag(Tags.TARGETABLE);
 				_current++;

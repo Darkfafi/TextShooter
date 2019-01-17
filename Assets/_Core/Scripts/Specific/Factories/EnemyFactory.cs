@@ -1,4 +1,6 @@
-﻿public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
+﻿using UnityEngine;
+
+public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 {
 	private TimekeeperModel _timekeeperModel;
 
@@ -25,7 +27,9 @@
 			// Make Factory in GameModel's Factories? (Non static, not requiring TimekeeperModel parameter anymore)
 		}
 
-		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyType);
+		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyPosition);
+		enemyModel.Initialize(data.EnemyType);
+
 		return enemyModel;
 	}
 }
@@ -37,8 +41,14 @@ public struct EnemyFactoryData : IFactoryData
 		get; private set;
 	}
 
-	public EnemyFactoryData(string enemyType)
+	public Vector3 EnemyPosition
+	{
+		get; private set;
+	}
+
+	public EnemyFactoryData(string enemyType, Vector3 enemyPosition)
 	{
 		EnemyType = enemyType;
+		EnemyPosition = enemyPosition;
 	}
 }

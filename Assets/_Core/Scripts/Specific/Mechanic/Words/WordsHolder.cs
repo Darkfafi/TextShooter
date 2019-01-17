@@ -21,6 +21,11 @@ public class WordsHolder : BaseModelComponent
 		CurrentWord = startWord;
 		_words = new List<string>(nextWords);
 		_setup = true;
+
+		if(WordCycledEvent != null)
+		{
+			WordCycledEvent("", CurrentWord, this);
+		}
 	}
 
 	protected override void Removed()
