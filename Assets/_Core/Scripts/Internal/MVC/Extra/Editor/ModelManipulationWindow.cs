@@ -172,9 +172,9 @@ public class ModelManipulationWindow : EditorWindow
         {
             if (_manipulateTransform = EditorGUILayout.Foldout(_manipulateTransform, "Transform Data"))
             {
-                transformComponent.Position = EditorGUILayout.Vector3Field("Position", transformComponent.Position);
-                transformComponent.Rotation = EditorGUILayout.Vector3Field("Rotation", transformComponent.Rotation);
-                transformComponent.Scale = EditorGUILayout.Vector3Field("Scale", transformComponent.Scale);
+				transformComponent.SetPos(EditorGUILayout.Vector3Field("Position", transformComponent.Position));
+                transformComponent.SetRot(EditorGUILayout.Vector3Field("Rotation", transformComponent.Rotation));
+                transformComponent.SetScale(EditorGUILayout.Vector3Field("Scale", transformComponent.Scale));
             }
 
             EditorGUILayout.Space();

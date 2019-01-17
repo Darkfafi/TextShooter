@@ -1,6 +1,4 @@
-﻿using System;
-
-public class EntityTracker : ModelHolder<EntityModel>
+﻿public class EntityTracker : ModelHolder<EntityModel>
 {
 	public delegate void EntityTagHandler(EntityModel entity, string tag);
 	public delegate void EntityComponentHandler(EntityModel entity, BaseModelComponent component);

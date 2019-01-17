@@ -135,7 +135,7 @@ public class TopDownMovement : BaseModelComponent
 			_duration = _delta.magnitude / MovementSpeed;
 			CurrentNormalizedPosition = Mathf.Clamp01(_timePassed / _duration);
 
-			_transformToAffect.Position = StartPosition + (CurrentNormalizedPosition * _delta);
+			_transformToAffect.SetPos(StartPosition + (CurrentNormalizedPosition * _delta));
 			_transformToAffect.SetRotZ(Mathf.LerpAngle(_transformToAffect.Rotation.z, Mathf.Atan2(_delta.y, _delta.x) * Mathf.Rad2Deg, RotationSpeed * timeScale));
 
 			if(CurrentNormalizedPosition == 1f)
