@@ -1,13 +1,14 @@
 ﻿public class MoveIntoRangeSwitcher : BaseBrainSwitcher<EntityModel>
 {
 	private float _range;
+	private TimekeeperModel _timekeeperModel;
 	private EntityFilter<EntityModel> _targetsFilter;
 
-	public MoveIntoRangeSwitcher(float range, FilterRules targetFilterRules)
+	public MoveIntoRangeSwitcher(TimekeeperModel timekeeperModel, float range, FilterRules targetFilterRules)
 	{
 		_range = range;
+		_timekeeperModel = timekeeperModel;
 		_targetsFilter = EntityFilter<EntityModel>.Create(targetFilterRules);
-		_targetsFilter.TrackedEvent += OnTrackedEvent;
 	}
 
 	protected override void Initialized()
@@ -17,24 +18,26 @@
 
 	protected override void Activated()
 	{
-		TryActivateMovementState();
+		_timekeeperModel.ListenToFrameTick(OnUpdate);
+	}
+
+	private void OnUpdate(float deltaTime, float timeScale)
+	{
+		if(timeScale > 0)
+			TryActivateMovementState();
 	}
 
 	protected override void Deactivated()
 	{
-
+		_timekeeperModel.UnlistenFromFrameTick(OnUpdate);
 	}
 
 	protected override void Destroyed()
 	{
-		_targetsFilter.TrackedEvent -= OnTrackedEvent;
+		_timekeeperModel = null;
+
 		_targetsFilter.Clean();
 		_targetsFilter = null;
-	}
-
-	private void OnTrackedEvent(EntityModel entity)
-	{
-		TryActivateMovementState();
 	}
 
 	private void TryActivateMovementState()
@@ -46,7 +49,7 @@
 			return (int)(distA - distB);
 		});
 
-		if(closestTarget != null)
+		if(closestTarget != null && (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude > _range)
 		{
 			BrainStateMachine.RequestState(new MovementStateRequest(closestTarget, _range));
 		}
