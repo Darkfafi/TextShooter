@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TopDownMovement : BaseModelComponent
 {
+	public event Action<TopDownMovement, Vector2> ReachedDestinationEvent;
+
 	/// <summary>
 	/// The movement speed which is being used during movement
 	/// </summary>
@@ -141,6 +144,11 @@ public class TopDownMovement : BaseModelComponent
 			if(CurrentNormalizedPosition == 1f)
 			{
 				StopMoving();
+
+				if(ReachedDestinationEvent != null)
+				{
+					ReachedDestinationEvent(this, StartPosition + _delta);
+				}
 			}
 		}
 	}

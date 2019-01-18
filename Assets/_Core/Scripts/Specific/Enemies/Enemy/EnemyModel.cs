@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class EnemyModel : EntityModel
+public class EnemyModel : EntityModel, IStateMachineAffected
 {
 	public event Action<EnemyModel> DeathEvent;
 
