@@ -16,10 +16,12 @@ public class Brain<T> : IBrain<T> where T : class
 	private List<BaseBrainSwitcher<T>> _globalSwitchers = new List<BaseBrainSwitcher<T>>(); // Always active
 	private List<BaseBrainSwitcher<T>> _noStateSwitchers = new List<BaseBrainSwitcher<T>>(); // Only when no state active
 	private Dictionary<Type, List<BaseBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<BaseBrainSwitcher<T>>>(); // Only active for specific state
+	private Type _currentStateSwitchersType = null;
 
 	public Brain(T affected, bool isEnabledFromStart = true)
 	{
 		BrainStateMachine = new StateMachine<T>(affected);
+		BrainStateMachine.StateSetEvent += OnStateSetEvent;
 
 		if(isEnabledFromStart)
 		{
@@ -67,7 +69,7 @@ public class Brain<T> : IBrain<T> where T : class
 			}
 
 			_stateSwitchers[stateType].Add(switcher);
-			switcher.Initialize(BrainStateMachine.Affected);
+			switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
 
 			if(BrainStateMachine.CurrentStateType == stateType)
 			{
@@ -77,9 +79,9 @@ public class Brain<T> : IBrain<T> where T : class
 		else
 		{
 			_noStateSwitchers.Add(switcher);
-			switcher.Initialize(BrainStateMachine.Affected);
+			switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
 
-			if(!BrainStateMachine.CurrentStateType.IsValueType)
+			if(BrainStateMachine.CurrentStateType == null)
 			{
 				switcher.Activate();
 			}
@@ -89,7 +91,7 @@ public class Brain<T> : IBrain<T> where T : class
 	public void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
 	{
 		_globalSwitchers.Add(switcher);
-		switcher.Initialize(BrainStateMachine.Affected);
+		switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
 
 		if(IsEnabled)
 		{
@@ -109,8 +111,16 @@ public class Brain<T> : IBrain<T> where T : class
 		_stateSwitchers.Clear();
 		_stateSwitchers = null;
 
+		BrainStateMachine.StateSetEvent -= OnStateSetEvent;
 		BrainStateMachine.Clean();
 		BrainStateMachine = null;
+	}
+
+	private void OnStateSetEvent(IStateMachineState<T> state)
+	{
+		DeactivateStateSwitchers(_currentStateSwitchersType);
+		_currentStateSwitchersType = state.GetType();
+		ActivateStateSwitchers(_currentStateSwitchersType);
 	}
 
 	private void ActivateGlobalSwitchers()

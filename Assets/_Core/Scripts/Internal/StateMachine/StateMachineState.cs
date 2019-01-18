@@ -72,6 +72,8 @@ public abstract class StateMachineState<T> : IStateMachineState<T> where T : cla
 		if(CanInteruptState == canBeInterupted)
 			return;
 
+		CanInteruptState = canBeInterupted;
+
 		if(CanBeInteruptedStateChangedEvent != null)
 		{
 			CanBeInteruptedStateChangedEvent(this, CanInteruptState);
@@ -100,12 +102,10 @@ public abstract class BaseStateMachineStateRequest<T, U> : IStateMachineStateReq
 {
 	public Type StateMachineStateType
 	{
-		get; private set;
-	}
-
-	public BaseStateMachineStateRequest()
-	{
-		StateMachineStateType = typeof(T);
+		get
+		{
+			return typeof(T);
+		}
 	}
 
 	public T CreateStateMachineState()
@@ -120,6 +120,8 @@ public abstract class BaseStateMachineStateRequest<T, U> : IStateMachineStateReq
 		return CreateStateMachineState();
 	}
 
+	public abstract bool IsAllowedToCreate();
+	public abstract void Clean();
 	protected abstract void SetupCreatedState(T state);
 }
 
@@ -131,4 +133,7 @@ public interface IStateMachineStateRequest<T> where T : class
 	}
 
 	IStateMachineState<T> CreateStateMachineState();
+
+	bool IsAllowedToCreate();
+	void Clean();
 }

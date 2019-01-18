@@ -19,16 +19,22 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 		get; private set;
 	}
 
+	public StateMachine<T> BrainStateMachine
+	{
+		get; private set;
+	}
+
 	public BaseBrainSwitcher()
 	{
 		SwitcherStatus = BrainSwitcherStatus.NotReady;
 	}
 
-	public void Initialize(T affected)
+	public void Initialize(T affected, StateMachine<T> stateMachine)
 	{
 		if(SwitcherStatus != BrainSwitcherStatus.NotReady)
 			return;
 
+		BrainStateMachine = stateMachine;
 		Affected = affected;
 		SwitcherStatus = BrainSwitcherStatus.Initialized;
 		Initialized();
@@ -80,6 +86,6 @@ public interface IBrainSwitcher<T> where T : class
 		get;
 	}
 
-	void Initialize(T affected);
+	void Initialize(T affected, StateMachine<T> stateMachine);
 	void Clean();
 }

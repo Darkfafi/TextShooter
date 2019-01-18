@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 public class StateMachine<T> where T : class
 {
@@ -8,7 +7,6 @@ public class StateMachine<T> where T : class
 
 	private StateStatus _currentStateStatus = new StateStatus();
 	private StateStatus _nextStateStatus = new StateStatus();
-	private List<IStateMachineStateRequest<T>> _statesHistory = new List<IStateMachineStateRequest<T>>();
 
 	public Type CurrentStateType
 	{
@@ -47,7 +45,6 @@ public class StateMachine<T> where T : class
 		_nextStateStatus = new StateStatus();
 		SetToNoStateInternally(false);
 		Affected = null;
-		_statesHistory.Clear();
 	}
 
 	public void RequestState(IStateMachineStateRequest<T> request, bool force = false)
@@ -59,19 +56,6 @@ public class StateMachine<T> where T : class
 		else
 		{
 			SetStateInternally(request);
-		}
-	}
-
-	public void RequestPreviousState(bool force)
-	{
-		if(_statesHistory.Count > 0)
-		{
-			IStateMachineStateRequest<T> entry = _statesHistory[_statesHistory.Count - 1];
-			RequestState(entry, force);
-		}
-		else
-		{
-			RequestNoState(force);
 		}
 	}
 
@@ -94,11 +78,7 @@ public class StateMachine<T> where T : class
 			_currentStateStatus.State.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
 			_currentStateStatus.State.StateInternallyEndedEvent -= OnStateInternallyEndedEvent;
 			_currentStateStatus.State.Deactivate();
-			_statesHistory.Add(_currentStateStatus.StateRequest);
-			if(HistoryLimit >= 0 && _statesHistory.Count > HistoryLimit)
-			{
-				_statesHistory.RemoveAt(0);
-			}
+			_currentStateStatus.StateRequest.Clean();
 		}
 
 		_currentStateStatus = default(StateStatus);
@@ -127,17 +107,24 @@ public class StateMachine<T> where T : class
 		SetToNoStateInternally(false);
 		if(request != null)
 		{
-			IStateMachineState<T> state = request.CreateStateMachineState();
-
-			StateStatus newState = new StateStatus(request, state);
-			state.StateInternallyEndedEvent += OnStateInternallyEndedEvent;
-
-			_currentStateStatus = newState;
-			_currentStateStatus.State.Activate(Affected);
-
-			if(StateSetEvent != null)
+			if(request.IsAllowedToCreate())
 			{
-				StateSetEvent(_currentStateStatus.State);
+				IStateMachineState<T> state = request.CreateStateMachineState();
+
+				StateStatus newState = new StateStatus(request, state);
+				state.StateInternallyEndedEvent += OnStateInternallyEndedEvent;
+
+				_currentStateStatus = newState;
+				_currentStateStatus.State.Activate(Affected);
+
+				if(StateSetEvent != null)
+				{
+					StateSetEvent(_currentStateStatus.State);
+				}
+			}
+			else
+			{
+				request.Clean();
 			}
 		}
 	}
