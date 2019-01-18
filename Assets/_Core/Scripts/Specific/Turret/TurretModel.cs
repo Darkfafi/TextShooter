@@ -91,6 +91,8 @@ public class TurretModel : EntityModel, ITargetingUser
 
 		SetFireWordGun(new InstantFireWordGun(0.25f, 5f, timekeeper));
 		SetGunActiveState(true);
+
+		ModelTags.AddTag(Tags.ENEMY_TARGET);
 	}
 
 	protected override void OnModelDestroy()
