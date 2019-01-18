@@ -104,8 +104,9 @@ public class StateMachine<T> where T : class
 
 	private void SetStateInternally(IStateMachineStateRequest<T> request)
 	{
-		SetToNoStateInternally(false);
-		if(request != null)
+		bool willHaveNewState = request != null && request.IsAllowedToCreate();
+		SetToNoStateInternally(!willHaveNewState);
+		if(willHaveNewState)
 		{
 			if(request.IsAllowedToCreate())
 			{
@@ -122,10 +123,10 @@ public class StateMachine<T> where T : class
 					StateSetEvent(_currentStateStatus.State);
 				}
 			}
-			else
-			{
-				request.Clean();
-			}
+		}
+		else if(request != null)
+		{
+			request.Clean();
 		}
 	}
 

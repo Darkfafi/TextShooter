@@ -119,7 +119,7 @@ public class Brain<T> : IBrain<T> where T : class
 	private void OnStateSetEvent(IStateMachineState<T> state)
 	{
 		DeactivateStateSwitchers(_currentStateSwitchersType);
-		_currentStateSwitchersType = state.GetType();
+		_currentStateSwitchersType = state == null ? null : state.GetType();
 		ActivateStateSwitchers(_currentStateSwitchersType);
 	}
 
