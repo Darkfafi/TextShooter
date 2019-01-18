@@ -106,10 +106,11 @@ public abstract class BaseModelComponent
 		bool wasActive = ComponentState == ModelComponentState.Active;
 
 		ComponentState = ModelComponentState.Removed;
-		Removed();
 
 		if(IsEnabled && wasActive)
 			Disabled();
+
+		Removed();
 
 		Components.ChangedComponentEnabledStateEvent -= OnChangedComponentEnabledStateEvent;
 		Components = null;
