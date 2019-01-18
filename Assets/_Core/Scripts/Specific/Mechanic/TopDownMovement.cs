@@ -70,6 +70,10 @@ public class TopDownMovement : BaseModelComponent
 	private float _duration;
 	private float _timePassed;
 
+	private ModelTransform _transformToFollow;
+	private float _minFollowDistance;
+	private bool _stopFollowWhenReachMinDistance;
+
 	public void Setup(TimekeeperModel timekeeper, float baseSpeed = 4f)
 	{
 		_timekeeperModel = timekeeper;
@@ -94,6 +98,18 @@ public class TopDownMovement : BaseModelComponent
 	public void MoveTo(Vector2 position)
 	{
 		MoveTo(position, BaseSpeed);
+	}
+
+	public void Follow(ModelTransform transformToFollow, float minDistance = 0f, bool stopFollowWhenReachMinDistance = true)
+	{
+		_transformToFollow = transformToFollow;
+		_minFollowDistance = minDistance;
+		_stopFollowWhenReachMinDistance = stopFollowWhenReachMinDistance;
+	}
+
+	public void StopFollow()
+	{
+		_transformToFollow = null;
 	}
 
 	public void MoveTo(Vector2 position, float speed)
@@ -132,6 +148,11 @@ public class TopDownMovement : BaseModelComponent
 
 	private void Update(float deltaTime, float timeScale)
 	{
+		if(_transformToFollow != null)
+		{
+			MoveTo(_transformToFollow.Position + Vector3.Normalize(_transformToAffect.Position - _transformToFollow.Position) * _minFollowDistance);
+		}
+
 		if(IsEnabled && IsMoving && Parent != null && !Parent.IsDestroyed)
 		{
 			_timePassed += deltaTime * timeScale;
@@ -143,6 +164,11 @@ public class TopDownMovement : BaseModelComponent
 
 			if(CurrentNormalizedPosition == 1f)
 			{
+				if(_stopFollowWhenReachMinDistance)
+				{
+					StopFollow();
+				}
+
 				StopMoving();
 
 				if(ReachedDestinationEvent != null)
