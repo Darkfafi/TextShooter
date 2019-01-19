@@ -13,6 +13,16 @@ public class Brain<T> : IBrain<T> where T : class
 		get; private set;
 	}
 
+	public IBrainState BrainState
+	{
+		get
+		{
+			return _brainState;
+		}
+	}
+
+	private BrainState<T> _brainState;
+
 	private List<BaseBrainSwitcher<T>> _globalSwitchers = new List<BaseBrainSwitcher<T>>(); // Always active
 	private List<BaseBrainSwitcher<T>> _noStateSwitchers = new List<BaseBrainSwitcher<T>>(); // Only when no state active
 	private Dictionary<Type, List<BaseBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<BaseBrainSwitcher<T>>>(); // Only active for specific state

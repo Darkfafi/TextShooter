@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class StateMachine<T> where T : class
+public class StateMachine<T> : IStateMachine<T> where T : class
 {
 	public event Action<IStateMachineState<T>> StateInternallyEndedEvent;
 	public event Action<IStateMachineState<T>> StateSetEvent;
@@ -24,20 +24,14 @@ public class StateMachine<T> where T : class
 		}
 	}
 
-	public int HistoryLimit
-	{
-		get; private set;
-	}
-
 	public T Affected
 	{
 		get; private set;
 	}
 
-	public StateMachine(T affected, int historyLimit = 20)
+	public StateMachine(T affected)
 	{
 		Affected = affected;
-		HistoryLimit = historyLimit;
 	}
 
 	public void Clean()
@@ -193,6 +187,27 @@ public class StateMachine<T> where T : class
 			State = state;
 		}
 	}
+}
+
+public interface IStateMachine<T> where T : class
+{
+	Type CurrentStateType
+	{
+		get;
+	}
+
+	bool IsCurrentStateValid
+	{
+		get;
+	}
+
+	T Affected
+	{
+		get;
+	}
+
+	void RequestState(IStateMachineStateRequest<T> request, bool force = false);
+	void RequestNoState(bool force);
 }
 
 public interface IStateMachineAffected

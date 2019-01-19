@@ -1,4 +1,6 @@
-﻿public enum BrainSwitcherStatus
+﻿using System;
+
+public enum BrainSwitcherStatus
 {
 	NotReady,
 	Initialized,
@@ -7,7 +9,7 @@
 	Destroyed
 }
 
-public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
+public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T> where T : class
 {
 	public BrainSwitcherStatus SwitcherStatus
 	{
@@ -18,16 +20,35 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 	{
 		get
 		{
-			if(BrainStateMachine == null)
+			if(_brainStateMachine == null)
 				return null;
-			return BrainStateMachine.Affected;
+			return _brainStateMachine.Affected;
 		}
 	}
 
-	public StateMachine<T> BrainStateMachine
+	public Type CurrentStateType
 	{
-		get; private set;
+		get
+		{
+			if(_brainStateMachine == null)
+				return null;
+
+			return _brainStateMachine.CurrentStateType;
+		}
 	}
+
+	public bool IsCurrentStateValid
+	{
+		get
+		{
+			if(_brainStateMachine == null)
+				return false;
+
+			return _brainStateMachine.IsCurrentStateValid;
+		}
+	}
+
+	private StateMachine<T> _brainStateMachine;
 
 	public BaseBrainSwitcher()
 	{
@@ -39,7 +60,7 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 		if(SwitcherStatus != BrainSwitcherStatus.NotReady)
 			return;
 
-		BrainStateMachine = stateMachine;
+		_brainStateMachine = stateMachine;
 		SwitcherStatus = BrainSwitcherStatus.Initialized;
 		Initialized();
 	}
@@ -52,7 +73,7 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 		Deactivate();
 		SwitcherStatus = BrainSwitcherStatus.Destroyed;
 		Destroyed();
-		BrainStateMachine = null;
+		_brainStateMachine = null;
 	}
 
 	public void Activate()
@@ -71,6 +92,22 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 
 		SwitcherStatus = BrainSwitcherStatus.Deactivated;
 		Deactivated();
+	}
+
+	public void RequestState(IStateMachineStateRequest<T> request, bool force = false)
+	{
+		if(_brainStateMachine != null)
+		{
+			_brainStateMachine.RequestState(request, force);
+		}
+	}
+
+	public void RequestNoState(bool force)
+	{
+		if(_brainStateMachine != null)
+		{
+			_brainStateMachine.RequestNoState(force);
+		}
 	}
 
 	protected abstract void Initialized();

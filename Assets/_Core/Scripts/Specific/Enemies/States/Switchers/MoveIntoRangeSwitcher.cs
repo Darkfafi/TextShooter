@@ -42,6 +42,9 @@
 
 	private void TryActivateMovementState()
 	{
+		if(Affected == null)
+			return;
+
 		EntityModel closestTarget = _targetsFilter.GetFirst((a, b) =>
 		{
 			float distA = (a.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
@@ -51,7 +54,7 @@
 
 		if(closestTarget != null && (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude > _range)
 		{
-			BrainStateMachine.RequestState(new MovementStateRequest(closestTarget, _range));
+			RequestState(new MovementStateRequest(closestTarget, _range));
 		}
 	}
 }
