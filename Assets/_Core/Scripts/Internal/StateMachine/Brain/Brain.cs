@@ -69,7 +69,7 @@ public class Brain<T> : IBrain<T> where T : class
 			}
 
 			_stateSwitchers[stateType].Add(switcher);
-			switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
+			switcher.Initialize(BrainStateMachine);
 
 			if(BrainStateMachine.CurrentStateType == stateType)
 			{
@@ -79,7 +79,7 @@ public class Brain<T> : IBrain<T> where T : class
 		else
 		{
 			_noStateSwitchers.Add(switcher);
-			switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
+			switcher.Initialize(BrainStateMachine);
 
 			if(BrainStateMachine.CurrentStateType == null)
 			{
@@ -91,7 +91,7 @@ public class Brain<T> : IBrain<T> where T : class
 	public void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
 	{
 		_globalSwitchers.Add(switcher);
-		switcher.Initialize(BrainStateMachine.Affected, BrainStateMachine);
+		switcher.Initialize(BrainStateMachine);
 
 		if(IsEnabled)
 		{
@@ -101,7 +101,14 @@ public class Brain<T> : IBrain<T> where T : class
 
 	public void Clean()
 	{
-		SetEnabledState(false);
+		BrainStateMachine.StateSetEvent -= OnStateSetEvent;
+
+		DeactivateGlobalSwitchers();
+		DeactivateStateSwitchers(BrainStateMachine.CurrentStateType);
+
+		BrainStateMachine.Clean();
+		BrainStateMachine = null;
+
 		_globalSwitchers.Clear();
 		_globalSwitchers = null;
 
@@ -110,10 +117,6 @@ public class Brain<T> : IBrain<T> where T : class
 
 		_stateSwitchers.Clear();
 		_stateSwitchers = null;
-
-		BrainStateMachine.StateSetEvent -= OnStateSetEvent;
-		BrainStateMachine.Clean();
-		BrainStateMachine = null;
 	}
 
 	private void OnStateSetEvent(IStateMachineState<T> state)
