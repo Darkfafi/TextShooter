@@ -29,7 +29,26 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 
 		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyPosition);
 		enemyModel.Initialize(data.EnemyType);
-		enemyModel.AddComponent<EntityBrain>().SetupNoStateSwitcher(new MoveIntoRangeSwitcher(_timekeeperModel, 1f, FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET)));
+		EntityBrain brain = enemyModel.AddComponent<EntityBrain>();
+
+		brain.SetupNoStateSwitcher(
+			new MoveIntoRangeSwitcher(_timekeeperModel,
+			new MoveInRangeSwitcherData()
+			{
+				RangeToMoveTo = 1f,
+				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
+				DistanceToTriggerSwitcher = 3.5f,
+			})
+		);
+
+		brain.SetupNoStateSwitcher(
+			new MoveIntoRangeSwitcher(_timekeeperModel,
+			new MoveInRangeSwitcherData() {
+				RangeToMoveTo = 4f,
+				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
+				SpecifiedSpeed = 2.25f,
+			})
+		);
 
 		return enemyModel;
 	}

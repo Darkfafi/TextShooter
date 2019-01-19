@@ -89,7 +89,7 @@ public class TurretModel : EntityModel, ITargetingUser
 		_timekeeper = timekeeper;
 		_timekeeper.ListenToFrameTick(Update);
 
-		SetFireWordGun(new InstantFireWordGun(0.25f, 5f, timekeeper));
+		SetFireWordGun(new InstantFireWordGun(0.25f, 8f, timekeeper));
 		SetGunActiveState(true);
 
 		ModelTags.AddTag(Tags.ENEMY_TARGET);
