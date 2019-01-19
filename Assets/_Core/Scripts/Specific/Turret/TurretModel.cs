@@ -24,13 +24,13 @@ public class TurretModel : EntityModel, ITargetingUser
 						return false;
 
 					return true;
-				}, (a, b) =>
-				{
-					float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
-					float distB = (b.ModelTransform.Position - ModelTransform.Position).magnitude;
-					return (int)(distA - distB);
-				});
+				}, this.SortOnClosestTo());
 		}
+	}
+
+	public Lives Lives
+	{
+		get; private set;
 	}
 
 	public Targeting Targeting
@@ -93,6 +93,10 @@ public class TurretModel : EntityModel, ITargetingUser
 		SetGunActiveState(true);
 
 		ModelTags.AddTag(Tags.ENEMY_TARGET);
+
+		Lives = AddComponent<Lives>();
+		Lives.SetLivesAmount(3);
+		Lives.DeathEvent += OnDeathEvent;
 	}
 
 	protected override void OnModelDestroy()
@@ -104,7 +108,14 @@ public class TurretModel : EntityModel, ITargetingUser
 
 		_fireWordGun = null;
 
+		Lives.DeathEvent -= OnDeathEvent;
+		Lives = null;
 		Targeting = null;
+	}
+
+	private void OnDeathEvent(Lives livesComponent)
+	{
+		Destroy();
 	}
 
 	private void Update(float deltaTime, float timeScale)

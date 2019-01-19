@@ -8,7 +8,13 @@
 	{
 		_timekeeperModel = timekeeperModel;
 		_data = data;
-		_targetsFilter = EntityFilter<EntityModel>.Create(_data.TargetFilterRules);
+
+		FilterRules r = _data.TargetFilterRules; 
+		FilterRules.OpenConstructOnFilterRules(r);
+		FilterRules.AddComponentToConstruct<Lives>(true);
+		FilterRules.CloseConstruct(out r);
+
+		_targetsFilter = EntityFilter<EntityModel>.Create(r);
 	}
 
 	protected override void Initialized()
@@ -45,13 +51,7 @@
 		if(Affected == null)
 			return;
 
-		EntityModel closestTarget = _targetsFilter.GetFirst((a, b) =>
-		{
-			float distA = (a.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
-			float distB = (b.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
-			return (int)(distA - distB);
-		});
-
+		EntityModel closestTarget = _targetsFilter.GetFirst(e => e.GetComponent<Lives>().IsAlive, Affected.SortOnClosestTo());
 
 		if(closestTarget != null)
 		{
