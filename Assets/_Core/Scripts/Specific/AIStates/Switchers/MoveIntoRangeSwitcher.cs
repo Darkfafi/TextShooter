@@ -1,14 +1,14 @@
 ﻿public class MoveIntoRangeSwitcher : BaseBrainSwitcher<EntityModel>
 {
-	private float _range;
 	private TimekeeperModel _timekeeperModel;
 	private EntityFilter<EntityModel> _targetsFilter;
+	private MoveInRangeSwitcherData _data;
 
-	public MoveIntoRangeSwitcher(TimekeeperModel timekeeperModel, float range, FilterRules targetFilterRules)
+	public MoveIntoRangeSwitcher(TimekeeperModel timekeeperModel, MoveInRangeSwitcherData data)
 	{
-		_range = range;
 		_timekeeperModel = timekeeperModel;
-		_targetsFilter = EntityFilter<EntityModel>.Create(targetFilterRules);
+		_data = data;
+		_targetsFilter = EntityFilter<EntityModel>.Create(_data.TargetFilterRules);
 	}
 
 	protected override void Initialized()
@@ -52,9 +52,35 @@
 			return (int)(distA - distB);
 		});
 
-		if(closestTarget != null && (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude > _range)
+
+		if(closestTarget != null)
 		{
-			RequestState(new MovementStateRequest(closestTarget, _range));
+			float distance = (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
+
+			if(_data.DistanceToTriggerSwitcher.HasValue)
+			{
+				if(_data.DistanceToTriggerSwitcher > distance)
+					return;
+			}
+
+			if(distance > _data.RangeToMoveTo)
+			{
+				MovementStateRequest r = new MovementStateRequest(closestTarget, _data.RangeToMoveTo);
+
+				if(_data.SpecifiedSpeed.HasValue)
+					r.SpecifySpeed(_data.SpecifiedSpeed.Value);
+
+				RequestState(r);
+			}
 		}
 	}
+}
+
+
+public struct MoveInRangeSwitcherData
+{
+	public float RangeToMoveTo;
+	public float? SpecifiedSpeed;
+	public FilterRules TargetFilterRules;
+	public float? DistanceToTriggerSwitcher;
 }

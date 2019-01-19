@@ -30,6 +30,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	public Brain(T affected, bool isEnabledFromStart = true)
 	{
+		_brainState = new BrainState<T>(this);
 		BrainStateMachine = new StateMachine<T>(affected);
 		BrainStateMachine.StateSetEvent += OnStateSetEvent;
 
@@ -48,8 +49,8 @@ public class Brain<T> : IBrain<T> where T : class
 
 		if(IsEnabled)
 		{
-			ActivateGlobalSwitchers();
-			ActivateStateSwitchers(BrainStateMachine.CurrentStateType);
+			StateConditionSetGlobalSwitchers();
+			StateConditionSetStateSwitchers(BrainStateMachine.CurrentStateType);
 		}
 		else
 		{
@@ -79,21 +80,21 @@ public class Brain<T> : IBrain<T> where T : class
 			}
 
 			_stateSwitchers[stateType].Add(switcher);
-			switcher.Initialize(BrainStateMachine);
+			switcher.Initialize(this);
 
 			if(BrainStateMachine.CurrentStateType == stateType)
 			{
-				switcher.Activate();
+				switcher.Activate(true);
 			}
 		}
 		else
 		{
 			_noStateSwitchers.Add(switcher);
-			switcher.Initialize(BrainStateMachine);
+			switcher.Initialize(this);
 
 			if(BrainStateMachine.CurrentStateType == null)
 			{
-				switcher.Activate();
+				switcher.Activate(true);
 			}
 		}
 	}
@@ -101,11 +102,11 @@ public class Brain<T> : IBrain<T> where T : class
 	public void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
 	{
 		_globalSwitchers.Add(switcher);
-		switcher.Initialize(BrainStateMachine);
+		switcher.Initialize(this);
 
 		if(IsEnabled)
 		{
-			switcher.Activate();
+			switcher.Activate(true);
 		}
 	}
 
@@ -133,14 +134,22 @@ public class Brain<T> : IBrain<T> where T : class
 	{
 		DeactivateStateSwitchers(_currentStateSwitchersType);
 		_currentStateSwitchersType = state == null ? null : state.GetType();
-		ActivateStateSwitchers(_currentStateSwitchersType);
+		StateConditionSetGlobalSwitchers();
+		StateConditionSetStateSwitchers(_currentStateSwitchersType);
 	}
 
-	private void ActivateGlobalSwitchers()
+	private void StateConditionSetGlobalSwitchers()
 	{
 		for(int i = 0, c = _globalSwitchers.Count; i < c; i++)
 		{
-			_globalSwitchers[i].Activate();
+			if(_globalSwitchers[i].ConditionMet())
+			{
+				_globalSwitchers[i].Activate(false);
+			}
+			else
+			{
+				_globalSwitchers[i].Deactivate();
+			}
 		}
 	}
 
@@ -152,7 +161,7 @@ public class Brain<T> : IBrain<T> where T : class
 		}
 	}
 
-	private void ActivateStateSwitchers(Type stateType)
+	private void StateConditionSetStateSwitchers(Type stateType)
 	{
 		List<BaseBrainSwitcher<T>> switchers;
 
@@ -169,7 +178,14 @@ public class Brain<T> : IBrain<T> where T : class
 		{
 			for(int i = 0, c = switchers.Count; i < c; i++)
 			{
-				switchers[i].Activate();
+				if(switchers[i].ConditionMet())
+				{
+					switchers[i].Activate(false);
+				}
+				else
+				{
+					switchers[i].Deactivate();
+				}
 			}
 		}
 	}

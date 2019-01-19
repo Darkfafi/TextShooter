@@ -7,6 +7,7 @@ public class MovementState : StateMachineState<EntityModel>
 	private Vector2 _locationToMoveTo;
 	private EntityModel _entityToFollow;
 	private float _minDistance;
+	private float? _speed;
 
 	public void Setup(Vector2 locationToMoveTo)
 	{
@@ -17,6 +18,11 @@ public class MovementState : StateMachineState<EntityModel>
 	{
 		_minDistance = minDistance;
 		_entityToFollow = entityToFollow;
+	}
+
+	public void SetSpecifiedSpeed(float speed)
+	{
+		_speed = speed;
 	}
 
 	protected override void OnActivated()
@@ -33,6 +39,11 @@ public class MovementState : StateMachineState<EntityModel>
 			else
 			{
 				_affectingTopDownComponent.MoveTo(_locationToMoveTo);
+			}
+
+			if(_speed.HasValue)
+			{
+				_affectingTopDownComponent.SetMovementSpeed(_speed.Value);
 			}
 		}
 		else
@@ -59,6 +70,7 @@ public class MovementStateRequest : BaseStateMachineStateRequest<MovementState, 
 	private Vector2 _locationToMoveTo;
 	private EntityModel _entityToFollow;
 	private float _minDistance;
+	private float? _speed;
 
 	public MovementStateRequest(Vector2 locationToMoveTo)
 	{
@@ -69,6 +81,16 @@ public class MovementStateRequest : BaseStateMachineStateRequest<MovementState, 
 	{
 		_entityToFollow = entityToFollow;
 		_minDistance = minDistance;
+	}
+
+	public void SpecifySpeed(float speed)
+	{
+		_speed = speed;
+	}
+
+	public void UnsetSpecifiedSpeed()
+	{
+		_speed = null;
 	}
 
 	protected override void SetupCreatedState(MovementState state)
@@ -82,6 +104,10 @@ public class MovementStateRequest : BaseStateMachineStateRequest<MovementState, 
 			state.Setup(_entityToFollow, _minDistance);
 		}
 
+		if(_speed.HasValue)
+		{
+			state.SetSpecifiedSpeed(_speed.Value);
+		}
 	}
 
 	public override void Clean()

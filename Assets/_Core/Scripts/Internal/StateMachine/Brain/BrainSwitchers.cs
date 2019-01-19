@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public enum BrainSwitcherStatus
 {
@@ -20,9 +21,9 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 	{
 		get
 		{
-			if(_brainStateMachine == null)
+			if(_brain == null || _brain.BrainStateMachine == null)
 				return null;
-			return _brainStateMachine.Affected;
+			return _brain.BrainStateMachine.Affected;
 		}
 	}
 
@@ -30,10 +31,10 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 	{
 		get
 		{
-			if(_brainStateMachine == null)
+			if(_brain == null || _brain.BrainStateMachine == null)
 				return null;
 
-			return _brainStateMachine.CurrentStateType;
+			return _brain.BrainStateMachine.CurrentStateType;
 		}
 	}
 
@@ -41,26 +42,27 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 	{
 		get
 		{
-			if(_brainStateMachine == null)
+			if(_brain == null || _brain.BrainStateMachine == null)
 				return false;
 
-			return _brainStateMachine.IsCurrentStateValid;
+			return _brain.BrainStateMachine.IsCurrentStateValid;
 		}
 	}
 
-	private StateMachine<T> _brainStateMachine;
+	private Dictionary<string, bool> _keysToSetOnStateRequest = new Dictionary<string, bool>();
+	private Dictionary<string, bool> _conditionKeys = new Dictionary<string, bool>();
+	private Brain<T> _brain;
 
 	public BaseBrainSwitcher()
 	{
 		SwitcherStatus = BrainSwitcherStatus.NotReady;
 	}
 
-	public void Initialize(StateMachine<T> stateMachine)
+	public void Initialize(Brain<T> brain)
 	{
 		if(SwitcherStatus != BrainSwitcherStatus.NotReady)
 			return;
-
-		_brainStateMachine = stateMachine;
+		_brain = brain;
 		SwitcherStatus = BrainSwitcherStatus.Initialized;
 		Initialized();
 	}
@@ -73,12 +75,15 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		Deactivate();
 		SwitcherStatus = BrainSwitcherStatus.Destroyed;
 		Destroyed();
-		_brainStateMachine = null;
+		_brain = null;
 	}
 
-	public void Activate()
+	public void Activate(bool onlyIfConditionMet)
 	{
 		if(SwitcherStatus != BrainSwitcherStatus.Initialized && SwitcherStatus != BrainSwitcherStatus.Deactivated)
+			return;
+
+		if(onlyIfConditionMet && !ConditionMet())
 			return;
 
 		SwitcherStatus = BrainSwitcherStatus.Activated;
@@ -96,24 +101,79 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 
 	public void RequestState(IStateMachineStateRequest<T> request, bool force = false)
 	{
-		if(_brainStateMachine != null)
+		if(_brain != null && _brain.BrainStateMachine != null)
 		{
-			_brainStateMachine.RequestState(request, force);
+			SetRequestKeys();
+			_brain.BrainStateMachine.RequestState(request, force);
 		}
 	}
 
 	public void RequestNoState(bool force)
 	{
-		if(_brainStateMachine != null)
+		if(_brain != null && _brain.BrainStateMachine != null)
 		{
-			_brainStateMachine.RequestNoState(force);
+			SetRequestKeys();
+			_brain.BrainStateMachine.RequestNoState(force);
 		}
+	}
+
+	public bool ConditionMet()
+	{
+		if(_brain == null || _brain.BrainState == null)
+			return false;
+
+		foreach(var pair in _conditionKeys)
+		{
+			if(_brain.BrainState.GetKey(pair.Key) != pair.Value)
+				return false;
+		}
+
+		return true;
 	}
 
 	protected abstract void Initialized();
 	protected abstract void Destroyed();
 	protected abstract void Activated();
 	protected abstract void Deactivated();
+
+	private void SetRequestKeys()
+	{
+		if(_brain == null || _brain.BrainStateMachine == null)
+		{
+			foreach(var pair in _keysToSetOnStateRequest)
+			{
+				_brain.BrainState.SetKey(pair.Key, pair.Value);
+			}
+		}
+	}
+
+	public BaseBrainSwitcher<T> SetConditionKey(string key, bool value = true)
+	{
+		if(!_conditionKeys.ContainsKey(key))
+		{
+			_conditionKeys.Add(key, value);
+		}
+		else
+		{
+			_conditionKeys[key] = value;
+		}
+
+		return this;
+	}
+
+	public BaseBrainSwitcher<T> SetOnRequestKeyToSet(string key, bool value = true)
+	{
+		if(!_keysToSetOnStateRequest.ContainsKey(key))
+		{
+			_keysToSetOnStateRequest.Add(key, value);
+		}
+		else
+		{
+			_keysToSetOnStateRequest[key] = value;
+		}
+
+		return this;
+	}
 }
 
 public interface IBrainSwitcher<T> where T : class
@@ -128,6 +188,7 @@ public interface IBrainSwitcher<T> where T : class
 		get;
 	}
 
-	void Initialize(StateMachine<T> stateMachine);
+	bool ConditionMet();
+	void Initialize(Brain<T> brain);
 	void Clean();
 }
