@@ -50,6 +50,10 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 			})
 		);
 
+		brain.SetupGlobalSwitcher(new UseWeaponInRangeSwitcher(_timekeeperModel, FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET), 0.8f));
+
+		enemyModel.AddComponent<SuicideBombWeapon>();
+
 		return enemyModel;
 	}
 }

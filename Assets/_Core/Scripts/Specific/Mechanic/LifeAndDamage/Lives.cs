@@ -25,6 +25,9 @@ public class Lives : BaseModelComponent
 
 	public void Damage(int amount)
 	{
+		if(amount < 0)
+			return;
+
 		Amount = Mathf.Max(Amount - amount, 0);
 		if(Amount == 0)
 		{

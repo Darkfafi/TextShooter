@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 
-public class MovementState : StateMachineState<EntityModel>
+/// <summary>
+/// State which can make the affected entity move and follow in a linear manner.
+/// </summary>
+public class LinearMovementState : StateMachineState<EntityModel>
 {
 	private TopDownMovement _affectingTopDownComponent;
 
@@ -65,7 +68,7 @@ public class MovementState : StateMachineState<EntityModel>
 	}
 }
 
-public class MovementStateRequest : BaseStateMachineStateRequest<MovementState, EntityModel>
+public class MovementStateRequest : BaseStateMachineStateRequest<LinearMovementState, EntityModel>
 {
 	private Vector2 _locationToMoveTo;
 	private EntityModel _entityToFollow;
@@ -93,7 +96,7 @@ public class MovementStateRequest : BaseStateMachineStateRequest<MovementState, 
 		_speed = null;
 	}
 
-	protected override void SetupCreatedState(MovementState state)
+	protected override void SetupCreatedState(LinearMovementState state)
 	{
 		if(_entityToFollow == null)
 		{
