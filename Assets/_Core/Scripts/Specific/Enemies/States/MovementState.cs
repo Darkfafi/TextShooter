@@ -24,6 +24,8 @@ public class MovementState : StateMachineState<EntityModel>
 		if(Affected.HasComponent<TopDownMovement>())
 		{
 			_affectingTopDownComponent = Affected.GetComponent<TopDownMovement>();
+			_affectingTopDownComponent.StoppedMovingEvent += OnStoppedMovingEvent;
+
 			if(_entityToFollow != null)
 			{
 				_affectingTopDownComponent.Follow(_entityToFollow.ModelTransform, _minDistance);
@@ -32,8 +34,6 @@ public class MovementState : StateMachineState<EntityModel>
 			{
 				_affectingTopDownComponent.MoveTo(_locationToMoveTo);
 			}
-
-			_affectingTopDownComponent.ReachedDestinationEvent += OnReachedDestinationEvent;
 		}
 		else
 		{
@@ -41,16 +41,16 @@ public class MovementState : StateMachineState<EntityModel>
 		}
 	}
 
-	private void OnReachedDestinationEvent(TopDownMovement component, Vector2 destination)
-	{
-		EndStateInternally();
-	}
-
 	protected override void OnDeactivated()
 	{
+		_affectingTopDownComponent.StoppedMovingEvent -= OnStoppedMovingEvent;
 		_affectingTopDownComponent.StopFollow();
-		_affectingTopDownComponent.ReachedDestinationEvent -= OnReachedDestinationEvent;
 		_affectingTopDownComponent = null;
+	}
+
+	private void OnStoppedMovingEvent(TopDownMovement component)
+	{
+		EndStateInternally();
 	}
 }
 

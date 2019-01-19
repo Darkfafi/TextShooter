@@ -4,6 +4,7 @@ using UnityEngine;
 public class TopDownMovement : BaseModelComponent
 {
 	public event Action<TopDownMovement, Vector2> ReachedDestinationEvent;
+	public event Action<TopDownMovement> StoppedMovingEvent;
 
 	/// <summary>
 	/// The movement speed which is being used during movement
@@ -110,6 +111,7 @@ public class TopDownMovement : BaseModelComponent
 	public void StopFollow()
 	{
 		_transformToFollow = null;
+		StopMoving();
 	}
 
 	public void MoveTo(Vector2 position, float speed)
@@ -127,6 +129,9 @@ public class TopDownMovement : BaseModelComponent
 	public void StopMoving()
 	{
 		SetMovementSpeed(0f);
+
+		if(StoppedMovingEvent != null)
+			StoppedMovingEvent(this);
 	}
 
 	public void SetBaseSpeed(float newSpeed)
@@ -150,7 +155,14 @@ public class TopDownMovement : BaseModelComponent
 	{
 		if(_transformToFollow != null)
 		{
-			MoveTo(_transformToFollow.Position + Vector3.Normalize(_transformToAffect.Position - _transformToFollow.Position) * _minFollowDistance);
+			if(_transformToFollow.ComponentState == ModelComponentState.Removed)
+			{
+				StopFollow();
+			}
+			else
+			{
+				MoveTo(_transformToFollow.Position + Vector3.Normalize(_transformToAffect.Position - _transformToFollow.Position) * _minFollowDistance);
+			}
 		}
 
 		if(IsEnabled && IsMoving && Parent != null && !Parent.IsDestroyed)
