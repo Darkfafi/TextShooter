@@ -8,60 +8,66 @@
 		}
 	}
 
-	private EntityFilter<EnemyModel> _spawnedEnemyTrackerFilter;
-	private string _eventEnemyTag;
-	private int _enemiesSpawned;
+	private EntityFilter<EntityModel> _spawnedKillablesTrackerFilter;
+	private string _eventEntityTag;
+	private int _entitiesSpawned;
 
-	public KillsProgressor(string eventEnemyTag, int goalKills) : base(goalKills)
+	public KillsProgressor(string eventEntityTag, int goalKills) : base(goalKills)
 	{
-		_eventEnemyTag = eventEnemyTag;
+		_eventEntityTag = eventEntityTag;
 	}
 
 	public override void StartProgressor(string optionalValueString)
 	{
-		_enemiesSpawned = 0;
-		_spawnedEnemyTrackerFilter = EntityFilter<EnemyModel>.Create(FilterRules.CreateHasAnyTagsFilter(_eventEnemyTag));
-		_spawnedEnemyTrackerFilter.TrackedEvent += OnTrackedEvent;
-		_spawnedEnemyTrackerFilter.UntrackedEvent += OnUntrackedEvent;
+		_entitiesSpawned = 0;
+		FilterRules f;
+		FilterRules.OpenConstructHasAllTags(_eventEntityTag);
+		FilterRules.AddComponentToConstruct<Lives>(true);
+		FilterRules.CloseConstruct(out f);
+
+		_spawnedKillablesTrackerFilter = EntityFilter<EntityModel>.Create(f);
+		_spawnedKillablesTrackerFilter.TrackedEvent += OnTrackedEvent;
+		_spawnedKillablesTrackerFilter.UntrackedEvent += OnUntrackedEvent;
 	}
 
 	public override void EndProgressor()
 	{
-		EnemyModel[] spawnedEnemies = _spawnedEnemyTrackerFilter.GetAll(e => !e.IsDead);
+		EntityModel[] spawnedKillables = _spawnedKillablesTrackerFilter.GetAll(e => e.GetComponent<Lives>().IsAlive);
 
-		for(int i = 0; i < spawnedEnemies.Length; i++)
+		for(int i = 0; i < spawnedKillables.Length; i++)
 		{
-			spawnedEnemies[i].DeathEvent -= OnDeathEvent;
+			spawnedKillables[i].GetComponent<Lives>().DeathEvent -= OnDeathEvent;
 		}
 
-		_spawnedEnemyTrackerFilter.TrackedEvent -= OnTrackedEvent;
-		_spawnedEnemyTrackerFilter.UntrackedEvent -= OnUntrackedEvent;
-		_spawnedEnemyTrackerFilter.Clean();
-		_spawnedEnemyTrackerFilter = null;
+		_spawnedKillablesTrackerFilter.TrackedEvent -= OnTrackedEvent;
+		_spawnedKillablesTrackerFilter.UntrackedEvent -= OnUntrackedEvent;
+		_spawnedKillablesTrackerFilter.Clean();
+		_spawnedKillablesTrackerFilter = null;
 	}
 
-	private void OnTrackedEvent(EnemyModel enemy)
+	private void OnTrackedEvent(EntityModel entity)
 	{
-		enemy.DeathEvent += OnDeathEvent;
-		_enemiesSpawned++;
+		entity.GetComponent<Lives>().DeathEvent += OnDeathEvent;
+		_entitiesSpawned++;
 	}
 
-	private void OnUntrackedEvent(EnemyModel enemy)
+	private void OnUntrackedEvent(EntityModel entity)
 	{
-		enemy.DeathEvent -= OnDeathEvent;
-		if(!enemy.IsDead)
+		Lives lives = entity.GetComponent<Lives>();
+		lives.DeathEvent -= OnDeathEvent;
+		if(lives.IsAlive)
 		{
-			OnDeathEvent(enemy);
+			OnDeathEvent(lives);
 		}
 	}
 
-	private void OnDeathEvent(EnemyModel enemy)
+	private void OnDeathEvent(Lives livesComponent)
 	{
-		if(_spawnedEnemyTrackerFilter != null)
+		if(_spawnedKillablesTrackerFilter != null)
 		{
-			enemy.DeathEvent -= OnDeathEvent;
-			int enemyAmountToGo = (GoalValue - _enemiesSpawned);
-			UpdateValue(GoalValue - (_spawnedEnemyTrackerFilter.GetAll((e) => !e.IsDead).Length + enemyAmountToGo));
+			livesComponent.DeathEvent -= OnDeathEvent;
+			int entityAmountToGo = (GoalValue - _entitiesSpawned);
+			UpdateValue(GoalValue - (_spawnedKillablesTrackerFilter.GetAll((e) => e.GetComponent<Lives>().IsAlive).Length + entityAmountToGo));
 		}
 	}
 }

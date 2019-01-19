@@ -1,10 +1,7 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EnemyModel : EntityModel, IStateMachineAffected
 {
-	public event Action<EnemyModel> DeathEvent;
-
 	public WordsHolder WordsHolder
 	{
 		get; private set;
@@ -15,11 +12,19 @@ public class EnemyModel : EntityModel, IStateMachineAffected
 		get; private set;
 	}
 
+	public Lives Lives
+	{
+		get; private set;
+	}
+
 	public bool IsDead
 	{
 		get
 		{
-			return WordsHolder == null || WordsHolder.WordsAmount(true) == 0;
+			if(Lives == null || Lives.ComponentState == ModelComponentState.Removed)
+				return true;
+
+			return !Lives.IsAlive;
 		}
 	}
 
@@ -34,10 +39,12 @@ public class EnemyModel : EntityModel, IStateMachineAffected
 		if(WordsHolder != null)
 			return;
 
+		Lives = AddComponent<Lives>();
 		WordsHolder = AddComponent<WordsHolder>();
 		WordsHolder.Setup(currentWord, nextWords);
 		WordsHp = AddComponent<WordsHp>();
 
+		Lives.DeathEvent += OnDeathEvent;
 		WordsHolder.WordCycledEvent += OnWordCycledEvent;
 	}
 
@@ -45,22 +52,24 @@ public class EnemyModel : EntityModel, IStateMachineAffected
 	{
 		base.OnModelDestroy();
 
+		Lives.DeathEvent -= OnDeathEvent;
 		WordsHolder.WordCycledEvent -= OnWordCycledEvent;
 
+		Lives = null;
 		WordsHolder = null;
 		WordsHp = null;
+	}
+
+	private void OnDeathEvent(Lives livesComponent)
+	{
+		Destroy();
 	}
 
 	private void OnWordCycledEvent(string previousWord, string newWord, WordsHolder wordsHolder)
 	{
 		if(string.IsNullOrEmpty(newWord))
 		{
-			if(DeathEvent != null)
-			{
-				DeathEvent(this);
-			}
-
-			Destroy();
+			Lives.Kill(); // No words left, so kill enemy
 		}
 	}
 }
