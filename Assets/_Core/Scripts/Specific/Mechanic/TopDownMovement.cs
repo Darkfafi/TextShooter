@@ -106,6 +106,7 @@ public class TopDownMovement : BaseModelComponent
 		_transformToFollow = transformToFollow;
 		_minFollowDistance = minDistance;
 		_stopFollowWhenReachMinDistance = stopFollowWhenReachMinDistance;
+		MoveTo(_transformToFollow.Position);
 	}
 
 	public void StopFollow()
@@ -161,7 +162,7 @@ public class TopDownMovement : BaseModelComponent
 			}
 			else
 			{
-				MoveTo(_transformToFollow.Position + Vector3.Normalize(_transformToAffect.Position - _transformToFollow.Position) * _minFollowDistance);
+				MoveTo(_transformToFollow.Position + Vector3.Normalize(_transformToAffect.Position - _transformToFollow.Position) * _minFollowDistance, MovementSpeed);
 			}
 		}
 
