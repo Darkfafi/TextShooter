@@ -13,6 +13,8 @@
 		{
 			Affected.GetComponent<BaseWeapon>().Use(_livesComponent);
 		}
+
+		EndStateInternally();
 	}
 
 	protected override void OnDeactivated()

@@ -51,7 +51,8 @@
 			float distance = (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
 			if(Affected.HasComponent<BaseWeapon>())
 			{
-				if(distance > (Affected.GetComponent<BaseWeapon>().Radius * _useAtRadiusPercentage))
+				BaseWeapon weapon = Affected.GetComponent<BaseWeapon>();
+				if(!weapon.CanBeUsed || distance > (weapon.Radius * _useAtRadiusPercentage))
 					return;
 			}
 			else
