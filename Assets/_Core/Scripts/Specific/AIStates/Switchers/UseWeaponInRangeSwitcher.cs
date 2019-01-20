@@ -1,14 +1,13 @@
 ﻿public class UseWeaponInRangeSwitcher : BaseBrainSwitcher<EntityModel>
 {
-	private TimekeeperModel _timekeeperModel;
 	private EntityFilter<EntityModel> _targetsFilter;
 	private float _useAtRadiusPercentage;
+	private EntityModel _lastCalculatedTarget;
 
-	public UseWeaponInRangeSwitcher(TimekeeperModel timekeeperModel, FilterRules targetFilterRules, float useAtRadiusPercentage = 1f)
+	public UseWeaponInRangeSwitcher(FilterRules targetFilterRules, float useAtRadiusPercentage = 1f)
 	{
 		useAtRadiusPercentage = UnityEngine.Mathf.Clamp01(useAtRadiusPercentage);
 
-		_timekeeperModel = timekeeperModel;
 		_useAtRadiusPercentage = useAtRadiusPercentage;
 		FilterRules.OpenConstructOnFilterRules(targetFilterRules);
 		FilterRules.AddComponentToConstruct<Lives>(true);
@@ -17,33 +16,34 @@
 		_targetsFilter = EntityFilter<EntityModel>.Create(targetFilterRules); 
 	}
 
-	protected override void Initialized()
+	protected override int CalculatePriorityLevel()
 	{
-
-	}
-
-	protected override void Activated()
-	{
-		_timekeeperModel.ListenToFrameTick(OnUpdate);
-	}
-
-	protected override void Deactivated()
-	{
-		_timekeeperModel.UnlistenFromFrameTick(OnUpdate);
+		int prio;
+		_lastCalculatedTarget = GetTargetCalculatePrio(out prio);
+		return prio;
 	}
 
 	protected override void Destroyed()
 	{
 		_targetsFilter.Clean();
 		_targetsFilter = null;
-
-		_timekeeperModel = null;
 	}
 
-	private void OnUpdate(float deltaTime, float timeScale)
+	protected override void OnSwitchIfDesired()
+	{
+		if(_lastCalculatedTarget != null && PriorityLevel != SwitcherSettings.NO_PRIO)
+		{
+			RequestState(new UseWeaponStateRequest(_lastCalculatedTarget.GetComponent<Lives>()));
+		}
+	}
+
+	private EntityModel GetTargetCalculatePrio(out int prio)
 	{
 		if(Affected == null)
-			return;
+		{
+			prio = SwitcherSettings.NO_PRIO;
+			return null;
+		}
 
 		EntityModel closestTarget = _targetsFilter.GetFirst(e => e.GetComponent<Lives>().IsAlive, Affected.SortOnClosestTo());
 		if(closestTarget != null)
@@ -53,14 +53,24 @@
 			{
 				BaseWeapon weapon = Affected.GetComponent<BaseWeapon>();
 				if(!weapon.CanBeUsed || distance > (weapon.Radius * _useAtRadiusPercentage))
-					return;
+				{
+					prio = SwitcherSettings.NO_PRIO;
+					return closestTarget;
+				}
 			}
 			else
 			{
-				return;
+				prio = SwitcherSettings.NO_PRIO;
+				return closestTarget;
 			}
 
-			RequestState(new UseWeaponStateRequest(closestTarget.GetComponent<Lives>()));
+			prio = SwitcherSettings.NORMAL_BASE_FULL_PRIO;
+
+			return closestTarget;
+
 		}
+
+		prio = SwitcherSettings.NO_PRIO;
+		return null;
 	}
 }

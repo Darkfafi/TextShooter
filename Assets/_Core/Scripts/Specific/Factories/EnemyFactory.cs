@@ -29,20 +29,20 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 
 		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyPosition);
 		enemyModel.Initialize(data.EnemyType);
-		EntityBrain brain = enemyModel.AddComponent<EntityBrain>();
+		ModelBrain<EntityModel> brain = enemyModel.AddComponent<EntityBrain>().Setup(_timekeeperModel);
 
 		brain.SetupNoStateSwitcher(
-			new MoveIntoRangeSwitcher(_timekeeperModel,
+			new MoveIntoRangeSwitcher(
 			new MoveInRangeSwitcherData()
 			{
 				RangeToMoveTo = 1f,
 				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
-				DistanceToTriggerSwitcher = 3.5f,
+				DistanceToTriggerSwitcher = 5f,
 			})
 		);
 
 		brain.SetupNoStateSwitcher(
-			new MoveIntoRangeSwitcher(_timekeeperModel,
+			new MoveIntoRangeSwitcher(
 			new MoveInRangeSwitcherData() {
 				RangeToMoveTo = 4f,
 				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
@@ -50,7 +50,7 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 			})
 		);
 
-		brain.SetupGlobalSwitcher(new UseWeaponInRangeSwitcher(_timekeeperModel, FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET), 0.8f));
+		brain.SetupGlobalSwitcher(new UseWeaponInRangeSwitcher(FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET), 0.8f));
 
 		enemyModel.AddComponent<SuicideBombWeapon>();
 

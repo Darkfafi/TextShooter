@@ -17,6 +17,11 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		get; private set;
 	}
 
+	public int PriorityLevel
+	{
+		get; private set;
+	}
+
 	public T Affected
 	{
 		get
@@ -56,6 +61,11 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 	public BaseBrainSwitcher()
 	{
 		SwitcherStatus = BrainSwitcherStatus.NotReady;
+	}
+
+	public void CallCalculatePriorityLevel()
+	{
+		PriorityLevel = CalculatePriorityLevel();
 	}
 
 	public void Initialize(Brain<T> brain)
@@ -99,6 +109,14 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		Deactivated();
 	}
 
+	public void SwitchIfDesired()
+	{
+		if(SwitcherStatus == BrainSwitcherStatus.Activated)
+		{
+			OnSwitchIfDesired();
+		}
+	}
+
 	public void RequestState(IStateMachineStateRequest<T> request, bool force = false)
 	{
 		if(_brain != null && _brain.BrainStateMachine != null)
@@ -131,10 +149,28 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		return true;
 	}
 
-	protected abstract void Initialized();
-	protected abstract void Destroyed();
-	protected abstract void Activated();
-	protected abstract void Deactivated();
+	protected virtual void Initialized()
+	{
+
+	}
+
+	protected virtual void Destroyed()
+	{
+
+	}
+
+	protected virtual void Activated()
+	{
+
+	}
+
+	protected virtual void Deactivated()
+	{
+
+	}
+
+	protected abstract int CalculatePriorityLevel();
+	protected abstract void OnSwitchIfDesired();
 
 	private void SetRequestKeys()
 	{

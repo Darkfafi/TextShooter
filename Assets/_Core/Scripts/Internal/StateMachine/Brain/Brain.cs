@@ -27,9 +27,11 @@ public class Brain<T> : IBrain<T> where T : class
 	private List<BaseBrainSwitcher<T>> _noStateSwitchers = new List<BaseBrainSwitcher<T>>(); // Only when no state active
 	private Dictionary<Type, List<BaseBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<BaseBrainSwitcher<T>>>(); // Only active for specific state
 	private Type _currentStateSwitchersType = null;
+	private TimekeeperModel _timekeeperModel;
 
-	public Brain(T affected, bool isEnabledFromStart = true)
+	public Brain(TimekeeperModel timekeeperModel, T affected, bool isEnabledFromStart = true)
 	{
+		_timekeeperModel = timekeeperModel;
 		_brainState = new BrainState<T>(this);
 		BrainStateMachine = new StateMachine<T>(affected);
 		BrainStateMachine.StateSetEvent += OnStateSetEvent;
@@ -51,9 +53,11 @@ public class Brain<T> : IBrain<T> where T : class
 		{
 			StateConditionSetGlobalSwitchers();
 			StateConditionSetStateSwitchers(BrainStateMachine.CurrentStateType);
+			_timekeeperModel.ListenToFrameTick(OnUpdate);
 		}
 		else
 		{
+			_timekeeperModel.UnlistenFromFrameTick(OnUpdate);
 			DeactivateGlobalSwitchers();
 			DeactivateStateSwitchers(BrainStateMachine.CurrentStateType);
 			BrainStateMachine.RequestNoState(false);
@@ -112,6 +116,9 @@ public class Brain<T> : IBrain<T> where T : class
 
 	public void Clean()
 	{
+		_timekeeperModel.UnlistenFromFrameTick(OnUpdate);
+		_timekeeperModel = null;
+
 		BrainStateMachine.StateSetEvent -= OnStateSetEvent;
 
 		DeactivateGlobalSwitchers();
@@ -119,7 +126,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 		BrainStateMachine.Clean();
 		BrainStateMachine = null;
-
+		
 		_globalSwitchers.Clear();
 		_globalSwitchers = null;
 
@@ -128,6 +135,30 @@ public class Brain<T> : IBrain<T> where T : class
 
 		_stateSwitchers.Clear();
 		_stateSwitchers = null;
+	}
+
+	private void OnUpdate(float deltaTime, float timeScale)
+	{
+		if(BrainStateMachine == null)
+			return;
+
+		List<BaseBrainSwitcher<T>> switchers = new List<BaseBrainSwitcher<T>>(_globalSwitchers);
+		switchers.AddRange(GetStateSwitchers(BrainStateMachine.CurrentStateType));
+
+		for(int i = 0, c = switchers.Count; i < c; i++)
+		{
+			switchers[i].CallCalculatePriorityLevel();
+		}
+
+		switchers.Sort((a, b) =>
+		{
+			return b.PriorityLevel - a.PriorityLevel;
+		});
+
+		for(int i = 0, c = switchers.Count; i < c; i++)
+		{
+			switchers[i].SwitchIfDesired();
+		}
 	}
 
 	private void OnStateSetEvent(IStateMachineState<T> state)
@@ -163,16 +194,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void StateConditionSetStateSwitchers(Type stateType)
 	{
-		List<BaseBrainSwitcher<T>> switchers;
-
-		if(stateType != null)
-		{
-			_stateSwitchers.TryGetValue(stateType, out switchers);
-		}
-		else
-		{
-			switchers = _noStateSwitchers;
-		}
+		List<BaseBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
 		if(switchers != null)
 		{
@@ -192,16 +214,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void DeactivateStateSwitchers(Type stateType)
 	{
-		List<BaseBrainSwitcher<T>> switchers;
-
-		if(stateType != null)
-		{
-			_stateSwitchers.TryGetValue(stateType, out switchers);
-		}
-		else
-		{
-			switchers = _noStateSwitchers;
-		}
+		List<BaseBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
 		if(switchers != null)
 		{
@@ -210,6 +223,25 @@ public class Brain<T> : IBrain<T> where T : class
 				switchers[i].Deactivate();
 			}
 		}
+	}
+
+	private List<BaseBrainSwitcher<T>> GetStateSwitchers(Type stateType)
+	{
+		List<BaseBrainSwitcher<T>> switchers;
+
+		if(stateType != null)
+		{
+			if(!_stateSwitchers.TryGetValue(stateType, out switchers))
+			{
+				return new List<BaseBrainSwitcher<T>>();
+			}
+		}
+		else
+		{
+			switchers = _noStateSwitchers;
+		}
+
+		return switchers;
 	}
 }
 
