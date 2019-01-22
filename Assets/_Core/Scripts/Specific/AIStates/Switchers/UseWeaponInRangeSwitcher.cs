@@ -2,7 +2,6 @@
 {
 	private EntityFilter<EntityModel> _targetsFilter;
 	private float _useAtRadiusPercentage;
-	private EntityModel _lastCalculatedTarget;
 
 	public UseWeaponInRangeSwitcher(FilterRules targetFilterRules, float useAtRadiusPercentage = 1f)
 	{
@@ -16,25 +15,23 @@
 		_targetsFilter = EntityFilter<EntityModel>.Create(targetFilterRules); 
 	}
 
-	protected override int CalculatePriorityLevel()
-	{
-		int prio;
-		_lastCalculatedTarget = GetTargetCalculatePrio(out prio);
-		return prio;
-	}
-
 	protected override void Destroyed()
 	{
 		_targetsFilter.Clean();
 		_targetsFilter = null;
 	}
 
-	protected override void OnSwitchIfDesired()
+	protected override PotentialSwitch<EntityModel>? CheckForSwitchRequest()
 	{
-		if(_lastCalculatedTarget != null && PriorityLevel != SwitcherSettings.NO_PRIO)
+		int prio;
+		EntityModel target = GetTargetCalculatePrio(out prio);
+
+		if(target != null && prio != SwitcherSettings.NO_PRIO)
 		{
-			RequestState(new UseWeaponStateRequest(_lastCalculatedTarget.GetComponent<Lives>()));
+			return CreatePotentialSwitchToState(new UseWeaponStateRequest(target.GetComponent<Lives>()), prio);
 		}
+
+		return null;
 	}
 
 	private EntityModel GetTargetCalculatePrio(out int prio)

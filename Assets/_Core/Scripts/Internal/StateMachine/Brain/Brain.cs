@@ -26,6 +26,8 @@ public class Brain<T> : IBrain<T> where T : class
 	private List<BaseBrainSwitcher<T>> _globalSwitchers = new List<BaseBrainSwitcher<T>>(); // Always active
 	private List<BaseBrainSwitcher<T>> _noStateSwitchers = new List<BaseBrainSwitcher<T>>(); // Only when no state active
 	private Dictionary<Type, List<BaseBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<BaseBrainSwitcher<T>>>(); // Only active for specific state
+	private List<BaseBrainSwitcher<T>> _activeSwitchers = new List<BaseBrainSwitcher<T>>();
+
 	private Type _currentStateSwitchersType = null;
 	private TimekeeperModel _timekeeperModel;
 
@@ -88,7 +90,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 			if(BrainStateMachine.CurrentStateType == stateType)
 			{
-				switcher.Activate(true);
+				SetSwitcherActiveState(switcher, true);
 			}
 		}
 		else
@@ -98,7 +100,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 			if(BrainStateMachine.CurrentStateType == null)
 			{
-				switcher.Activate(true);
+				SetSwitcherActiveState(switcher, true);
 			}
 		}
 	}
@@ -110,7 +112,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 		if(IsEnabled)
 		{
-			switcher.Activate(true);
+			SetSwitcherActiveState(switcher, true);
 		}
 	}
 
@@ -139,25 +141,79 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void OnUpdate(float deltaTime, float timeScale)
 	{
-		if(BrainStateMachine == null)
+		if(BrainStateMachine == null || !IsEnabled)
 			return;
 
-		List<BaseBrainSwitcher<T>> switchers = new List<BaseBrainSwitcher<T>>(_globalSwitchers);
-		switchers.AddRange(GetStateSwitchers(BrainStateMachine.CurrentStateType));
+		List<BaseBrainSwitcher<T>> switchers = new List<BaseBrainSwitcher<T>>(_activeSwitchers);
+		List<PotentialSwitch<T>> potentialSwitches = new List<PotentialSwitch<T>>();
 
+		int rollMaxValue = 0;
 		for(int i = 0, c = switchers.Count; i < c; i++)
 		{
-			switchers[i].CallCalculatePriorityLevel();
+			PotentialSwitch<T>? potentialSwitch = switchers[i].CallCheckForSwitchRequest();
+			if(potentialSwitch.HasValue && potentialSwitch.Value.IsSet && potentialSwitch.Value.PriorityLevel > 0)
+			{
+				if(potentialSwitch.Value.Request != null && !potentialSwitch.Value.Request.IsAllowedToCreate())
+				{
+					potentialSwitch.Value.Clean();
+					continue;
+				}
+
+				potentialSwitches.Add(potentialSwitch.Value);
+				rollMaxValue += potentialSwitch.Value.PriorityLevel;
+			}
+			else if(potentialSwitch.HasValue)
+			{
+				potentialSwitch.Value.Clean();
+			}
 		}
 
-		switchers.Sort((a, b) =>
+		potentialSwitches.Sort((a, b) =>
 		{
 			return b.PriorityLevel - a.PriorityLevel;
 		});
 
-		for(int i = 0, c = switchers.Count; i < c; i++)
+		int choiceRoll = UnityEngine.Random.Range(0, rollMaxValue  + 1);
+		int currentPrioLevel = 0;
+		PotentialSwitch<T> chosenPotentialSwitch = new PotentialSwitch<T>();
+
+		for(int i = 0, c = potentialSwitches.Count; i < c; i++)
 		{
-			switchers[i].SwitchIfDesired();
+			PotentialSwitch<T> pr = potentialSwitches[i];
+			if(!chosenPotentialSwitch.IsSet)
+			{
+				if(choiceRoll > currentPrioLevel && choiceRoll <= currentPrioLevel + pr.PriorityLevel)
+				{
+					chosenPotentialSwitch = pr;
+				}
+				else
+				{
+					pr.Clean();
+				}
+
+				currentPrioLevel += pr.PriorityLevel;
+			}
+			else
+			{
+				pr.Clean();
+			}
+		}
+
+		if(chosenPotentialSwitch.IsSet)
+		{
+			if(chosenPotentialSwitch.Request == null)
+			{
+				BrainStateMachine.RequestNoState(chosenPotentialSwitch.Force);
+			}
+			else
+			{
+				BrainStateMachine.RequestState(chosenPotentialSwitch.Request, chosenPotentialSwitch.Force);
+			}
+
+			foreach(var pair in chosenPotentialSwitch.Switcher.GetKeysToSetOnRequestDictionary())
+			{
+				BrainState.SetKey(pair.Key, pair.Value);
+			}
 		}
 	}
 
@@ -175,11 +231,11 @@ public class Brain<T> : IBrain<T> where T : class
 		{
 			if(_globalSwitchers[i].ConditionMet())
 			{
-				_globalSwitchers[i].Activate(false);
+				SetSwitcherActiveState(_globalSwitchers[i], true);
 			}
 			else
 			{
-				_globalSwitchers[i].Deactivate();
+				SetSwitcherActiveState(_globalSwitchers[i], false);
 			}
 		}
 	}
@@ -188,7 +244,7 @@ public class Brain<T> : IBrain<T> where T : class
 	{
 		for(int i = 0, c = _globalSwitchers.Count; i < c; i++)
 		{
-			_globalSwitchers[i].Deactivate();
+			SetSwitcherActiveState(_globalSwitchers[i], false);
 		}
 	}
 
@@ -202,11 +258,11 @@ public class Brain<T> : IBrain<T> where T : class
 			{
 				if(switchers[i].ConditionMet())
 				{
-					switchers[i].Activate(false);
+					SetSwitcherActiveState(switchers[i], true);
 				}
 				else
 				{
-					switchers[i].Deactivate();
+					SetSwitcherActiveState(switchers[i], false);
 				}
 			}
 		}
@@ -220,7 +276,25 @@ public class Brain<T> : IBrain<T> where T : class
 		{
 			for(int i = 0, c = switchers.Count; i < c; i++)
 			{
-				switchers[i].Deactivate();
+				SetSwitcherActiveState(switchers[i], false);
+			}
+		}
+	}
+
+	private void SetSwitcherActiveState(BaseBrainSwitcher<T> switcher, bool activeState)
+	{
+		if(activeState)
+		{
+			if(switcher.Activate(true) && !_activeSwitchers.Contains(switcher))
+			{
+				_activeSwitchers.Add(switcher);
+			}
+		}
+		else
+		{
+			if(switcher.Deactivate())
+			{
+				_activeSwitchers.Remove(switcher);
 			}
 		}
 	}

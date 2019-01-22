@@ -10,14 +10,9 @@ public enum BrainSwitcherStatus
 	Destroyed
 }
 
-public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T> where T : class
+public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T> where T : class
 {
 	public BrainSwitcherStatus SwitcherStatus
-	{
-		get; private set;
-	}
-
-	public int PriorityLevel
 	{
 		get; private set;
 	}
@@ -63,9 +58,9 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		SwitcherStatus = BrainSwitcherStatus.NotReady;
 	}
 
-	public void CallCalculatePriorityLevel()
+	public PotentialSwitch<T>? CallCheckForSwitchRequest()
 	{
-		PriorityLevel = CalculatePriorityLevel();
+		return CheckForSwitchRequest();
 	}
 
 	public void Initialize(Brain<T> brain)
@@ -88,51 +83,27 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		_brain = null;
 	}
 
-	public void Activate(bool onlyIfConditionMet)
+	public bool Activate(bool onlyIfConditionMet)
 	{
 		if(SwitcherStatus != BrainSwitcherStatus.Initialized && SwitcherStatus != BrainSwitcherStatus.Deactivated)
-			return;
+			return false;
 
 		if(onlyIfConditionMet && !ConditionMet())
-			return;
+			return false;
 
 		SwitcherStatus = BrainSwitcherStatus.Activated;
 		Activated();
+		return true;
 	}
 
-	public void Deactivate()
+	public bool Deactivate()
 	{
 		if(SwitcherStatus != BrainSwitcherStatus.Activated)
-			return;
+			return false;
 
 		SwitcherStatus = BrainSwitcherStatus.Deactivated;
 		Deactivated();
-	}
-
-	public void SwitchIfDesired()
-	{
-		if(SwitcherStatus == BrainSwitcherStatus.Activated)
-		{
-			OnSwitchIfDesired();
-		}
-	}
-
-	public void RequestState(IStateMachineStateRequest<T> request, bool force = false)
-	{
-		if(_brain != null && _brain.BrainStateMachine != null)
-		{
-			SetRequestKeys();
-			_brain.BrainStateMachine.RequestState(request, force);
-		}
-	}
-
-	public void RequestNoState(bool force)
-	{
-		if(_brain != null && _brain.BrainStateMachine != null)
-		{
-			SetRequestKeys();
-			_brain.BrainStateMachine.RequestNoState(force);
-		}
+		return true;
 	}
 
 	public bool ConditionMet()
@@ -149,38 +120,9 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 		return true;
 	}
 
-	protected virtual void Initialized()
+	public Dictionary<string, bool> GetKeysToSetOnRequestDictionary()
 	{
-
-	}
-
-	protected virtual void Destroyed()
-	{
-
-	}
-
-	protected virtual void Activated()
-	{
-
-	}
-
-	protected virtual void Deactivated()
-	{
-
-	}
-
-	protected abstract int CalculatePriorityLevel();
-	protected abstract void OnSwitchIfDesired();
-
-	private void SetRequestKeys()
-	{
-		if(_brain == null || _brain.BrainStateMachine == null)
-		{
-			foreach(var pair in _keysToSetOnStateRequest)
-			{
-				_brain.BrainState.SetKey(pair.Key, pair.Value);
-			}
-		}
+		return new Dictionary<string, bool>(_keysToSetOnStateRequest);
 	}
 
 	public BaseBrainSwitcher<T> SetConditionKey(string key, bool value = true)
@@ -210,6 +152,38 @@ public abstract class BaseBrainSwitcher<T> : IBrainSwitcher<T>, IStateMachine<T>
 
 		return this;
 	}
+
+	protected virtual void Initialized()
+	{
+
+	}
+
+	protected virtual void Destroyed()
+	{
+
+	}
+
+	protected virtual void Activated()
+	{
+
+	}
+
+	protected virtual void Deactivated()
+	{
+
+	}
+
+	protected PotentialSwitch<T> CreatePotentialSwitchToState(IStateMachineStateRequest<T> request, int priorityLevel, bool force = false)
+	{
+		return new PotentialSwitch<T>(this, request, priorityLevel, force);
+	}
+
+	protected PotentialSwitch<T> CreatePotentialSwitchToNoState(int priorityLevel, bool force)
+	{
+		return new PotentialSwitch<T>(this, null, priorityLevel, force);
+	}
+
+	protected abstract PotentialSwitch<T>? CheckForSwitchRequest();
 }
 
 public interface IBrainSwitcher<T> where T : class
@@ -227,4 +201,50 @@ public interface IBrainSwitcher<T> where T : class
 	bool ConditionMet();
 	void Initialize(Brain<T> brain);
 	void Clean();
+}
+
+public struct PotentialSwitch<T> where T : class
+{
+	public IStateMachineStateRequest<T> Request
+	{
+		get; private set;
+	}
+
+	public BaseBrainSwitcher<T> Switcher
+	{
+		get; private set;
+	}
+
+	public int PriorityLevel
+	{
+		get; private set;
+	}
+
+	public bool Force
+	{
+		get; private set;
+	}
+
+	public bool IsSet
+	{
+		get; private set;
+	}
+
+	public PotentialSwitch(BaseBrainSwitcher<T> switcher, IStateMachineStateRequest<T> request, int priorityLevel, bool force = false)
+	{
+		Switcher = switcher;
+		Request = request;
+		PriorityLevel = priorityLevel;
+		IsSet = true;
+		Force = force;
+	}
+
+	public void Clean()
+	{
+		if(Request != null)
+			Request.Clean();
+
+		Switcher = null;
+		Request = null;
+	}
 }

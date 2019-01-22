@@ -2,7 +2,6 @@
 {
 	private EntityFilter<EntityModel> _targetsFilter;
 	private MoveInRangeSwitcherData _data;
-	private EntityModel _lastCalculatedTarget;
 
 	public MoveIntoRangeSwitcher(MoveInRangeSwitcherData data)
 	{
@@ -16,30 +15,25 @@
 		_targetsFilter = EntityFilter<EntityModel>.Create(r);
 	}
 
-	protected override int CalculatePriorityLevel()
+	protected override PotentialSwitch<EntityModel>? CheckForSwitchRequest()
 	{
 		int prio;
-		_lastCalculatedTarget = GetTargetCalculatePrio(out prio);
-		return prio;
-	}
-
-	protected override void OnSwitchIfDesired()
-	{
-		if(_lastCalculatedTarget != null && PriorityLevel != SwitcherSettings.NO_PRIO)
+		EntityModel target = GetTargetCalculatePrio(out prio);
+		if(target != null && prio != SwitcherSettings.NO_PRIO)
 		{
-			MovementStateRequest r = new MovementStateRequest(_lastCalculatedTarget, _data.RangeToMoveTo);
+			MovementStateRequest r = new MovementStateRequest(target, _data.RangeToMoveTo);
 
 			if(_data.SpecifiedSpeed.HasValue)
 				r.SpecifySpeed(_data.SpecifiedSpeed.Value);
-
-			RequestState(r);
-			_lastCalculatedTarget = null;
+			
+			return CreatePotentialSwitchToState(r, prio);
 		}
+
+		return null;
 	}
 
 	protected override void Destroyed()
 	{
-		_lastCalculatedTarget = null;
 		_targetsFilter.Clean();
 		_targetsFilter = null;
 	}
