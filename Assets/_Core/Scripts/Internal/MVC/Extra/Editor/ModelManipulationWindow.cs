@@ -118,6 +118,7 @@ public class ModelManipulationWindow : EditorWindow
 				CloseAllEditors();
 				 _targetModel = model;
 				_targetView = monoBaseView;
+				OpenAllEditors();
 			}
         }
 
@@ -129,9 +130,7 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("View Object Name: " + _targetView.gameObject.name);
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
-		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo componentsFieldInfo = typeof(ModelComponents).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		HashSet<BaseModelComponent> componentsOfModel = (HashSet<BaseModelComponent>)componentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		HashSet<BaseModelComponent> componentsOfModel = GetModelComponents(_targetModel);
 
 		GUILayout.Label("Model Components: ");
 
@@ -172,10 +171,13 @@ public class ModelManipulationWindow : EditorWindow
 								editor.OnOpen();
 							}
 
+							GUILayout.BeginHorizontal();
+							GUILayout.Space(20f);
 							GUILayout.BeginVertical(GUI.skin.box);
 							GUILayout.Space(5f);
 							editor.OnGUI(component);
 							GUILayout.Space(5f);
+							GUILayout.EndVertical();
 							GUILayout.EndHorizontal();
 						}
 						else if(_componentsEditorsOpen.ContainsKey(component))
@@ -236,6 +238,25 @@ public class ModelManipulationWindow : EditorWindow
         }
     }
 
+	private void OpenAllEditors()
+	{
+		if(_targetModel != null)
+		{
+			HashSet<BaseModelComponent> components = GetModelComponents(_targetModel);
+			foreach(BaseModelComponent c in components)
+			{
+				if(!_componentsEditorsOpen.ContainsKey(c))
+				{
+					BaseModelComponentEditor editor = GetEditorForComponent(c);
+					if(editor != null)
+					{
+						_componentsEditorsOpen.Add(c, editor);
+					}
+				}
+			}
+		}
+	}
+
 	private void CloseAllEditors()
 	{
 		foreach(var pair in _componentsEditorsOpen)
@@ -244,6 +265,13 @@ public class ModelManipulationWindow : EditorWindow
 		}
 
 		_componentsEditorsOpen.Clear();
+	}
+
+	private HashSet<BaseModelComponent> GetModelComponents(BaseModel model)
+	{
+		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo componentsFieldInfo = typeof(ModelComponents).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		return (HashSet<BaseModelComponent>)componentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(model));
 	}
 
 	private Action DrawComponentMenu(BaseModelComponent component)
