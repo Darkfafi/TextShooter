@@ -9,7 +9,8 @@ public class ModelManipulationWindow : EditorWindow
 {
     private MonoBaseView _targetView;
     private BaseModel _targetModel;
-	
+
+	private SearchWindow _openSearchWindow;
 	private bool _showComponents = false;
 	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
 	private List<BaseModelComponent> _componentsEditorsOpen = new List<BaseModelComponent>();
@@ -55,6 +56,21 @@ public class ModelManipulationWindow : EditorWindow
         Repaint();
     }
 
+	private void OnDestroy()
+	{
+		if(_openSearchWindow != null)
+		{
+			_openSearchWindow.Close();
+			_openSearchWindow = null;
+		}
+
+		_targetView = null;
+		_targetModel = null;
+
+		_editors = null;
+		_componentsEditorsOpen = null;
+	}
+
 	private void SetupEditors()
 	{
 		_editors.Clear();
@@ -82,6 +98,7 @@ public class ModelManipulationWindow : EditorWindow
         if(monoBaseView == null || monoBaseView.LinkingController == null)
 		{
 			_componentsEditorsOpen.Clear();
+			CloseOpenSearchWindow();
 			GUIStyle okStyle = new GUIStyle(GUI.skin.label);
             okStyle.normal.textColor = Color.yellow;
             GUILayout.Label(string.Format("Selected {0} is not connected to a model", (monoBaseView == null ? "NULL" : monoBaseView.GetType().Name)), okStyle);
@@ -95,6 +112,7 @@ public class ModelManipulationWindow : EditorWindow
 			BaseModel model  = MVCUtil.GetModel<BaseModel>(monoBaseView);
 			if(_targetModel != model)
 			{
+				CloseOpenSearchWindow();
 				_componentsEditorsOpen.Clear();
 				_targetModel = model;
 				_targetView = monoBaseView;
@@ -180,6 +198,24 @@ public class ModelManipulationWindow : EditorWindow
 					optionAction();
 				}
 
+				if(GUILayout.Button("Add"))
+				{
+					Type[] componentTypes = Assembly.GetAssembly(typeof(ModelTransform)).GetTypes().Where(t => typeof(BaseModelComponent).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToArray();
+					_openSearchWindow = SearchWindow.OpenWindow((index) =>
+					{
+						if(_targetModel != null && index >= 0)
+						{
+							_targetModel.AddComponent(componentTypes[index]);
+						}
+
+						if(index >= 0)
+						{
+							CloseOpenSearchWindow();
+						}
+
+					}, componentTypes);
+				}
+
 				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.Space();
@@ -224,6 +260,15 @@ public class ModelManipulationWindow : EditorWindow
 		}
 
 		return null;
+	}
+
+	private void CloseOpenSearchWindow()
+	{
+		if(_openSearchWindow != null)
+		{
+			_openSearchWindow.Close();
+			_openSearchWindow = null;
+		}
 	}
 }
 
