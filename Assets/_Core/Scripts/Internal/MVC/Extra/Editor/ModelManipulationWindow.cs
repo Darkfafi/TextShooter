@@ -13,7 +13,7 @@ public class ModelManipulationWindow : EditorWindow
 	private SearchWindow _openSearchWindow;
 	private bool _showComponents = false;
 	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
-	private List<BaseModelComponent> _componentsEditorsOpen = new List<BaseModelComponent>();
+	private Dictionary<BaseModelComponent, BaseModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, BaseModelComponentEditor>();
 
     [MenuItem("MVC/Model Manipulator")]
     static void OpenWindow()
@@ -58,6 +58,9 @@ public class ModelManipulationWindow : EditorWindow
 
 	private void OnDestroy()
 	{
+		CloseAllEditors();
+		_componentsEditorsOpen = null;
+
 		if(_openSearchWindow != null)
 		{
 			_openSearchWindow.Close();
@@ -68,7 +71,6 @@ public class ModelManipulationWindow : EditorWindow
 		_targetModel = null;
 
 		_editors = null;
-		_componentsEditorsOpen = null;
 	}
 
 	private void SetupEditors()
@@ -97,7 +99,7 @@ public class ModelManipulationWindow : EditorWindow
     {
         if(monoBaseView == null || monoBaseView.LinkingController == null)
 		{
-			_componentsEditorsOpen.Clear();
+			CloseAllEditors();
 			CloseOpenSearchWindow();
 			GUIStyle okStyle = new GUIStyle(GUI.skin.label);
             okStyle.normal.textColor = Color.yellow;
@@ -113,8 +115,8 @@ public class ModelManipulationWindow : EditorWindow
 			if(_targetModel != model)
 			{
 				CloseOpenSearchWindow();
-				_componentsEditorsOpen.Clear();
-				_targetModel = model;
+				CloseAllEditors();
+				 _targetModel = model;
 				_targetView = monoBaseView;
 			}
         }
@@ -151,7 +153,7 @@ public class ModelManipulationWindow : EditorWindow
 					{
 						s = EditorStyles.foldout;
 						s.normal.textColor = new Color(0.3f, 0.2f, 0.75f);
-						bool inContainer = _componentsEditorsOpen.Contains(component);
+						bool inContainer = _componentsEditorsOpen.ContainsKey(component);
 
 						GUILayout.BeginHorizontal();
 						inContainer = EditorGUILayout.Foldout(inContainer, " * " + component, s);
@@ -164,9 +166,10 @@ public class ModelManipulationWindow : EditorWindow
 
 						if(inContainer)
 						{
-							if(!_componentsEditorsOpen.Contains(component))
+							if(!_componentsEditorsOpen.ContainsKey(component))
 							{
-								_componentsEditorsOpen.Add(component);
+								_componentsEditorsOpen.Add(component, editor);
+								editor.OnOpen();
 							}
 
 							GUILayout.BeginVertical(GUI.skin.box);
@@ -175,9 +178,10 @@ public class ModelManipulationWindow : EditorWindow
 							GUILayout.Space(5f);
 							GUILayout.EndHorizontal();
 						}
-						else
+						else if(_componentsEditorsOpen.ContainsKey(component))
 						{
 							_componentsEditorsOpen.Remove(component);
+							editor.OnClose();
 						}
 					}
 					else
@@ -203,13 +207,13 @@ public class ModelManipulationWindow : EditorWindow
 					Type[] componentTypes = Assembly.GetAssembly(typeof(ModelTransform)).GetTypes().Where(t => typeof(BaseModelComponent).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToArray();
 					_openSearchWindow = SearchWindow.OpenWindow((index) =>
 					{
-						if(_targetModel != null && index >= 0)
-						{
-							_targetModel.AddComponent(componentTypes[index]);
-						}
-
 						if(index >= 0)
 						{
+							if(_targetModel != null)
+							{
+								_targetModel.AddComponent(componentTypes[index]);
+							}
+
 							CloseOpenSearchWindow();
 						}
 
@@ -232,6 +236,16 @@ public class ModelManipulationWindow : EditorWindow
         }
     }
 
+	private void CloseAllEditors()
+	{
+		foreach(var pair in _componentsEditorsOpen)
+		{
+			pair.Value.OnClose();
+		}
+
+		_componentsEditorsOpen.Clear();
+	}
+
 	private Action DrawComponentMenu(BaseModelComponent component)
 	{
 		GUIStyle s = new GUIStyle(GUI.skin.button);
@@ -251,6 +265,9 @@ public class ModelManipulationWindow : EditorWindow
 
 	private BaseModelComponentEditor GetEditorForComponent(BaseModelComponent component)
 	{
+		if(_componentsEditorsOpen.ContainsKey(component))
+			return _componentsEditorsOpen[component];
+
 		foreach(var pair in _editors)
 		{
 			if(component.GetType().IsAssignableFrom(pair.Key))
@@ -284,5 +301,15 @@ public class ModelComponentEditorAttribute : Attribute
 
 public abstract class BaseModelComponentEditor
 {
+	public virtual void OnOpen()
+	{
+
+	}
+
+	public virtual void OnClose()
+	{
+
+	}
+
 	public abstract void OnGUI(BaseModelComponent component);
 }
