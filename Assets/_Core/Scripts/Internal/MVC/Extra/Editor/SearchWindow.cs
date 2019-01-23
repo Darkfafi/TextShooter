@@ -26,11 +26,16 @@ public class SearchWindow : EditorWindow
 
 	private void OnGUI()
 	{
-		// Search tool (TODO)
+		// SearchBar
 		GUILayout.BeginHorizontal(GUI.skin.FindStyle("Toolbar"));
+		GUI.SetNextControlName("SearchBar");
 		_searchString = GUILayout.TextField(_searchString, GUI.skin.FindStyle("ToolbarSeachTextField"));
 		GUILayout.EndHorizontal();
-		// items
+
+		if(focusedWindow)
+			GUI.FocusControl("SearchBar");
+
+		// Selection
 		int selectedIndex = -1;
 		int showCount = 0;
 		for(int i = 0; i < _selectionItems.Length; i++)
