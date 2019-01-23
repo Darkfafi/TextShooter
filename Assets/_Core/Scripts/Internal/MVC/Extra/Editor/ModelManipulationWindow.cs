@@ -165,12 +165,7 @@ public class ModelManipulationWindow : EditorWindow
 
 						if(inContainer)
 						{
-							if(!_componentsEditorsOpen.ContainsKey(component))
-							{
-								_componentsEditorsOpen.Add(component, editor);
-								editor.OnOpen();
-							}
-
+							OpenEditor(component);
 							GUILayout.BeginHorizontal();
 							GUILayout.Space(20f);
 							GUILayout.BeginVertical(GUI.skin.box);
@@ -180,10 +175,9 @@ public class ModelManipulationWindow : EditorWindow
 							GUILayout.EndVertical();
 							GUILayout.EndHorizontal();
 						}
-						else if(_componentsEditorsOpen.ContainsKey(component))
+						else
 						{
-							_componentsEditorsOpen.Remove(component);
-							editor.OnClose();
+							CloseEditor(component);
 						}
 					}
 					else
@@ -213,13 +207,7 @@ public class ModelManipulationWindow : EditorWindow
 						{
 							if(_targetModel != null)
 							{
-								BaseModelComponent c = _targetModel.AddComponent(componentTypes[index]);
-								BaseModelComponentEditor e = GetEditorForComponent(c);
-								if(e != null)
-								{
-									_componentsEditorsOpen.Add(c, e);
-									e.OnOpen();
-								}
+								OpenEditor(_targetModel.AddComponent(componentTypes[index]));
 							}
 
 							CloseOpenSearchWindow();
@@ -242,7 +230,20 @@ public class ModelManipulationWindow : EditorWindow
         {
             _targetModel.Destroy();
         }
-    }
+	}
+
+	private void OpenEditor(BaseModelComponent component)
+	{
+		if(!_componentsEditorsOpen.ContainsKey(component))
+		{
+			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			if(editor != null)
+			{
+				_componentsEditorsOpen.Add(component, editor);
+				editor.OnOpen();
+			}
+		}
+	}
 
 	private void OpenAllEditors()
 	{
@@ -251,15 +252,20 @@ public class ModelManipulationWindow : EditorWindow
 			HashSet<BaseModelComponent> components = GetModelComponents(_targetModel);
 			foreach(BaseModelComponent c in components)
 			{
-				if(!_componentsEditorsOpen.ContainsKey(c))
-				{
-					BaseModelComponentEditor editor = GetEditorForComponent(c);
-					if(editor != null)
-					{
-						_componentsEditorsOpen.Add(c, editor);
-						editor.OnOpen();
-					}
-				}
+				OpenEditor(c);
+			}
+		}
+	}
+
+	private void CloseEditor(BaseModelComponent component)
+	{
+		if(_componentsEditorsOpen.ContainsKey(component))
+		{
+			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			_componentsEditorsOpen.Remove(component);
+			if(editor != null)
+			{
+				editor.OnClose();
 			}
 		}
 	}
