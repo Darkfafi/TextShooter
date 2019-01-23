@@ -213,7 +213,13 @@ public class ModelManipulationWindow : EditorWindow
 						{
 							if(_targetModel != null)
 							{
-								_targetModel.AddComponent(componentTypes[index]);
+								BaseModelComponent c = _targetModel.AddComponent(componentTypes[index]);
+								BaseModelComponentEditor e = GetEditorForComponent(c);
+								if(e != null)
+								{
+									_componentsEditorsOpen.Add(c, e);
+									e.OnOpen();
+								}
 							}
 
 							CloseOpenSearchWindow();
@@ -251,6 +257,7 @@ public class ModelManipulationWindow : EditorWindow
 					if(editor != null)
 					{
 						_componentsEditorsOpen.Add(c, editor);
+						editor.OnOpen();
 					}
 				}
 			}
