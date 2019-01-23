@@ -59,45 +59,55 @@ public class ModelComponents : IComponentsHolder
 
 	public T AddComponent<T>() where T : BaseModelComponent
 	{
-		BaseModelComponent c = Activator.CreateInstance<T>();
-		_components.Add(c);
-		c.Initialize(this);
+		return AddComponent(typeof(T)) as T;
+	}
 
-		if(AddedComponentEvent != null)
+	public BaseModelComponent AddComponent(Type componentType)
+	{
+		BaseModelComponent c = Activator.CreateInstance(componentType) as BaseModelComponent;
+		if(c != null)
 		{
-			AddedComponentEvent(c);
+
+			_components.Add(c);
+			c.Initialize(this);
+
+			if(AddedComponentEvent != null)
+			{
+				AddedComponentEvent(c);
+			}
+
+			if(_isReady)
+			{
+				c.SignalReady();
+			}
+
+			return c;
 		}
 
-		if(_isReady)
-		{
-			c.SignalReady();
-		}
-
-		return c as T;
+		return null;
 	}
 
 	public void RemoveComponent<T>() where T : BaseModelComponent
 	{
-		BaseModelComponent c = GetComponentOfType(typeof(T));
-		InternalRemoveComponent(c);
+		RemoveComponent(typeof(T));
+	}
+
+	public void RemoveComponent(Type componentType)
+	{
+		RemoveComponent(GetComponent(componentType));
+	}
+
+	public void RemoveComponent(BaseModelComponent component)
+	{
+		InternalRemoveComponent(component);
 	}
 
 	public T GetComponent<T>() where T : BaseModelComponent
 	{
-		return GetComponentOfType(typeof(T)) as T;
+		return GetComponent(typeof(T)) as T;
 	}
 
-	public bool HasComponent<T>() where T : BaseModelComponent
-	{
-		return GetComponent<T>() != null;
-	}
-
-	public bool HasComponent(Type componentType)
-	{
-		return GetComponentOfType(componentType) != null;
-	}
-
-	private BaseModelComponent GetComponentOfType(Type type)
+	public BaseModelComponent GetComponent(Type type)
 	{
 		foreach(BaseModelComponent component in _components)
 		{
@@ -108,6 +118,16 @@ public class ModelComponents : IComponentsHolder
 		}
 
 		return null;
+	}
+
+	public bool HasComponent<T>() where T : BaseModelComponent
+	{
+		return GetComponent<T>() != null;
+	}
+
+	public bool HasComponent(Type componentType)
+	{
+		return GetComponent(componentType) != null;
 	}
 
 	private void InternalRemoveComponent(BaseModelComponent component, bool selfClean = false)
@@ -138,8 +158,12 @@ public class ModelComponents : IComponentsHolder
 public interface IComponentsHolder
 {
 	T AddComponent<T>() where T : BaseModelComponent;
+	BaseModelComponent AddComponent(Type componentType);
 	void RemoveComponent<T>() where T : BaseModelComponent;
+	void RemoveComponent(Type componentType);
+	void RemoveComponent(BaseModelComponent component);
 	T GetComponent<T>() where T : BaseModelComponent;
+	BaseModelComponent GetComponent(Type componentType);
 	bool HasComponent<T>() where T : BaseModelComponent;
 	bool HasComponent(Type componentType);
 }
