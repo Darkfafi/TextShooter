@@ -11,7 +11,7 @@ public class ModelManipulationWindow : EditorWindow
     private BaseModel _targetModel;
 
 	private SearchWindow _openSearchWindow;
-	private bool _showComponents = false;
+	private bool _showComponents = true;
 	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
 	private Dictionary<BaseModelComponent, BaseModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, BaseModelComponentEditor>();
 
@@ -114,6 +114,7 @@ public class ModelManipulationWindow : EditorWindow
 			BaseModel model  = MVCUtil.GetModel<BaseModel>(monoBaseView);
 			if(_targetModel != model)
 			{
+				_showComponents = true;
 				CloseOpenSearchWindow();
 				CloseAllEditors();
 				 _targetModel = model;
