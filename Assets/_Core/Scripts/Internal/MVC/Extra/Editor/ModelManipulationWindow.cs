@@ -121,6 +121,8 @@ public class ModelManipulationWindow : EditorWindow
 			{
 				EditorGUILayout.BeginVertical();
 
+				Action optionAction = null;
+
 				foreach(BaseModelComponent component in componentsOfModel)
 				{
 					GUIStyle s = new GUIStyle(GUI.skin.label);
@@ -132,7 +134,16 @@ public class ModelManipulationWindow : EditorWindow
 						s = EditorStyles.foldout;
 						s.normal.textColor = new Color(0.3f, 0.2f, 0.75f);
 						bool inContainer = _componentsEditorsOpen.Contains(component);
+
+						GUILayout.BeginHorizontal();
 						inContainer = EditorGUILayout.Foldout(inContainer, " * " + component, s);
+						Action a = DrawComponentMenu(component);
+						if(optionAction == null)
+						{
+							optionAction = a;
+						}
+						GUILayout.EndHorizontal();
+
 						if(inContainer)
 						{
 							if(!_componentsEditorsOpen.Contains(component))
@@ -153,9 +164,22 @@ public class ModelManipulationWindow : EditorWindow
 					}
 					else
 					{
+						GUILayout.BeginHorizontal();
 						GUILayout.Label(" * " + component, s);
+						Action a = DrawComponentMenu(component);
+						if(optionAction == null)
+						{
+							optionAction = a;
+						}
+						GUILayout.EndHorizontal();
 					}
 				}
+
+				if(optionAction != null)
+				{
+					optionAction();
+				}
+
 				EditorGUILayout.EndVertical();
 
 				EditorGUILayout.Space();
@@ -171,6 +195,23 @@ public class ModelManipulationWindow : EditorWindow
             _targetModel.Destroy();
         }
     }
+
+	private Action DrawComponentMenu(BaseModelComponent component)
+	{
+		GUIStyle s = new GUIStyle(GUI.skin.button);
+		s.fixedWidth = 30f;
+
+		GUILayout.Space(10);
+		if(GUILayout.Button("x", s))
+		{
+			return () =>
+			{
+				_targetModel.RemoveComponent(component);
+			};
+		}
+		GUILayout.Space(10);
+		return null;
+	}
 
 	private BaseModelComponentEditor GetEditorForComponent(BaseModelComponent component)
 	{
