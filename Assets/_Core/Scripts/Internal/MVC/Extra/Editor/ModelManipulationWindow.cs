@@ -15,6 +15,9 @@ public class ModelManipulationWindow : EditorWindow
 	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
 	private Dictionary<BaseModelComponent, BaseModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, BaseModelComponentEditor>();
 
+	private Color _enabledComponentColor = new Color(0.2f, 0.4f, 0.75f);
+	private Color _disabledComponentColor = new Color(0.4f, 0.2f, 0.75f);
+
     [MenuItem("MVC/Model Manipulator")]
     static void OpenWindow()
     {
@@ -131,28 +134,19 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("View Object Name: " + _targetView.gameObject.name);
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
-		HashSet<BaseModelComponent> enabledComponentsOfModel = GetEnabledModelComponents(_targetModel);
-		HashSet<BaseModelComponent> disabledComponentsOfModel = GetDisabledModelComponents(_targetModel);
+		HashSet<BaseModelComponent> componentsOfModel = GetModelComponents(_targetModel);
 
 		GUILayout.Label("Model Components: ");
 
-		if(enabledComponentsOfModel != null)
+		if(componentsOfModel != null)
 		{
-			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components (E({0}), D({1}))", enabledComponentsOfModel.Count, disabledComponentsOfModel.Count)))
+			int disabledCount = componentsOfModel.Where(c => !c.IsEnabled).Count();
+			if(_showComponents = EditorGUILayout.Foldout(_showComponents, string.Format("Components (E({0}), D({1}))", componentsOfModel.Count, disabledCount), true, new GUIStyle(EditorStyles.foldout)))
 			{
 				EditorGUILayout.BeginVertical();
 
 				Action optionAction = null;
-				foreach(BaseModelComponent component in enabledComponentsOfModel)
-				{
-					Action a = DrawComponentSection(component);
-					if(optionAction == null)
-					{
-						optionAction = a;
-					}
-				}
-
-				foreach(BaseModelComponent component in disabledComponentsOfModel)
+				foreach(BaseModelComponent component in componentsOfModel)
 				{
 					Action a = DrawComponentSection(component);
 					if(optionAction == null)
@@ -202,7 +196,7 @@ public class ModelManipulationWindow : EditorWindow
 
 	private Action DrawComponentSection(BaseModelComponent component)
 	{
-		Color color = component.IsEnabled ? new Color(0.2f, 0.4f, 0.75f) : new Color(0.4f, 0.2f, 0.75f);
+		Color color = component.IsEnabled ? _enabledComponentColor : _disabledComponentColor;
 		GUIStyle s = new GUIStyle(GUI.skin.label);
 		s.normal.textColor = color;
 		Action optionAction = null;
@@ -212,8 +206,12 @@ public class ModelManipulationWindow : EditorWindow
 		BaseModelComponentEditor editor = GetEditorForComponent(component);
 		if(editor != null)
 		{
-			s = EditorStyles.foldout;
-			s.normal.textColor = color;
+			s = new GUIStyle(EditorStyles.foldout);
+			s.onNormal.textColor = color;
+			s.onActive.textColor = color;
+			s.onFocused.textColor = color;
+			s.onHover.textColor = color;
+
 			bool inContainer = _componentsEditorsOpen.ContainsKey(component);
 
 			GUILayout.BeginHorizontal();
@@ -266,14 +264,8 @@ public class ModelManipulationWindow : EditorWindow
 	{
 		if(_targetModel != null)
 		{
-			HashSet<BaseModelComponent> enabledComponents = GetEnabledModelComponents(_targetModel);
-			foreach(BaseModelComponent c in enabledComponents)
-			{
-				OpenEditor(c);
-			}
-
-			HashSet<BaseModelComponent> disabledComponents = GetDisabledModelComponents(_targetModel);
-			foreach(BaseModelComponent c in disabledComponents)
+			HashSet<BaseModelComponent> components = GetModelComponents(_targetModel);
+			foreach(BaseModelComponent c in components)
 			{
 				OpenEditor(c);
 			}
@@ -302,24 +294,31 @@ public class ModelManipulationWindow : EditorWindow
 		_componentsEditorsOpen.Clear();
 	}
 
-	private HashSet<BaseModelComponent> GetEnabledModelComponents(BaseModel model)
+	private HashSet<BaseModelComponent> GetModelComponents(BaseModel model)
 	{
 		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo enabledComponentsFieldInfo = typeof(ModelComponents).GetField("_enabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo enabledComponentsFieldInfo = typeof(ModelComponents).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
 		return (HashSet<BaseModelComponent>)enabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(model));
-	}
-
-	private HashSet<BaseModelComponent> GetDisabledModelComponents(BaseModel model)
-	{
-		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo disabledComponentsFieldInfo = typeof(ModelComponents).GetField("_disabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
-		return (HashSet<BaseModelComponent>)disabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(model));
 	}
 
 	private Action DrawComponentMenu(BaseModelComponent component)
 	{
 		GUIStyle s = new GUIStyle(GUI.skin.button);
 		s.fixedWidth = 30f;
+		s.normal.textColor = component.IsEnabled ? _enabledComponentColor : _disabledComponentColor;
+
+		if(GUILayout.Button(component.IsEnabled ? "(E)" : "(D)", s))
+		{
+			return () =>
+			{
+				if(component != null && component.ComponentState != ModelComponentState.Removed)
+				{
+					component.SetEnabledState(!component.IsEnabled);
+				}
+			};
+		}
+
+		s.normal.textColor = Color.red;
 
 		GUILayout.Space(10);
 		if(GUILayout.Button("x", s))
