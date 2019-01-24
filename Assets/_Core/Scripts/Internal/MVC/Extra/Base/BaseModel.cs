@@ -115,14 +115,34 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return _components.AddComponent<T>();
 	}
 
+	public BaseModelComponent AddComponent(Type componentType)
+	{
+		return _components.AddComponent(componentType);
+	}
+
 	public void RemoveComponent<T>() where T : BaseModelComponent
 	{
 		_components.RemoveComponent<T>();
 	}
 
+	public void RemoveComponent(Type componentType)
+	{
+		_components.RemoveComponent(componentType);
+	}
+
+	public void RemoveComponent(BaseModelComponent component)
+	{
+		_components.RemoveComponent(component);
+	}
+
 	public T GetComponent<T>() where T : BaseModelComponent
 	{
 		return _components.GetComponent<T>();
+	}
+
+	public BaseModelComponent GetComponent(Type componentType)
+	{
+		return _components.GetComponent(componentType);
 	}
 
 	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent

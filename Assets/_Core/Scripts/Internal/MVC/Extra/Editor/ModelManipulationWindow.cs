@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -8,10 +10,10 @@ public class ModelManipulationWindow : EditorWindow
     private MonoBaseView _targetView;
     private BaseModel _targetModel;
 
-    private bool _manipulateTransform = false;
-    private bool _showTags = false;
-	private bool _showComponents = false;
-    private string _currentTagAddString = "";
+	private SearchWindow _openSearchWindow;
+	private bool _showComponents = true;
+	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
+	private Dictionary<BaseModelComponent, BaseModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, BaseModelComponentEditor>();
 
     [MenuItem("MVC/Model Manipulator")]
     static void OpenWindow()
@@ -23,6 +25,7 @@ public class ModelManipulationWindow : EditorWindow
 
     protected void OnGUI()
     {
+		SetupEditors();
         EditorGUI.DrawRect(new Rect(0, 0, position.width, position.height), new Color(0.5f, 0.5f, 0.5f));
         GameObject targetGameObject = Selection.activeGameObject;
         MonoBaseView monoBaseView = null;
@@ -53,11 +56,52 @@ public class ModelManipulationWindow : EditorWindow
         Repaint();
     }
 
-    private void ShowInternalControllWindow(MonoBaseView monoBaseView)
+	private void OnDestroy()
+	{
+		CloseAllEditors();
+		_componentsEditorsOpen = null;
+
+		if(_openSearchWindow != null)
+		{
+			_openSearchWindow.Close();
+			_openSearchWindow = null;
+		}
+
+		_targetView = null;
+		_targetModel = null;
+
+		_editors = null;
+	}
+
+	private void SetupEditors()
+	{
+		_editors.Clear();
+		Type[] componentEditors = Assembly.GetAssembly(typeof(BaseModelComponentEditor)).GetTypes().Where(t => t.IsClass && typeof(BaseModelComponentEditor).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
+		for(int i = 0; i < componentEditors.Length; i++)
+		{
+			object[] attributes = componentEditors[i].GetCustomAttributes(typeof(ModelComponentEditorAttribute), true);
+			if(attributes.Length > 0)
+			{
+				ModelComponentEditorAttribute customEditorAttribute = attributes[0] as ModelComponentEditorAttribute;
+				try
+				{
+					_editors.Add(customEditorAttribute.ComponentType, Activator.CreateInstance(componentEditors[i]) as BaseModelComponentEditor);
+				}
+				catch(Exception e)
+				{
+					Debug.Log("Model Component Editor Error for " + componentEditors[i].Name + ": " + e.Message);
+				}
+			}
+		}
+	}
+
+	private void ShowInternalControllWindow(MonoBaseView monoBaseView)
     {
         if(monoBaseView == null || monoBaseView.LinkingController == null)
-        {
-            GUIStyle okStyle = new GUIStyle(GUI.skin.label);
+		{
+			CloseAllEditors();
+			CloseOpenSearchWindow();
+			GUIStyle okStyle = new GUIStyle(GUI.skin.label);
             okStyle.normal.textColor = Color.yellow;
             GUILayout.Label(string.Format("Selected {0} is not connected to a model", (monoBaseView == null ? "NULL" : monoBaseView.GetType().Name)), okStyle);
             _targetModel = null;
@@ -67,8 +111,16 @@ public class ModelManipulationWindow : EditorWindow
 
         if(_targetView != monoBaseView)
         {
-            _targetModel = MVCUtil.GetModel<BaseModel>(monoBaseView);
-            _targetView = monoBaseView;
+			BaseModel model  = MVCUtil.GetModel<BaseModel>(monoBaseView);
+			if(_targetModel != model)
+			{
+				_showComponents = true;
+				CloseOpenSearchWindow();
+				CloseAllEditors();
+				 _targetModel = model;
+				_targetView = monoBaseView;
+				OpenAllEditors();
+			}
         }
 
         if (_targetModel == null)
@@ -79,11 +131,8 @@ public class ModelManipulationWindow : EditorWindow
         GUILayout.Label("View Object Name: " + _targetView.gameObject.name);
         GUILayout.Label("Model Type: " + _targetModel.GetType());
 
-		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo enabledComponentsFieldInfo = typeof(ModelComponents).GetField("_enabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
-		FieldInfo disabledComponentsFieldInfo = typeof(ModelComponents).GetField("_disabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
-		HashSet<BaseModelComponent> enabledComponentsOfModel = (HashSet<BaseModelComponent>)enabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
-		HashSet<BaseModelComponent> disabledComponentsOfModel = (HashSet<BaseModelComponent>)disabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(_targetModel));
+		HashSet<BaseModelComponent> enabledComponentsOfModel = GetEnabledModelComponents(_targetModel);
+		HashSet<BaseModelComponent> disabledComponentsOfModel = GetDisabledModelComponents(_targetModel);
 
 		GUILayout.Label("Model Components: ");
 
@@ -93,18 +142,46 @@ public class ModelManipulationWindow : EditorWindow
 			{
 				EditorGUILayout.BeginVertical();
 
+				Action optionAction = null;
 				foreach(BaseModelComponent component in enabledComponentsOfModel)
 				{
-					GUIStyle s = new GUIStyle(GUI.skin.label);
-					s.normal.textColor = new Color(0.2f, 0.4f, 0.75f);
-					GUILayout.Label(" (E) " + component, s);
+					Action a = DrawComponentSection(component);
+					if(optionAction == null)
+					{
+						optionAction = a;
+					}
 				}
 
 				foreach(BaseModelComponent component in disabledComponentsOfModel)
 				{
-					GUIStyle s = new GUIStyle(GUI.skin.label);
-					s.normal.textColor = new Color(0.4f, 0.2f, 0.75f);
-					GUILayout.Label(" (D) " + component, s);
+					Action a = DrawComponentSection(component);
+					if(optionAction == null)
+					{
+						optionAction = a;
+					}
+				}
+
+				if(optionAction != null)
+				{
+					optionAction();
+				}
+
+				if(GUILayout.Button("Add"))
+				{
+					Type[] componentTypes = Assembly.GetAssembly(typeof(ModelTransform)).GetTypes().Where(t => typeof(BaseModelComponent).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToArray();
+					_openSearchWindow = SearchWindow.OpenWindow((index) =>
+					{
+						if(index >= 0)
+						{
+							if(_targetModel != null)
+							{
+								OpenEditor(_targetModel.AddComponent(componentTypes[index]));
+							}
+
+							CloseOpenSearchWindow();
+						}
+
+					}, componentTypes);
 				}
 
 				EditorGUILayout.EndVertical();
@@ -113,80 +190,196 @@ public class ModelManipulationWindow : EditorWindow
 			}
 		}
 
-
-
 		EditorGUILayout.EndVertical();
 
         EditorGUILayout.Space();
-
-        ModelTags tagsComponent = _targetModel.GetComponent<ModelTags>();
-
-        EditorGUILayout.BeginVertical(GUI.skin.textArea);
-
-        GUILayout.Label("Model Tags: " + (tagsComponent != null ? "OK" : "None Available"));
-
-        if (tagsComponent != null)
-        {
-            string[] tags = tagsComponent.GetTags();
-            if (_showTags = EditorGUILayout.Foldout(_showTags, string.Format("Tags ({0})", tags.Length)))
-            {
-                EditorGUILayout.BeginHorizontal();
-                _currentTagAddString = EditorGUILayout.TextField("Add Tag: ", _currentTagAddString);
-                if(GUILayout.Button("+", GUILayout.Width(40)))
-                {
-                    tagsComponent.AddTag(_currentTagAddString);
-                    _currentTagAddString = string.Empty;
-                }
-                EditorGUILayout.EndHorizontal();
-
-                for (int i = 0; i < tags.Length; i++)
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    GUIStyle s = new GUIStyle(GUI.skin.label);
-                    s.normal.textColor = new Color(0.6f, 0.3f, 0.6f);
-                    GUILayout.Label(" - " + tags[i], s);
-                    s = new GUIStyle(GUI.skin.button);
-                    s.normal.textColor = Color.red;
-                    if (GUILayout.Button("x", s, GUILayout.Width(25)))
-                    {
-                        tagsComponent.RemoveTag(tags[i]);
-                    }
-                    EditorGUILayout.EndHorizontal();
-                }
-
-                EditorGUILayout.Space();
-            }
-        }
-
-        EditorGUILayout.EndVertical();
-
-        EditorGUILayout.Space();
-
-        ModelTransform transformComponent = _targetModel.GetComponent<ModelTransform>();
-
-        EditorGUILayout.BeginVertical(GUI.skin.textArea);
-
-        GUILayout.Label("Model Transform: " + (transformComponent != null ? "OK" : "None Available"));
-
-        if (transformComponent != null)
-        {
-            if (_manipulateTransform = EditorGUILayout.Foldout(_manipulateTransform, "Transform Data"))
-            {
-				transformComponent.SetPos(EditorGUILayout.Vector3Field("Position", transformComponent.Position));
-                transformComponent.SetRot(EditorGUILayout.Vector3Field("Rotation", transformComponent.Rotation));
-                transformComponent.SetScale(EditorGUILayout.Vector3Field("Scale", transformComponent.Scale));
-            }
-
-            EditorGUILayout.Space();
-        }
-
-        EditorGUILayout.Space();
-
-        EditorGUILayout.EndVertical();
 
         if (GUILayout.Button("Destroy Model"))
         {
             _targetModel.Destroy();
         }
-    }
+	}
+
+	private Action DrawComponentSection(BaseModelComponent component)
+	{
+		Color color = component.IsEnabled ? new Color(0.2f, 0.4f, 0.75f) : new Color(0.4f, 0.2f, 0.75f);
+		GUIStyle s = new GUIStyle(GUI.skin.label);
+		s.normal.textColor = color;
+		Action optionAction = null;
+		string componentName = component.IsEnabled ? " (E) " : " (D) ";
+		componentName += component.GetType().Name;
+
+		BaseModelComponentEditor editor = GetEditorForComponent(component);
+		if(editor != null)
+		{
+			s = EditorStyles.foldout;
+			s.normal.textColor = color;
+			bool inContainer = _componentsEditorsOpen.ContainsKey(component);
+
+			GUILayout.BeginHorizontal();
+			inContainer = EditorGUILayout.Foldout(inContainer, componentName, s);
+			optionAction = DrawComponentMenu(component);
+			GUILayout.EndHorizontal();
+
+			if(inContainer)
+			{
+				OpenEditor(component);
+				GUILayout.BeginHorizontal();
+				GUILayout.Space(20f);
+				GUILayout.BeginVertical(GUI.skin.box);
+				GUILayout.Space(5f);
+				editor.OnGUI(component);
+				GUILayout.Space(5f);
+				GUILayout.EndVertical();
+				GUILayout.EndHorizontal();
+			}
+			else
+			{
+				CloseEditor(component);
+			}
+		}
+		else
+		{
+			GUILayout.BeginHorizontal();
+			GUILayout.Label(componentName, s);
+			optionAction = DrawComponentMenu(component);
+			GUILayout.EndHorizontal();
+		}
+
+		return optionAction;
+	}
+
+	private void OpenEditor(BaseModelComponent component)
+	{
+		if(!_componentsEditorsOpen.ContainsKey(component))
+		{
+			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			if(editor != null)
+			{
+				_componentsEditorsOpen.Add(component, editor);
+				editor.OnOpen();
+			}
+		}
+	}
+
+	private void OpenAllEditors()
+	{
+		if(_targetModel != null)
+		{
+			HashSet<BaseModelComponent> enabledComponents = GetEnabledModelComponents(_targetModel);
+			foreach(BaseModelComponent c in enabledComponents)
+			{
+				OpenEditor(c);
+			}
+
+			HashSet<BaseModelComponent> disabledComponents = GetDisabledModelComponents(_targetModel);
+			foreach(BaseModelComponent c in disabledComponents)
+			{
+				OpenEditor(c);
+			}
+		}
+	}
+	private void CloseEditor(BaseModelComponent component)
+	{
+		if(_componentsEditorsOpen.ContainsKey(component))
+		{
+			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			_componentsEditorsOpen.Remove(component);
+			if(editor != null)
+			{
+				editor.OnClose();
+			}
+		}
+	}
+
+	private void CloseAllEditors()
+	{
+		foreach(var pair in _componentsEditorsOpen)
+		{
+			pair.Value.OnClose();
+		}
+
+		_componentsEditorsOpen.Clear();
+	}
+
+	private HashSet<BaseModelComponent> GetEnabledModelComponents(BaseModel model)
+	{
+		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo enabledComponentsFieldInfo = typeof(ModelComponents).GetField("_enabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		return (HashSet<BaseModelComponent>)enabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(model));
+	}
+
+	private HashSet<BaseModelComponent> GetDisabledModelComponents(BaseModel model)
+	{
+		FieldInfo modelComponentsFieldInfo = typeof(BaseModel).GetField("_components", BindingFlags.NonPublic | BindingFlags.Instance);
+		FieldInfo disabledComponentsFieldInfo = typeof(ModelComponents).GetField("_disabledComponents", BindingFlags.NonPublic | BindingFlags.Instance);
+		return (HashSet<BaseModelComponent>)disabledComponentsFieldInfo.GetValue(modelComponentsFieldInfo.GetValue(model));
+	}
+
+	private Action DrawComponentMenu(BaseModelComponent component)
+	{
+		GUIStyle s = new GUIStyle(GUI.skin.button);
+		s.fixedWidth = 30f;
+
+		GUILayout.Space(10);
+		if(GUILayout.Button("x", s))
+		{
+			return () =>
+			{
+				_targetModel.RemoveComponent(component);
+			};
+		}
+		GUILayout.Space(10);
+		return null;
+	}
+
+	private BaseModelComponentEditor GetEditorForComponent(BaseModelComponent component)
+	{
+		if(_componentsEditorsOpen.ContainsKey(component))
+			return _componentsEditorsOpen[component];
+
+		foreach(var pair in _editors)
+		{
+			if(component.GetType().IsAssignableFrom(pair.Key))
+			{
+				return pair.Value;
+			}
+		}
+
+		return null;
+	}
+
+	private void CloseOpenSearchWindow()
+	{
+		if(_openSearchWindow != null)
+		{
+			_openSearchWindow.Close();
+			_openSearchWindow = null;
+		}
+	}
+}
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class ModelComponentEditorAttribute : Attribute
+{
+	public Type ComponentType;
+	public ModelComponentEditorAttribute(Type componentType)
+	{
+		ComponentType = componentType;
+	}
+}
+
+public abstract class BaseModelComponentEditor
+{
+	public virtual void OnOpen()
+	{
+
+	}
+
+	public virtual void OnClose()
+	{
+
+	}
+
+	public abstract void OnGUI(BaseModelComponent component);
 }
