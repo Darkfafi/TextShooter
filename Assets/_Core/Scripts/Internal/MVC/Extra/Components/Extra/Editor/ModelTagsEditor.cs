@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 
 [ModelComponentEditor(typeof(ModelTags))]
-public class ModelTagsEditor : BaseModelComponentEditor
+public class ModelTagsEditor : ModelComponentEditor
 {
 	private string _currentTagAddString = "";
 	private SearchWindow _openSearchWindow = null;
@@ -82,7 +82,7 @@ public class ModelTagsEditor : BaseModelComponentEditor
 		
 	}
 
-	public override void OnClose()
+	protected override void OnClose()
 	{
 		if(_openSearchWindow != null)
 		{

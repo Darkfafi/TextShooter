@@ -10,10 +10,11 @@ public class ModelManipulationWindow : EditorWindow
     private MonoBaseView _targetView;
     private BaseModel _targetModel;
 
+	private Vector2 _scrollPos = Vector2.zero;
 	private SearchWindow _openSearchWindow;
 	private bool _showComponents = true;
-	private Dictionary<Type, BaseModelComponentEditor> _editors = new Dictionary<Type, BaseModelComponentEditor>();
-	private Dictionary<BaseModelComponent, BaseModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, BaseModelComponentEditor>();
+	private Dictionary<Type, ModelComponentEditor> _editors = new Dictionary<Type, ModelComponentEditor>();
+	private Dictionary<BaseModelComponent, ModelComponentEditor> _componentsEditorsOpen = new Dictionary<BaseModelComponent, ModelComponentEditor>();
 
 	private Color _enabledComponentColor = new Color(0.2f, 0.4f, 0.75f);
 	private Color _disabledComponentColor = new Color(0.4f, 0.2f, 0.75f);
@@ -79,7 +80,7 @@ public class ModelManipulationWindow : EditorWindow
 	private void SetupEditors()
 	{
 		_editors.Clear();
-		Type[] componentEditors = Assembly.GetAssembly(typeof(BaseModelComponentEditor)).GetTypes().Where(t => t.IsClass && typeof(BaseModelComponentEditor).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
+		Type[] componentEditors = Assembly.GetAssembly(typeof(ModelComponentEditor)).GetTypes().Where(t => t.IsClass && typeof(ModelComponentEditor).IsAssignableFrom(t) && !t.IsAbstract).ToArray();
 		for(int i = 0; i < componentEditors.Length; i++)
 		{
 			object[] attributes = componentEditors[i].GetCustomAttributes(typeof(ModelComponentEditorAttribute), true);
@@ -88,7 +89,7 @@ public class ModelManipulationWindow : EditorWindow
 				ModelComponentEditorAttribute customEditorAttribute = attributes[0] as ModelComponentEditorAttribute;
 				try
 				{
-					_editors.Add(customEditorAttribute.ComponentType, Activator.CreateInstance(componentEditors[i]) as BaseModelComponentEditor);
+					_editors.Add(customEditorAttribute.ComponentType, Activator.CreateInstance(componentEditors[i]) as ModelComponentEditor);
 				}
 				catch(Exception e)
 				{
@@ -146,14 +147,20 @@ public class ModelManipulationWindow : EditorWindow
 				EditorGUILayout.BeginVertical();
 
 				Action optionAction = null;
+				_scrollPos = EditorGUILayout.BeginScrollView(_scrollPos, GUILayout.Width(position.width - 20), GUILayout.Height(Mathf.Clamp(position.height - 200, 300, 500)));
 				foreach(BaseModelComponent component in componentsOfModel)
 				{
 					Action a = DrawComponentSection(component);
+
+					if(component.ComponentState == ModelComponentState.Removed)
+						break;
+
 					if(optionAction == null)
 					{
 						optionAction = a;
 					}
 				}
+				EditorGUILayout.EndScrollView();
 
 				if(optionAction != null)
 				{
@@ -203,8 +210,8 @@ public class ModelManipulationWindow : EditorWindow
 		string componentName = component.IsEnabled ? " (E) " : " (D) ";
 		componentName += component.GetType().Name;
 
-		BaseModelComponentEditor editor = GetEditorForComponent(component);
-		if(editor != null)
+		ModelComponentEditor editor = GetEditorForComponent(component);
+		if(editor != null && !editor.ShouldStayClosed)
 		{
 			s = new GUIStyle(EditorStyles.foldout);
 			s.onNormal.textColor = color;
@@ -224,7 +231,9 @@ public class ModelManipulationWindow : EditorWindow
 				OpenEditor(component);
 				GUILayout.BeginHorizontal();
 				GUILayout.Space(20f);
-				GUILayout.BeginVertical(GUI.skin.box);
+				GUIStyle componentStyle = new GUIStyle(GUI.skin.box);
+				componentStyle.stretchWidth = true;
+				GUILayout.BeginVertical(componentStyle);
 				GUILayout.Space(5f);
 				editor.OnGUI(component);
 				GUILayout.Space(5f);
@@ -251,11 +260,15 @@ public class ModelManipulationWindow : EditorWindow
 	{
 		if(!_componentsEditorsOpen.ContainsKey(component))
 		{
-			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			ModelComponentEditor editor = GetEditorForComponent(component, true);
 			if(editor != null)
 			{
 				_componentsEditorsOpen.Add(component, editor);
-				editor.OnOpen();
+				editor.CallOnOpen(component);
+				if(editor.ShouldStayClosed)
+				{
+					CloseEditor(component);
+				}
 			}
 		}
 	}
@@ -275,20 +288,22 @@ public class ModelManipulationWindow : EditorWindow
 	{
 		if(_componentsEditorsOpen.ContainsKey(component))
 		{
-			BaseModelComponentEditor editor = GetEditorForComponent(component);
+			ModelComponentEditor editor = GetEditorForComponent(component);
 			_componentsEditorsOpen.Remove(component);
 			if(editor != null)
 			{
-				editor.OnClose();
+				editor.CallOnClose();
 			}
 		}
 	}
 
 	private void CloseAllEditors()
 	{
+		_scrollPos = Vector2.zero;
+
 		foreach(var pair in _componentsEditorsOpen)
 		{
-			pair.Value.OnClose();
+			pair.Value.CallOnClose();
 		}
 
 		_componentsEditorsOpen.Clear();
@@ -332,7 +347,7 @@ public class ModelManipulationWindow : EditorWindow
 		return null;
 	}
 
-	private BaseModelComponentEditor GetEditorForComponent(BaseModelComponent component)
+	private ModelComponentEditor GetEditorForComponent(BaseModelComponent component, bool incNew = false)
 	{
 		if(_componentsEditorsOpen.ContainsKey(component))
 			return _componentsEditorsOpen[component];
@@ -345,7 +360,7 @@ public class ModelManipulationWindow : EditorWindow
 			}
 		}
 
-		return null;
+		return incNew ? new ModelComponentEditor() : null;
 	}
 
 	private void CloseOpenSearchWindow()
@@ -356,29 +371,4 @@ public class ModelManipulationWindow : EditorWindow
 			_openSearchWindow = null;
 		}
 	}
-}
-
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public class ModelComponentEditorAttribute : Attribute
-{
-	public Type ComponentType;
-	public ModelComponentEditorAttribute(Type componentType)
-	{
-		ComponentType = componentType;
-	}
-}
-
-public abstract class BaseModelComponentEditor
-{
-	public virtual void OnOpen()
-	{
-
-	}
-
-	public virtual void OnClose()
-	{
-
-	}
-
-	public abstract void OnGUI(BaseModelComponent component);
 }

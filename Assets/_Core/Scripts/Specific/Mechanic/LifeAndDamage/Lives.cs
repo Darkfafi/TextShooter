@@ -7,7 +7,14 @@ public class Lives : BaseModelComponent
 
 	public int Amount
 	{
-		get; private set;
+		get
+		{
+			return _lives;
+		}
+		private set
+		{
+			_lives = value;
+		}
 	}
 
 	public bool IsAlive
@@ -18,11 +25,10 @@ public class Lives : BaseModelComponent
 		}
 	}
 
-	protected override void Added()
-	{
-		Amount = 1;
-	}
+	[ModelEditorField]
+	private int _lives = 1;
 
+	[ModelEditorMethod]
 	public void Damage(int amount)
 	{
 		if(amount < 0)
@@ -38,11 +44,13 @@ public class Lives : BaseModelComponent
 		}
 	}
 
+	[ModelEditorMethod]
 	public void SetLivesAmount(int amount)
 	{
 		Amount = amount;
 	}
 
+	[ModelEditorMethod]
 	public void Kill()
 	{
 		Damage(Amount);

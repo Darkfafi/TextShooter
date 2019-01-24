@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 
 [ModelComponentEditor(typeof(ModelTransform))]
-public class ModelTransformEditor : BaseModelComponentEditor
+public class ModelTransformEditor : ModelComponentEditor
 {
 	public override void OnGUI(BaseModelComponent transformComponent)
 	{
