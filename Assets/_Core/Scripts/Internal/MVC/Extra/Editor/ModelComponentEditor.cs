@@ -100,8 +100,20 @@ public class ModelComponentEditor
 		GUILayout.Label("Method: " + editorMethod.Name);
 		if(GUILayout.Button("Invoke", GUILayout.Width(70)))
 		{
-			object[] parameters = _parameterEditorValuesMap.Where(pair => editorMethod.GetParameters().Contains(pair.Key)).Select(pair => pair.Value).ToArray();
-			editorMethod.Invoke(obj, parameters);
+			ParameterInfo[] pms = editorMethod.GetParameters();
+			List<object> parameters = new List<object>();
+			for(int i = 0; i < pms.Length; i++)
+			{
+				foreach(var pair in _parameterEditorValuesMap)
+				{
+					if(pair.Key == pms[i])
+					{
+						parameters.Add(pair.Value);
+					}
+				}
+			}
+			
+			editorMethod.Invoke(obj, parameters.ToArray());
 		}
 		EditorGUILayout.EndHorizontal();
 
@@ -194,11 +206,25 @@ public class ModelComponentEditor
 			}
 			return EditorGUILayout.Vector3IntField(labelName, (Vector3Int)value);
 		}
-		else if(typeof(BaseModel).IsAssignableFrom(fieldType))
+		else if(typeof(EntityModel) == fieldType)
 		{
-			BaseModel target = value as BaseModel;
-			MonoBaseView view = MVCUtil.GetView<MonoBaseView>(target);
-			return EditorGUILayout.ObjectField(labelName, view, typeof(MonoBaseView), true) as MonoBaseView;
+			EntityModel target = value as EntityModel;
+			MonoBaseView view = null;
+			if(target != null && !target.IsDestroyed)
+			{
+				view = MVCUtil.GetView<MonoBaseView>(target);
+			}
+
+			view = EditorGUILayout.ObjectField(labelName, view, typeof(MonoBaseView), true) as MonoBaseView;
+
+			if(view != null)
+			{
+				return MVCUtil.GetModel<EntityModel>(view);
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		return null;
