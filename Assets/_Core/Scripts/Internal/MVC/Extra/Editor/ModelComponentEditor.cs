@@ -137,7 +137,7 @@ public class ModelComponentEditor
 				}
 				else
 				{
-					preValue = parameterType.IsValueType ? Activator.CreateInstance(parameterType) : parameterInfo.DefaultValue;
+					preValue = string.IsNullOrEmpty(parameterInfo.RawDefaultValue.ToString()) ? (parameterType.IsValueType ? Activator.CreateInstance(parameterType) : null) : parameterInfo.DefaultValue;
 				}
 
 				try
