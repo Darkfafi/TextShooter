@@ -112,7 +112,7 @@ public class ModelComponentEditor
 					}
 				}
 			}
-			
+
 			editorMethod.Invoke(obj, parameters.ToArray());
 		}
 		EditorGUILayout.EndHorizontal();
@@ -123,25 +123,42 @@ public class ModelComponentEditor
 			GUILayout.Space(25f);
 			GUILayout.Label("Parameters: ");
 			EditorGUILayout.EndHorizontal();
-			EditorGUILayout.BeginHorizontal();
-			GUILayout.Space(45f);
 			foreach(ParameterInfo parameterInfo in editorMethod.GetParameters())
 			{
+				EditorGUILayout.BeginHorizontal();
+				GUILayout.Space(45f);
+				Type parameterType = parameterInfo.ParameterType;
 				object preValue;
 				object value;
-				_parameterEditorValuesMap.TryGetValue(parameterInfo, out preValue);
-				value = DrawTypeField(parameterInfo.Name, parameterInfo.ParameterType, preValue);
-				if(value != preValue)
-				{
-					if(!_parameterEditorValuesMap.ContainsKey(parameterInfo))
-					{
-						_parameterEditorValuesMap.Add(parameterInfo, value);
-					}
 
-					_parameterEditorValuesMap[parameterInfo] = value;
+				if(_parameterEditorValuesMap.ContainsKey(parameterInfo))
+				{
+					preValue = _parameterEditorValuesMap[parameterInfo];
 				}
+				else
+				{
+					preValue = parameterType.IsValueType ? Activator.CreateInstance(parameterType) : parameterInfo.DefaultValue;
+				}
+
+				try
+				{
+					value = DrawTypeField(parameterInfo.Name, parameterType, preValue);
+					if(value != preValue)
+					{
+						if(!_parameterEditorValuesMap.ContainsKey(parameterInfo))
+						{
+							_parameterEditorValuesMap.Add(parameterInfo, value);
+						}
+
+						_parameterEditorValuesMap[parameterInfo] = value;
+					}
+				}
+				catch(Exception e)
+				{
+					GUILayout.Label("Parameter `" + parameterInfo.Name + "` can't be used. Error: " + e.Message);
+				}
+				EditorGUILayout.EndHorizontal();
 			}
-			EditorGUILayout.EndHorizontal();
 		}
 	}
 
@@ -206,10 +223,11 @@ public class ModelComponentEditor
 			}
 			return EditorGUILayout.Vector3IntField(labelName, (Vector3Int)value);
 		}
-		else if(typeof(EntityModel) == fieldType)
+		else if(typeof(BaseModel).IsAssignableFrom(fieldType))
 		{
-			EntityModel target = value as EntityModel;
+			BaseModel target = value as BaseModel;
 			MonoBaseView view = null;
+
 			if(target != null && !target.IsDestroyed)
 			{
 				view = MVCUtil.GetView<MonoBaseView>(target);
@@ -219,7 +237,15 @@ public class ModelComponentEditor
 
 			if(view != null)
 			{
-				return MVCUtil.GetModel<EntityModel>(view);
+				BaseModel m = MVCUtil.GetModel<BaseModel>(view);
+				if(fieldType.IsAssignableFrom(m.GetType()))
+				{
+					return m;
+				}
+				else
+				{
+					return null;
+				}
 			}
 			else
 			{
@@ -227,6 +253,6 @@ public class ModelComponentEditor
 			}
 		}
 
-		return null;
+		throw new Exception(string.Format("Type {0} is not supported", fieldType));
 	}
 }
