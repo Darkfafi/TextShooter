@@ -169,7 +169,7 @@ public class ModelManipulationWindow : EditorWindow
 
 				if(GUILayout.Button("Add"))
 				{
-					Type[] componentTypes = Assembly.GetAssembly(typeof(ModelTransform)).GetTypes().Where(t => typeof(BaseModelComponent).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToArray();
+					Type[] componentTypes = Assembly.GetAssembly(typeof(ModelTransform)).GetTypes().Where(t => typeof(BaseModelComponent).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass && !t.IsGenericType).ToArray();
 					_openSearchWindow = SearchWindow.OpenWindow((index) =>
 					{
 						if(index >= 0)
