@@ -18,11 +18,11 @@ public class TargetingWordItemModificationView : BaseView
 
 	protected override void OnViewDestroy()
 	{
-		_targetingWordItemModificationModel = null;
 		_targetingWordItemModificationModel.TargetingEnabledStateChangedEvent -= OnTargetingEnabledStateChangedEvent;
 		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent -= OnCharAtItemIndexTypedEvent;
 		_targetingWordItemModificationModel.RegisteredItemAddedEvent -= OnRegisteredItemAddedEvent;
 		_targetingWordItemModificationModel.RegisteredItemRemovedEvent -= OnRegisteredItemRemovedEvent;
+		_targetingWordItemModificationModel = null;
 	}
 
 	private void OnTargetingEnabledStateChangedEvent(Targeting targeting, bool enabledState)
