@@ -57,10 +57,13 @@ public class Targeting
 
 	private CharInputModel _charInputModel;
 	private EntityFilter<EntityModel> _targetsFilter;
+	private CameraModel _cameraModel;
 
-	public Targeting(CharInputModel charInputModel, FilterRules filterRules)
+	public Targeting(CharInputModel charInputModel, CameraModel cameraModel, FilterRules filterRules)
 	{
 		IsEnabled = true;
+
+		_cameraModel = cameraModel;
 
 		FilterRules.OpenConstructOnFilterRules(filterRules);
 		FilterRules.AddComponentToConstruct<WordsHolder>(false);
@@ -85,6 +88,8 @@ public class Targeting
 
 		CurrentTypingTarget = null;
 		BuildupShootString = null;
+
+		_cameraModel = null;
 
 		_targetsFilter.UntrackedEvent -= OnUntrackedEvent;
 		_targetsFilter.Clean();
@@ -140,6 +145,9 @@ public class Targeting
 					return false;
 
 				if(!WordsHp.IsHit(c, e.GetComponent<WordsHp>().GetCurrentChar()))
+					return false;
+
+				if(_cameraModel.IsOutsideOfOrthographic(e.ModelTransform.Position))
 					return false;
 
 				return true;

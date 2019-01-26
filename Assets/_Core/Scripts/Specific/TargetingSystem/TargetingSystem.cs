@@ -24,9 +24,9 @@ public class TargetingSystem
 	private TimekeeperModel _timekeeperModel;
 	private EntityFilter<EntityModel> _targetingSystemUsers;
 
-	public TargetingSystem(CharInputModel charInputModel, TimekeeperModel timekeeperModel)
+	public TargetingSystem(CharInputModel charInputModel, CameraModel cameraModel, TimekeeperModel timekeeperModel)
 	{
-		Targeting = new Targeting(charInputModel, FilterRules.CreateHasAllTagsFilter(Tags.TARGETABLE));
+		Targeting = new Targeting(charInputModel, cameraModel, FilterRules.CreateHasAllTagsFilter(Tags.TARGETABLE));
 		Targeting.TargetingEnabledStateChangedEvent += OnTargetingEnabledStateChangedEvent;
 		_timekeeperModel = timekeeperModel;
 		_timekeeperModel.ListenToFrameTick(OnUpdate);

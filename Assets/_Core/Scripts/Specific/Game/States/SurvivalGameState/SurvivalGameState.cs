@@ -39,7 +39,7 @@
 			// Setup Global Mechanics
 
 			// -- Game -- \\
-			_targetingSystem = new TargetingSystem(CharInputModel, Game.TimekeeperModel);
+			_targetingSystem = new TargetingSystem(CharInputModel, Game.GameCamera, Game.TimekeeperModel);
 
 			// -- UI -- \\
 			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
