@@ -46,8 +46,10 @@ public class ModelManipulationWindow : EditorWindow
             ShowInternalControllWindow(monoBaseView);
         }
         else
-        {
-            if (_targetView != null)
+		{
+			CloseAllEditors();
+			CloseOpenSearchWindow();
+			if (_targetView != null)
             {
                 ShowInternalControllWindow(null);
             }
