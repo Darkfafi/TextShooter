@@ -36,8 +36,8 @@ public class ModelComponentEditor
 	{
 		_editorFields = component.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(typeof(ModelEditorFieldAttribute), true).Length > 0).ToArray();
 		_editorMethods = component.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Where(f => f.GetCustomAttributes(typeof(ModelEditorMethodAttribute), true).Length > 0).ToArray();
-		_showMethods = true;
 		_showFields = true;
+		_showMethods = false;
 		OnOpen();
 	}
 
@@ -51,7 +51,7 @@ public class ModelComponentEditor
 	{
 		if(_editorFields.Length > 0)
 		{
-			_showFields = EditorGUILayout.Foldout(_showFields, "Fields: ");
+			_showFields = EditorGUILayout.Foldout(_showFields, string.Format("Fields ({0}): ", _editorFields.Length));
 			if(_showFields)
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);
@@ -69,7 +69,7 @@ public class ModelComponentEditor
 
 		if(_editorMethods.Length > 0)
 		{
-			_showMethods = EditorGUILayout.Foldout(_showMethods, "Methods: ");
+			_showMethods = EditorGUILayout.Foldout(_showMethods, string.Format("Methods ({0}): ", _editorMethods.Length));
 			if(_showMethods)
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);

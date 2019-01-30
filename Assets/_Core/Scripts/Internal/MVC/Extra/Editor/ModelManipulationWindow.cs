@@ -49,12 +49,12 @@ public class ModelManipulationWindow : EditorWindow
 		{
 			CloseAllEditors();
 			CloseOpenSearchWindow();
-			if (_targetView != null)
-            {
-                ShowInternalControllWindow(null);
-            }
+			if(_targetView != null)
+			{
+				ShowInternalControllWindow(null);
+			}
 
-            GUIStyle badStyle = new GUIStyle(GUI.skin.label);
+			GUIStyle badStyle = new GUIStyle(GUI.skin.label);
             badStyle.normal.textColor = new Color(0.85f, 0.1f, 0.1f);
             GUILayout.Label("No GameObject selected with an 'MonoBaseView' Component on it", badStyle);
         }
@@ -213,66 +213,67 @@ public class ModelManipulationWindow : EditorWindow
 		componentName += component.GetType().Name;
 
 		ModelComponentEditor editor = GetEditorForComponent(component);
-		if(editor != null && !editor.ShouldStayClosed)
+
+		if(editor == null)
 		{
-			s = new GUIStyle(EditorStyles.foldout);
-			s.onNormal.textColor = color;
-			s.onActive.textColor = color;
-			s.onFocused.textColor = color;
-			s.onHover.textColor = color;
+			editor = new ModelComponentEditor();
+		}
 
-			bool inContainer = _componentsEditorsOpen.ContainsKey(component);
+		s = new GUIStyle(EditorStyles.foldout);
+		s.onNormal.textColor = color;
+		s.onActive.textColor = color;
+		s.onFocused.textColor = color;
+		s.onHover.textColor = color;
 
+		bool inContainer = _componentsEditorsOpen.ContainsKey(component);
+
+		GUILayout.BeginHorizontal();
+		inContainer = EditorGUILayout.Foldout(inContainer, componentName, s);
+		optionAction = DrawComponentMenu(component);
+		GUILayout.EndHorizontal();
+
+		if(inContainer && OpenEditor(component))
+		{
 			GUILayout.BeginHorizontal();
-			inContainer = EditorGUILayout.Foldout(inContainer, componentName, s);
-			optionAction = DrawComponentMenu(component);
+			GUILayout.Space(20f);
+			GUIStyle componentStyle = new GUIStyle(GUI.skin.box);
+			componentStyle.stretchWidth = true;
+			GUILayout.BeginVertical(componentStyle);
+			GUILayout.Space(5f);
+			editor.OnGUI(component);
+			GUILayout.Space(5f);
+			GUILayout.EndVertical();
 			GUILayout.EndHorizontal();
-
-			if(inContainer)
-			{
-				OpenEditor(component);
-				GUILayout.BeginHorizontal();
-				GUILayout.Space(20f);
-				GUIStyle componentStyle = new GUIStyle(GUI.skin.box);
-				componentStyle.stretchWidth = true;
-				GUILayout.BeginVertical(componentStyle);
-				GUILayout.Space(5f);
-				editor.OnGUI(component);
-				GUILayout.Space(5f);
-				GUILayout.EndVertical();
-				GUILayout.EndHorizontal();
-			}
-			else
-			{
-				CloseEditor(component);
-			}
 		}
 		else
 		{
-			GUILayout.BeginHorizontal();
-			GUILayout.Label(componentName, s);
-			optionAction = DrawComponentMenu(component);
-			GUILayout.EndHorizontal();
+			CloseEditor(component);
 		}
 
 		return optionAction;
 	}
 
-	private void OpenEditor(BaseModelComponent component)
+	private bool OpenEditor(BaseModelComponent component)
 	{
 		if(!_componentsEditorsOpen.ContainsKey(component))
 		{
-			ModelComponentEditor editor = GetEditorForComponent(component, true);
-			if(editor != null)
+			ModelComponentEditor editor = GetEditorForComponent(component);
+
+			if(editor == null)
 			{
-				_componentsEditorsOpen.Add(component, editor);
-				editor.CallOnOpen(component);
-				if(editor.ShouldStayClosed)
-				{
-					CloseEditor(component);
-				}
+				editor = new ModelComponentEditor();
+			}
+
+			_componentsEditorsOpen.Add(component, editor);
+			editor.CallOnOpen(component);
+			if(editor.ShouldStayClosed)
+			{
+				CloseEditor(component);
+				return false;
 			}
 		}
+
+		return true;
 	}
 
 	private void OpenAllEditors()
@@ -349,7 +350,7 @@ public class ModelManipulationWindow : EditorWindow
 		return null;
 	}
 
-	private ModelComponentEditor GetEditorForComponent(BaseModelComponent component, bool incNew = false)
+	private ModelComponentEditor GetEditorForComponent(BaseModelComponent component)
 	{
 		if(_componentsEditorsOpen.ContainsKey(component))
 			return _componentsEditorsOpen[component];
@@ -362,7 +363,7 @@ public class ModelManipulationWindow : EditorWindow
 			}
 		}
 
-		return incNew ? new ModelComponentEditor() : null;
+		return null;
 	}
 
 	private void CloseOpenSearchWindow()
