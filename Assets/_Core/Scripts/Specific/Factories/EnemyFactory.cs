@@ -3,10 +3,14 @@
 public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 {
 	private TimekeeperModel _timekeeperModel;
+	private StaticDatabase<EnemyData> _enemyDatabase;
+	private WordsList _wordsList;
 
-	public EnemyFactory(TimekeeperModel timekeeperModel)
+	public EnemyFactory(TimekeeperModel timekeeperModel, StaticDatabase<EnemyData> enemyDatabase, WordsList wordsList)
 	{
+		_wordsList = wordsList;
 		_timekeeperModel = timekeeperModel;
+		_enemyDatabase = enemyDatabase;
 	}
 
 	~EnemyFactory()
@@ -16,19 +20,19 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 
 	public EnemyModel Create(EnemyFactoryData data)
 	{
-		EnemyModel enemyModel;
+		EnemyData enemyData;
 
-		switch(data.EnemyType)
+		if(!_enemyDatabase.TryGetData(data.EnemyID, out enemyData))
 		{
-			// Suicide, RocketLauncher, Boss
-			// Tank, RocketInfantry, SuicideInfantry, Plane, SuperTank.
-			// Set Skin, Speed, damage and words
-			// Get enemyType info from some xml?
-			// Make Factory in GameModel's Factories? (Non static, not requiring TimekeeperModel parameter anymore)
+			Debug.LogError("Could not find data for enemy with ID " + data.EnemyID);
+			return null;
 		}
 
+		EnemyModel enemyModel;
+
 		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyPosition);
-		enemyModel.Initialize(data.EnemyType);
+		enemyModel.Initialize(_wordsList.ListData.GetRandomWord(), _wordsList.ListData.GetRandomWords(enemyData.ExtraWordsAmount));
+
 		ModelBrain<EntityModel> brain = enemyModel.AddComponent<EntityBrain>().Setup(_timekeeperModel);
 
 		brain.SetupNoStateSwitcher(
@@ -60,7 +64,7 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 
 public struct EnemyFactoryData : IFactoryData
 {
-	public string EnemyType
+	public string EnemyID
 	{
 		get; private set;
 	}
@@ -70,9 +74,9 @@ public struct EnemyFactoryData : IFactoryData
 		get; private set;
 	}
 
-	public EnemyFactoryData(string enemyType, Vector3 enemyPosition)
+	public EnemyFactoryData(string enemyID, Vector3 enemyPosition)
 	{
-		EnemyType = enemyType;
+		EnemyID = enemyID;
 		EnemyPosition = enemyPosition;
 	}
 }

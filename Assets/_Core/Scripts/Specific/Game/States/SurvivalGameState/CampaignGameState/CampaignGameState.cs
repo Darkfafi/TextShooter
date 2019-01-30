@@ -9,7 +9,7 @@
 
 		protected override void OnSetupState()
 		{
-			Campaign = XmlToCampaign.ParseXml(MasterGame, MasterGame.GameSettings.CampaignText);
+			Campaign = XmlToCampaign.ParseXml(MasterGame, SessionSettings.Request<CampaignSettings>().CampaignText);
 		}
 
 		protected override void OnStartState()

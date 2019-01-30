@@ -22,17 +22,17 @@ public class GameModel : BaseModel, IGame
 		get; private set;
 	}
 
-	public GameSettings GameSettings
+	public WordsList WordsList
 	{
 		get; private set;
 	}
 
 	public GameModel(float orthographicSize)
 	{
-		GameSettings = SessionSettings.Request<GameSettings>();
+		WordsList = new WordsList(SessionSettings.Request<WordsListSettings>().WordsListDocumentText);
 		GameCamera = new CameraModel(orthographicSize, orthographicSize);
 		TimekeeperModel = new TimekeeperModel();
-		Factories = new GameFactories(this);
+		Factories = new GameFactories(this, EnemyDatabaseParser.ParseXml(SessionSettings.Request<EnemySettings>().EnemyDatabaseString), WordsList);
 		GameStateManager = new GameStateManager<GameModel>(this);
 	}
 

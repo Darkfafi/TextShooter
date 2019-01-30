@@ -9,10 +9,10 @@ public class GameFactories
 		get; private set;
 	}
 
-	public GameFactories(GameModel game)
+	public GameFactories(GameModel game, StaticDatabase<EnemyData> enemyDatabase, WordsList wordsList)
 	{
 		// Creation of Factories
-		EnemyFactory = new EnemyFactory(game.TimekeeperModel);
+		EnemyFactory = new EnemyFactory(game.TimekeeperModel, enemyDatabase, wordsList);
 	}
 
 	~GameFactories()

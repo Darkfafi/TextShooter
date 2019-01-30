@@ -9,14 +9,14 @@
           <endingType>destroy</endingType>
           <progressor atValue="10" setKey="Killed_All_First_Event1" eventEndType="atValue">kills</progressor>
           <spawn>
-            <enemyType>Left</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <amount>7</amount>
             <timeBetween>0.5</timeBetween>
             <delayAfterSpawn>2</delayAfterSpawn>
             <side>left</side>
           </spawn>
           <spawn>
-            <enemyType>Right</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <amount>7</amount>
             <timeBetween>2</timeBetween>
             <side>right</side>
@@ -30,11 +30,11 @@
         <data>
           <progressor>kills</progressor>
           <spawn>
-            <enemyType>Hello</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <amount>5</amount>
           </spawn>
           <spawn>
-            <enemyType>Bye</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <amount>2</amount>
           </spawn>
         </data>
@@ -45,13 +45,13 @@
         <data>
           <progressor setKey="Killed_All_First_Event2">kills</progressor>
           <spawn>
-            <enemyType>Killed</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <amount>30</amount>
             <timeBetween>2</timeBetween>
             <side>any</side>
           </spawn>
           <spawn>
-            <enemyType>All</enemyType>
+            <enemyID>suicideWalker</enemyID>
             <side>any</side> 
             <amount>30</amount>
             <timeBetween>2</timeBetween>
@@ -68,12 +68,12 @@
         <conditionKey>Killed_All_First_Event1</conditionKey>
         <progressor>kills</progressor>
         <spawn>
-          <enemyType>Zero</enemyType>
+          <enemyID>suicideWalker</enemyID>
           <timeBetween>2</timeBetween>
           <amount>3</amount>
         </spawn>
         <spawn>
-          <enemyType>Nero</enemyType>
+          <enemyID>suicideWalker</enemyID>
           <timeBetween>2</timeBetween>
           <amount>5</amount>
         </spawn>
@@ -85,12 +85,12 @@
       <data>
         <progressor>kills</progressor>
         <spawn>
-          <enemyType>Jello</enemyType>
+          <enemyID>suicideWalker</enemyID>
           <timeBetween>2</timeBetween>
           <amount>6</amount>
         </spawn>
         <spawn>
-          <enemyType>Jelle</enemyType>
+          <enemyID>suicideWalker</enemyID>
           <timeBetween>2</timeBetween>
           <amount>7</amount>
         </spawn>

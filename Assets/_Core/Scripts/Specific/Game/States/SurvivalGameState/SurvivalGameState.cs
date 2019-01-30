@@ -7,11 +7,6 @@
 			get; private set;
 		}
 
-		public WordsList WordsList
-		{
-			get; private set;
-		}
-
 		public CharInputModel CharInputModel
 		{
 			get; private set;
@@ -37,9 +32,6 @@
 		protected override void OnSetupState()
 		{
 			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
-
-			// Setup chosen Words List
-			WordsList = new WordsList(ParentGame.GameSettings.WordsListDocumentText);
 
 			// Input
 			CharInputModel = new CharInputModel();

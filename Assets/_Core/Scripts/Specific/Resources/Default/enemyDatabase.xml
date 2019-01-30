@@ -1,0 +1,9 @@
+<enemyDatabase>
+	<enemyData>
+		<id>suicideWalker</id>
+		<type>walker</type>
+		<weapon>suicide</weapon>
+		<behaviour>default</behaviour>
+		<extraWords>0</extraWords>
+	</enemyData>
+</enemyDatabase>
