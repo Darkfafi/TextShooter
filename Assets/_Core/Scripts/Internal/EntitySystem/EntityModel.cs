@@ -48,6 +48,19 @@ public class EntityModel : BaseModel
 			}
 		}
 
+		if(componentType == typeof(ModelTags))
+		{
+			if(action == ModelComponents.ModelComponentsAction.RemoveComponent)
+			{
+				return IsDestroyed;
+			}
+
+			if(action == ModelComponents.ModelComponentsAction.AddComponent)
+			{
+				return ModelTags == null;
+			}
+		}
+
 		return true;
 	}
 
