@@ -23,8 +23,8 @@ namespace SurvivalGame
 			switch(_currentState)
 			{
 				case IntroState.End:
-					Game.TurretModel.SetGunActiveState(_turretPreActiveState);
-					Game.StartGame();
+					ParentGame.TurretModel.SetGunActiveState(_turretPreActiveState);
+					ParentGame.StartGame();
 					break;
 				default:
 					if(IntroStateSwitchedEvent != null)
@@ -39,8 +39,8 @@ namespace SurvivalGame
 		protected override void OnSetupState()
 		{
 			_currentState = IntroState.None;
-			_turretPreActiveState = Game.TurretModel.IsGunActive;
-			Game.TurretModel.SetGunActiveState(false);
+			_turretPreActiveState = ParentGame.TurretModel.IsGunActive;
+			ParentGame.TurretModel.SetGunActiveState(false);
 		}
 
 		protected override void OnStartState()

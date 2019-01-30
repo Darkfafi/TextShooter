@@ -720,7 +720,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b93d7243598629439582ed4bda2dca0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _campaignXml: {fileID: 4900000, guid: 54a81a3615ddc594984fc70e212008a2, type: 3}
 --- !u!4 &902016616
 Transform:
   m_ObjectHideFlags: 0

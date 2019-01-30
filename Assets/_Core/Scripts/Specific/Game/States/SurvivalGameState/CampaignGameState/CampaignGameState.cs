@@ -9,15 +9,7 @@
 
 		protected override void OnSetupState()
 		{
-
-		}
-
-		public void SetCampaignString(string campaignXmlString)
-		{
-			if(Campaign == null)
-			{
-				Campaign = XmlToCampaign.ParseXml(MasterGame, campaignXmlString);
-			}
+			Campaign = XmlToCampaign.ParseXml(MasterGame, MasterGame.GameSettings.CampaignText);
 		}
 
 		protected override void OnStartState()

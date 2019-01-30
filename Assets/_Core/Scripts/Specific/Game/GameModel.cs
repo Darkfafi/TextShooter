@@ -22,8 +22,14 @@ public class GameModel : BaseModel, IGame
 		get; private set;
 	}
 
+	public GameSettings GameSettings
+	{
+		get; private set;
+	}
+
 	public GameModel(float orthographicSize)
 	{
+		GameSettings = SessionSettings.Request<GameSettings>();
 		GameCamera = new CameraModel(orthographicSize, orthographicSize);
 		TimekeeperModel = new TimekeeperModel();
 		Factories = new GameFactories(this);

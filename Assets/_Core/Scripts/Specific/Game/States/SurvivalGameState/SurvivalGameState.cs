@@ -7,6 +7,11 @@
 			get; private set;
 		}
 
+		public WordsList WordsList
+		{
+			get; private set;
+		}
+
 		public CharInputModel CharInputModel
 		{
 			get; private set;
@@ -33,20 +38,23 @@
 		{
 			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
 
+			// Setup chosen Words List
+			WordsList = new WordsList(ParentGame.GameSettings.WordsListDocumentText);
+
 			// Input
 			CharInputModel = new CharInputModel();
 
 			// Setup Global Mechanics
 
 			// -- Game -- \\
-			_targetingSystem = new TargetingSystem(CharInputModel, Game.GameCamera, Game.TimekeeperModel);
+			_targetingSystem = new TargetingSystem(CharInputModel, ParentGame.GameCamera, ParentGame.TimekeeperModel);
 
 			// -- UI -- \\
-			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
+			WordsDisplayerModel = new WordsDisplayerModel(ParentGame.TimekeeperModel);
 			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(_targetingSystem.Targeting, WordsDisplayerModel);
 
 			// Setup Player
-			TurretModel = new TurretModel(Game.TimekeeperModel);
+			TurretModel = new TurretModel(ParentGame.TimekeeperModel);
 		}
 
 		public void StartGame()
