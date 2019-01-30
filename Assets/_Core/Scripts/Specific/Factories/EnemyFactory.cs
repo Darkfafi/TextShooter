@@ -15,6 +15,8 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 
 	~EnemyFactory()
 	{
+		_wordsList = null;
+		_enemyDatabase = null;
 		_timekeeperModel = null;
 	}
 
