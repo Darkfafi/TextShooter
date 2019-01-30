@@ -180,7 +180,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 			{
 				EnemyModel enemy = _game.Factories.EnemyFactory.Create(
 					new EnemyFactoryData(
-						_mobsSpawnData.EnemyType,
+						_mobsSpawnData.EnemyID,
 						_game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide)
 					)
 				);
@@ -206,7 +206,7 @@ public class MobsTimelineEventData : BaseTimelineEventData
 	public struct SpawnData
 	{
 		public CameraUtils.Side SpawnSide;
-		public string EnemyType;
+		public string EnemyID;
 		public int Amount;
 		public int DelayAfterSpawnInSeconds;
 		public float TimeBetweenInSeconds;
