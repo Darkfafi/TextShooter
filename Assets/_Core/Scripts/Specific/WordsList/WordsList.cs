@@ -171,4 +171,27 @@ public struct WordsListData
 		Title = title;
 		Words = new List<string>(words);
 	}
+
+	public string GetRandomWord()
+	{
+		if(Words == null || Words.Count == 0)
+			return null;
+
+		return Words[UnityEngine.Random.Range(0, Words.Count)];
+	}
+
+	public string[] GetRandomWords(int amount)
+	{
+		if(Words == null || Words.Count == 0)
+			return new string[] { };
+
+		List<string> words = new List<string>();
+
+		for(int i = 0; i < amount; i++)
+		{
+			words.Add(GetRandomWord());
+		}
+
+		return words.ToArray();
+	}
 }
