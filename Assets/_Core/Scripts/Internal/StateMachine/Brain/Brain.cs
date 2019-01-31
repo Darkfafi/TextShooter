@@ -30,18 +30,17 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private Type _currentStateSwitchersType = null;
 	private TimekeeperModel _timekeeperModel;
+	private bool _addedOwnStateMachine = false;
 
 	public Brain(TimekeeperModel timekeeperModel, T affected, bool isEnabledFromStart = true)
 	{
-		_timekeeperModel = timekeeperModel;
-		_brainState = new BrainState<T>(this);
-		BrainStateMachine = new StateMachine<T>(affected);
-		BrainStateMachine.StateSetEvent += OnStateSetEvent;
+		_addedOwnStateMachine = true;
+		Initialize(timekeeperModel, new StateMachine<T>(affected), isEnabledFromStart);
+	}
 
-		if(isEnabledFromStart)
-		{
-			SetEnabledState(true);
-		}
+	public Brain(TimekeeperModel timekeeperModel, StateMachine<T> stateMachine, bool isEnabledFromStart = true)
+	{
+		Initialize(timekeeperModel, stateMachine, isEnabledFromStart);
 	}
 
 	public void SetEnabledState(bool enabledState)
@@ -126,7 +125,9 @@ public class Brain<T> : IBrain<T> where T : class
 		DeactivateGlobalSwitchers();
 		DeactivateStateSwitchers(BrainStateMachine.CurrentStateType);
 
-		BrainStateMachine.Clean();
+		if(_addedOwnStateMachine)
+			BrainStateMachine.Clean();
+
 		BrainStateMachine = null;
 		
 		_globalSwitchers.Clear();
@@ -214,6 +215,22 @@ public class Brain<T> : IBrain<T> where T : class
 			{
 				BrainState.SetKey(pair.Key, pair.Value);
 			}
+		}
+	}
+
+	private void Initialize(TimekeeperModel timekeeperModel, StateMachine<T> stateMachine, bool isEnabledFromStart)
+	{
+		if(_timekeeperModel != null)
+			return;
+
+		_timekeeperModel = timekeeperModel;
+		_brainState = new BrainState<T>(this);
+		BrainStateMachine = stateMachine;
+		BrainStateMachine.StateSetEvent += OnStateSetEvent;
+
+		if(isEnabledFromStart)
+		{
+			SetEnabledState(true);
 		}
 	}
 

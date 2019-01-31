@@ -29,6 +29,12 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 		return this;
 	}
 
+	public ModelBrain<T> Setup(TimekeeperModel timekeeper, StateMachine<T> stateMachine)
+	{
+		_internalBrain = new Brain<T>(timekeeper, stateMachine, IsEnabled);
+		return this;
+	}
+
 	protected override void Added()
 	{
 
