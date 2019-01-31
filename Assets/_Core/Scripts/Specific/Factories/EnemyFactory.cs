@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
+public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 {
 	private TimekeeperModel _timekeeperModel;
 	private StaticDatabase<EnemyData> _enemyDatabase;
@@ -20,7 +20,7 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 		_timekeeperModel = null;
 	}
 
-	public EnemyModel Create(EnemyFactoryData data)
+	public CharacterModel Create(EnemyFactoryData data)
 	{
 		EnemyData enemyData;
 
@@ -30,11 +30,32 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 			return null;
 		}
 
-		EnemyModel enemyModel;
+		CharacterModel enemyModel;
 
-		enemyModel = new EnemyModel(_timekeeperModel, data.EnemyPosition);
+		enemyModel = new CharacterModel(_timekeeperModel, enemyData.MovementSpeed, data.EnemyPosition);
 		enemyModel.Initialize(_wordsList.ListData.GetRandomWord(), _wordsList.ListData.GetRandomWords(enemyData.ExtraWordsAmount));
+		ApplyWeapon(enemyData, enemyModel);
 
+		if(data.ApplyBrain)
+		{
+			ApplyBrain(enemyData, enemyModel);
+		}
+
+		return enemyModel;
+	}
+
+	private void ApplyWeapon(EnemyData enemyData, CharacterModel enemyModel)
+	{
+		switch(enemyData.WeaponType)
+		{
+			case "suicide":
+				enemyModel.AddComponent<SuicideBombWeapon>();
+				break;
+		}
+	}
+
+	private void ApplyBrain(EnemyData enemyData, CharacterModel enemyModel)
+	{
 		ModelBrain<EntityModel> brain = enemyModel.AddComponent<EntityBrain>().Setup(_timekeeperModel);
 
 		brain.SetupNoStateSwitcher(
@@ -44,23 +65,20 @@ public class EnemyFactory : IFactory<EnemyModel, EnemyFactoryData>
 				RangeToMoveTo = 1f,
 				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
 				DistanceToTriggerSwitcher = 5f,
+				SpecifiedSpeed = enemyModel.TopDownMovement.BaseSpeed * 1.25f,
 			})
 		);
 
 		brain.SetupNoStateSwitcher(
 			new MoveIntoRangeSwitcher(
-			new MoveInRangeSwitcherData() {
+			new MoveInRangeSwitcherData()
+			{
 				RangeToMoveTo = 4f,
 				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
-				SpecifiedSpeed = 2.25f,
 			})
 		);
 
 		brain.SetupGlobalSwitcher(new UseWeaponInRangeSwitcher(FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET), 0.8f));
-
-		enemyModel.AddComponent<SuicideBombWeapon>();
-
-		return enemyModel;
 	}
 }
 
@@ -76,9 +94,15 @@ public struct EnemyFactoryData : IFactoryData
 		get; private set;
 	}
 
-	public EnemyFactoryData(string enemyID, Vector3 enemyPosition)
+	public bool ApplyBrain
+	{
+		get; private set;
+	}
+
+	public EnemyFactoryData(string enemyID, Vector3 enemyPosition, bool applyBrain = true)
 	{
 		EnemyID = enemyID;
 		EnemyPosition = enemyPosition;
+		ApplyBrain = applyBrain;
 	}
 }

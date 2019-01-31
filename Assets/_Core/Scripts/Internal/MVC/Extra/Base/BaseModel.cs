@@ -3,7 +3,7 @@
 /// <summary>
 /// The design is to have the model contain no Unity specifications. It serves as a data object for its respective view.
 /// </summary>
-public abstract class BaseModel : IModel, IComponentsHolder
+public abstract class BaseModel : IModel, IComponentsHolder, IComponentsEnableModifier
 {
 	public event Action<BaseModel> DestroyEvent;
 	public event Action<BaseModel, BaseModelComponent> AddedComponentToModelEvent;

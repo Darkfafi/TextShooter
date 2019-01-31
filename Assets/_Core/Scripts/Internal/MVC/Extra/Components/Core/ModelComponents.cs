@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class ModelComponents : IComponentsHolder
+public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 {
 	public enum ModelComponentsAction
 	{
@@ -282,6 +282,12 @@ public class ModelComponents : IComponentsHolder
 	}
 }
 
+public interface IComponentsEnableModifier
+{
+	bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent;
+	void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent;
+}
+
 public interface IComponentsHolder
 {
 	T AddComponent<T>() where T : BaseModelComponent;
@@ -293,8 +299,6 @@ public interface IComponentsHolder
 	void RemoveComponent<T>() where T : BaseModelComponent;
 	void RemoveComponent(Type componentType);
 	void RemoveComponent(BaseModelComponent component);
-	bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent;
-	void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent;
 	bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent;
 	bool HasComponent(Type componentType, bool incDisabledComponents = true);
 }

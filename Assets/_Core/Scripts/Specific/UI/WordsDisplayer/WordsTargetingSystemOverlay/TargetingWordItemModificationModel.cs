@@ -84,7 +84,7 @@ public class TargetingWordItemModificationModel : BaseModel
 	private void OnTargetCharTypedEvent(EntityModel target, char newChar, char requiredChar, int index)
 	{
 		WordUIDisplayItemModel item = GetWordUIItemForEntityModel(target);
-		if(item != null && WordsHp.IsHit(newChar, requiredChar))
+		if(item != null && WordsHolder.IsCharMatch(newChar, requiredChar))
 		{
 			if(CharAtItemIndexTypedEvent != null)
 			{

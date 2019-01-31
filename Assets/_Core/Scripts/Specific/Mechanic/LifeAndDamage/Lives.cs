@@ -4,8 +4,9 @@ using UnityEngine;
 public class Lives : BaseModelComponent
 {
 	public event Action<Lives> DeathEvent;
+	public event Action<Lives, int> DamageEvent;
 
-	public int Amount
+	public int LivesAmount
 	{
 		get
 		{
@@ -21,7 +22,7 @@ public class Lives : BaseModelComponent
 	{
 		get
 		{
-			return Amount > 0;
+			return LivesAmount > 0;
 		}
 	}
 
@@ -29,13 +30,17 @@ public class Lives : BaseModelComponent
 	private int _lives = 1;
 
 	[ModelEditorMethod]
-	public void Damage(int amount)
+	public void Damage(int damageAmount)
 	{
-		if(amount < 0)
+		if(damageAmount < 0)
 			return;
 
-		Amount = Mathf.Max(Amount - amount, 0);
-		if(Amount == 0)
+		LivesAmount = Mathf.Max(LivesAmount - damageAmount, 0);
+
+		if(DamageEvent != null)
+			DamageEvent(this, damageAmount);
+
+		if(LivesAmount == 0)
 		{
 			if(DeathEvent != null)
 			{
@@ -47,12 +52,12 @@ public class Lives : BaseModelComponent
 	[ModelEditorMethod]
 	public void SetLivesAmount(int amount)
 	{
-		Amount = amount;
+		LivesAmount = amount;
 	}
 
 	[ModelEditorMethod]
 	public void Kill()
 	{
-		Damage(Amount);
+		Damage(LivesAmount);
 	}
 }

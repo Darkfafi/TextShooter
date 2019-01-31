@@ -14,11 +14,13 @@
 		SetRadius(2f);
 	}
 
-	protected override void OnUse(Lives livesComponent)
+	protected override bool OnUse(Lives livesComponent)
 	{
 		if(Parent.HasComponent<Lives>())
 			Parent.GetComponent<Lives>().Kill();
 
 		ApplyDamage(livesComponent);
+
+		return true;
 	}
 }

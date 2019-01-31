@@ -223,25 +223,6 @@ public abstract class BaseModelComponent : IComponentsHolder
 		Components.RemoveComponent(component);
 	}
 
-	public bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent
-	{
-		if(Components == null)
-		{
-			isEnabled = false;
-			return false;
-		}
-
-		return Components.TryIsEnabledCheck<T>(out isEnabled);
-	}
-
-	public void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent
-	{
-		if(Components == null)
-			return;
-
-		Components.SetComponentEnabledState<T>(enabledState);
-	}
-
 	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent
 	{
 		if(Components == null)

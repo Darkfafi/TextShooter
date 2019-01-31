@@ -35,6 +35,19 @@ public class WordsHolder : BaseModelComponent
 		CurrentWord = null;
 	}
 
+	public static bool IsCharMatch(char charForHit, char charToHit)
+	{
+		return charForHit.ToString().ToLower() == charToHit.ToString().ToLower();
+	}
+
+	public char GetChar(int index)
+	{
+		if(string.IsNullOrEmpty(CurrentWord) || index < 0 || index >= CurrentWord.Length)
+			return default(char);
+
+		return CurrentWord[index];
+	}
+
 	public void AddWord(string word)
 	{
 		_words.Add(word);

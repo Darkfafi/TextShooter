@@ -1,14 +1,8 @@
-﻿public class InstantFireWordGun : BaseFireWordGun
+﻿public class InstantHitGun : BaseCooldownWeapon
 {
-	public InstantFireWordGun(float cooldown, float range, TimekeeperModel timekeeper) : base(cooldown, range, timekeeper) { }
-
-	protected override bool FireLogics(WordsHp wordsHp, string wordToFireAsChars)
+	protected override bool DoUseLogics(Lives livesComponent)
 	{
-		for(int i = 0, c = wordToFireAsChars.Length; i < c; i++)
-		{
-			wordsHp.Hit(wordToFireAsChars[i]);
-		}
-
+		ApplyDamage(livesComponent);
 		return true;
 	}
 }

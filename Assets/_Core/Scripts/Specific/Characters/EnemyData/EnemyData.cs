@@ -20,14 +20,20 @@
 		get; private set;
 	}
 
+	public float MovementSpeed
+	{
+		get; private set;
+	}
+
 	public int ExtraWordsAmount
 	{
 		get; private set;
 	}
 
-	public EnemyData(string dataID, string enemyType, string weaponType, string behaviourType, int extraWordsAmount = 0)
+	public EnemyData(string dataID, string enemyType, string weaponType, string behaviourType, float movementSpeed, int extraWordsAmount = 0)
 	{
 		DataID = dataID;
+		MovementSpeed = movementSpeed;
 		EnemyType = enemyType;
 		WeaponType = weaponType;
 		BehaviourType = behaviourType;

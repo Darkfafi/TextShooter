@@ -9,6 +9,7 @@ public static class EnemyDatabaseParser
 	public const string NODE_ENEMY_DATA_TYPE = "type";
 	public const string NODE_ENEMY_DATA_WEAPON = "weapon";
 	public const string NODE_ENEMY_DATA_BEHAVIOUR = "behaviour";
+	public const string NODE_ENEMY_DATA_MOVEMENT_SPEED = "movementSpeed";
 	public const string NODE_ENEMY_DATA_EXTRA_WORDS = "extraWords";
 
 	public static StaticDatabase<EnemyData> ParseXml(string xmlString)
@@ -47,6 +48,7 @@ public static class EnemyDatabaseParser
 		string weapon = null;
 		string behaviour = "default";
 		int extraWords = 0;
+		float movementSpeed = 2f;
 
 		foreach(XmlNode node in dataNode)
 		{
@@ -67,10 +69,13 @@ public static class EnemyDatabaseParser
 				case NODE_ENEMY_DATA_EXTRA_WORDS:
 					int.TryParse(node.InnerText, out extraWords);
 					break;
+				case NODE_ENEMY_DATA_MOVEMENT_SPEED:
+					float.TryParse(node.InnerText, out movementSpeed);
+					break;
 			}
 		}
 
-		EnemyData enemyData = new EnemyData(id, type, weapon, behaviour, extraWords);
+		EnemyData enemyData = new EnemyData(id, type, weapon, behaviour, movementSpeed, extraWords);
 		Validate(enemyData);
 		return enemyData;
 	}

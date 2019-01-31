@@ -23,12 +23,14 @@
 		Radius = 1f;
 	}
 
-	public void Use(Lives livesComponent)
+	public bool Use(Lives livesComponent)
 	{
 		if(CanBeUsed)
 		{
-			OnUse(livesComponent);
+			return OnUse(livesComponent);
 		}
+
+		return false;
 	}
 
 	public virtual void SetDamage(int damage)
@@ -53,5 +55,5 @@
 		}
 	}
 
-	protected abstract void OnUse(Lives livesComponent);
+	protected abstract bool OnUse(Lives livesComponent);
 }

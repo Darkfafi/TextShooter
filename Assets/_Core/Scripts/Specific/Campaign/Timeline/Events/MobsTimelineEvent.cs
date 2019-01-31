@@ -178,7 +178,7 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		{
 			if(_current < _mobsSpawnData.Amount)
 			{
-				EnemyModel enemy = _game.Factories.EnemyFactory.Create(
+				CharacterModel enemy = _game.Factories.EnemyFactory.Create(
 					new EnemyFactoryData(
 						_mobsSpawnData.EnemyID,
 						_game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide)

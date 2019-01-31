@@ -66,8 +66,7 @@ public class Targeting
 		_cameraModel = cameraModel;
 
 		FilterRules.OpenConstructOnFilterRules(filterRules);
-		FilterRules.AddComponentToConstruct<WordsHolder>(false);
-		FilterRules.AddComponentToConstruct<WordsHp>(false);
+		FilterRules.AddComponentToConstruct<WordsLive>(false);
 		FilterRules.CloseConstruct(out filterRules);
 
 		_targetsFilter = EntityFilter<EntityModel>.Create(filterRules);
@@ -133,18 +132,18 @@ public class Targeting
 		if(!IsEnabled)
 			return;
 
-		if(CurrentTypingTarget == null || CurrentTypingTarget.IsDestroyed || CurrentTypingTarget.GetComponent<WordsHp>().IsDead)
+		if(CurrentTypingTarget == null || CurrentTypingTarget.IsDestroyed || !CurrentTypingTarget.GetComponent<WordsLive>().Lives.IsAlive)
 		{
 			EntityModel target = _targetsFilter.GetFirst(
 			(e) =>
 			{
-				if(e.IsDestroyed || e.GetComponent<WordsHp>().IsDead)
+				if(e.IsDestroyed || !e.GetComponent<WordsLive>().Lives.IsAlive)
 					return false;
 
 				if(IsTargetCompleted(e))
 					return false;
 
-				if(!WordsHp.IsHit(c, e.GetComponent<WordsHp>().GetCurrentChar()))
+				if(!WordsHolder.IsCharMatch(e.GetComponent<WordsLive>().WordsHolder.GetChar(0), c))
 					return false;
 
 				if(_cameraModel.IsOutsideOfOrthographic(e.ModelTransform.Position))
@@ -164,19 +163,19 @@ public class Targeting
 
 		if(CurrentTypingTarget != null)
 		{
-			WordsHp targetWordsHp = CurrentTypingTarget.GetComponent<WordsHp>();
+			WordsLive wordsLive = CurrentTypingTarget.GetComponent<WordsLive>();
 			int index = CurrentShootIndex;
-			char requiredChar = targetWordsHp.GetChar(index);
+			char requiredChar = wordsLive.WordsHolder.GetChar(index);
 
 			if(TargetCharTypedEvent != null)
 			{
 				TargetCharTypedEvent(CurrentTypingTarget, c, requiredChar, index);
 			}
 
-			if(WordsHp.IsHit(c, requiredChar))
+			if(WordsHolder.IsCharMatch(c, requiredChar))
 			{
 				BuildupShootString += requiredChar;
-				if(targetWordsHp.CurrentTargetWord.Length == BuildupShootString.Length)
+				if(wordsLive.WordsHolder.CurrentWord.Length == BuildupShootString.Length)
 				{
 					CompleteCurrentTypingTarget();
 				}
@@ -194,9 +193,13 @@ public class Targeting
 		if(entity == null)
 			return;
 
+		entity.GetComponent<WordsLive>().WordsHolder.WordCycledEvent -= OnWordCycledEvent;
 		_completedTargetList.Remove(entity);
-		entity.GetComponent<WordsHolder>().WordCycledEvent -= OnWordCycledEvent;
-		entity.GetComponent<WordsHp>().WordCharHitEvent -= OnWordCharHitEvent;
+
+		if(CurrentTypingTarget == entity)
+		{
+			SetTypeTarget(null);
+		}
 	}
 
 	private void CompleteCurrentTypingTarget()
@@ -205,22 +208,13 @@ public class Targeting
 		{
 			EntityModel target = CurrentTypingTarget;
 			_completedTargetList.Add(target);
-			target.GetComponent<WordsHolder>().WordCycledEvent += OnWordCycledEvent;
-			target.GetComponent<WordsHp>().WordCharHitEvent += OnWordCharHitEvent;
 			SetTypeTarget(null);
+			target.GetComponent<WordsLive>().WordsHolder.WordCycledEvent += OnWordCycledEvent;
 
 			if(TargetCompletedEvent != null)
 			{
 				TargetCompletedEvent(target);
 			}
-		}
-	}
-
-	private void OnWordCharHitEvent(string word, int charIndex, WordsHp hitter)
-	{
-		if(hitter.IsDead)
-		{
-			OnUntrackedEvent((EntityModel)hitter.Parent);
 		}
 	}
 
@@ -233,14 +227,21 @@ public class Targeting
 	{
 		EntityModel previousTarget = CurrentTypingTarget;
 
-		if(previousTarget == target)
+		if(previousTarget != null)
+		{
+			previousTarget.GetComponent<WordsLive>().WordsHolder.WordCycledEvent -= OnWordCycledEvent;
+		}
+
+		if(previousTarget == target && target != null)
 			return;
 
 		BuildupShootString = "";
-
 		CurrentTypingTarget = target;
 
-		if(TargetSetEvent != null)
+		if(CurrentTypingTarget != null)
+			CurrentTypingTarget.GetComponent<WordsLive>().WordsHolder.WordCycledEvent += OnWordCycledEvent;
+
+		if(previousTarget != target && TargetSetEvent != null)
 		{
 			TargetSetEvent(CurrentTypingTarget, previousTarget);
 		}
