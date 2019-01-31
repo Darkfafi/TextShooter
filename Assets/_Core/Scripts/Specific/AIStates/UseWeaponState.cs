@@ -9,9 +9,9 @@
 
 	protected override void OnActivated()
 	{
-		if(Affected.HasComponent<BaseWeapon>())
+		if(Affected.HasComponent<WeaponHolder>())
 		{
-			Affected.GetComponent<BaseWeapon>().Use(_livesComponent);
+			Affected.GetComponent<WeaponHolder>().UseWeaponIfAny(_livesComponent);
 		}
 
 		EndStateInternally();

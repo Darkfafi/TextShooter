@@ -46,10 +46,10 @@
 		if(closestTarget != null)
 		{
 			float distance = (closestTarget.ModelTransform.Position - Affected.ModelTransform.Position).magnitude;
-			if(Affected.HasComponent<BaseWeapon>())
+			if(Affected.HasComponent<WeaponHolder>())
 			{
-				BaseWeapon weapon = Affected.GetComponent<BaseWeapon>();
-				if(!weapon.CanBeUsed || distance > (weapon.Radius * _useAtRadiusPercentage))
+				BaseWeapon weapon = Affected.GetComponent<WeaponHolder>().Weapon;
+				if(weapon == null || !weapon.CanBeUsed || distance > (weapon.Radius * _useAtRadiusPercentage))
 				{
 					prio = SwitcherSettings.NO_PRIO;
 					return closestTarget;

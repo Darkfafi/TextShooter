@@ -46,7 +46,7 @@ public class TurretModel : EntityModel, ITargetingUser
 	{
 		get
 		{
-			return _weapon.Radius;
+			return (_weaponHolder == null || !_weaponHolder.HasWeapon) ? 0f : _weaponHolder.Weapon.Radius;
 		}
 	}
 
@@ -54,7 +54,7 @@ public class TurretModel : EntityModel, ITargetingUser
 	{
 		get
 		{
-			return _weapon != null && _weapon.IsEnabled;
+			return _weaponHolder != null && _weaponHolder.HasWeapon && _weaponHolder.IsEnabled;
 		}
 	}
 
@@ -76,24 +76,22 @@ public class TurretModel : EntityModel, ITargetingUser
 
 	private TimekeeperModel _timekeeper;
 	private float _rotationTillResultTile = 0f;
-	private BaseWeapon _weapon;
+	private WeaponHolder _weaponHolder;
 
 	public TurretModel(TimekeeperModel timekeeper)
 	{
 		_timekeeper = timekeeper;
 		_timekeeper.ListenToFrameTick(Update);
-
-		InstantHitGun defaultGun = SetWeapon<InstantHitGun>();
-		defaultGun.SetupCooldown(0.25f, timekeeper);
-		defaultGun.SetRadius(8f);
-
-		SetGunActiveState(true);
+		_weaponHolder = AddComponent<WeaponHolder>();
 
 		ModelTags.AddTag(Tags.ENEMY_TARGET);
 
 		Lives = AddComponent<Lives>();
 		Lives.SetLivesAmount(3);
 		Lives.DeathEvent += OnDeathEvent;
+
+		SetWeapon(new InstantHitGun(0.25f, timekeeper, 10f));
+		SetGunActiveState(true);
 	}
 
 	protected override void OnModelDestroy()
@@ -103,7 +101,7 @@ public class TurretModel : EntityModel, ITargetingUser
 		_timekeeper.UnlistenFromFrameTick(Update);
 		_timekeeper = null;
 
-		_weapon = null;
+		_weaponHolder = null;
 
 		Lives.DeathEvent -= OnDeathEvent;
 		Lives = null;
@@ -132,7 +130,7 @@ public class TurretModel : EntityModel, ITargetingUser
 				{
 					_rotationTillResultTile = 0f;
 					Lives currentTargetLives = CurrentTarget.GetComponent<Lives>();
-					if(_weapon.Use(currentTargetLives))
+					if(_weaponHolder.UseWeaponIfAny(currentTargetLives))
 					{
 						if(GunFiredEvent != null)
 						{
@@ -148,28 +146,24 @@ public class TurretModel : EntityModel, ITargetingUser
 
 	// Setters and Getters
 
-	public T SetWeapon<T>() where T : BaseWeapon
+	public void SetWeapon(BaseWeapon weapon)
 	{
-		if(_weapon != null)
+		if(_weaponHolder.Weapon != weapon)
 		{
-			RemoveComponent(_weapon);
+			_weaponHolder.SetWeapon(weapon);
+
+			if(WeaponChangedEvent != null)
+			{
+				WeaponChangedEvent(weapon);
+			}
 		}
-
-		_weapon = AddComponent<T>();
-
-		if(WeaponChangedEvent != null)
-		{
-			WeaponChangedEvent(_weapon);
-		}
-
-		return _weapon as T;
 	}
 
 	public void SetGunActiveState(bool activeState)
 	{
-		if(_weapon != null && activeState != IsGunActive)
+		if(_weaponHolder != null && activeState != IsGunActive)
 		{
-			_weapon.SetEnabledState(activeState);
+			_weaponHolder.SetEnabledState(activeState);
 
 			if(GunActiveStateChangedEvent != null)
 			{
@@ -180,8 +174,11 @@ public class TurretModel : EntityModel, ITargetingUser
 
 	public void SetRadius(float newRadius)
 	{
+		if(!_weaponHolder.HasWeapon)
+			return;
+
 		float preRange = Radius;
-		_weapon.SetRadius(newRadius);
+		_weaponHolder.Weapon.SetRadius(newRadius);
 		if(preRange != Radius)
 		{
 			if(RadiusChangedEvent != null)

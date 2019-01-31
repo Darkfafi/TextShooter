@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public abstract class BaseCooldownWeapon : BaseWeapon
+﻿public abstract class BaseCooldownWeapon : BaseWeapon
 {
 	public override bool CanBeUsed
 	{
@@ -19,20 +15,16 @@ public abstract class BaseCooldownWeapon : BaseWeapon
 
 	private float _cooldownProcess;
 	private TimekeeperModel _timekeeper;
+	public BaseCooldownWeapon(float cooldown, TimekeeperModel timekeeper, float radius, int damage = 1) : base(radius, damage)
+	{
+		_timekeeper = timekeeper;
+		SetCooldown(cooldown);
+		_timekeeper.ListenToFrameTick(OnUpdate);
+	}
 
 	public void SetCooldown(float newValue)
 	{
 		Cooldown = newValue;
-	}
-
-	public void SetupCooldown(float cooldown, TimekeeperModel timekeeper)
-	{
-		if(_timekeeper != null)
-			return;
-
-		_timekeeper = timekeeper;
-		SetCooldown(cooldown);
-		_timekeeper.ListenToFrameTick(OnUpdate);
 	}
 
 	protected override bool OnUse(Lives livesComponent)
@@ -41,13 +33,14 @@ public abstract class BaseCooldownWeapon : BaseWeapon
 		return DoUseLogics(livesComponent);
 	}
 
-	protected override void Removed()
+	public override void Clean()
 	{
 		if(_timekeeper != null)
 		{
 			_timekeeper.UnlistenFromFrameTick(OnUpdate);
 			_timekeeper = null;
 		}
+		base.Clean();
 	}
 
 	protected abstract bool DoUseLogics(Lives livesComponent);

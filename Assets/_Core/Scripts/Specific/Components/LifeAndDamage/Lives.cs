@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Lives : BaseModelComponent
 {
+	public const int DAMAGE_KILL = -1337;
+
 	public event Action<Lives> DeathEvent;
 	public event Action<Lives, int> DamageEvent;
 
@@ -33,7 +35,12 @@ public class Lives : BaseModelComponent
 	public void Damage(int damageAmount)
 	{
 		if(damageAmount < 0)
+		{
+			if(damageAmount == DAMAGE_KILL)
+				Kill();
+
 			return;
+		}
 
 		LivesAmount = Mathf.Max(LivesAmount - damageAmount, 0);
 

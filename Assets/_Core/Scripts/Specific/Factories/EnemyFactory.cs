@@ -34,7 +34,7 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 
 		enemyModel = new CharacterModel(_timekeeperModel, enemyData.MovementSpeed, data.EnemyPosition);
 		enemyModel.Initialize(_wordsList.ListData.GetRandomWord(), _wordsList.ListData.GetRandomWords(enemyData.ExtraWordsAmount));
-		ApplyWeapon(enemyData, enemyModel);
+		ApplyWeapon(enemyData, enemyModel.AddComponent<WeaponHolder>());
 
 		if(data.ApplyBrain)
 		{
@@ -44,12 +44,12 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 		return enemyModel;
 	}
 
-	private void ApplyWeapon(EnemyData enemyData, CharacterModel enemyModel)
+	private void ApplyWeapon(EnemyData enemyData, WeaponHolder weaponHolder)
 	{
 		switch(enemyData.WeaponType)
 		{
 			case "suicide":
-				enemyModel.AddComponent<SuicideBombWeapon>();
+				weaponHolder.SetWeapon(new SuicideBombWeapon(2f));
 				break;
 		}
 	}

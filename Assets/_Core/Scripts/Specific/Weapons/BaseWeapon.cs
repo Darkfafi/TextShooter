@@ -1,7 +1,5 @@
-﻿public abstract class BaseWeapon : BaseModelComponent
+﻿public abstract class BaseWeapon
 {
-	public static int DAMAGE_KILL = -1;
-
 	public int Damage
 	{
 		get; private set;
@@ -17,10 +15,25 @@
 		get;
 	}
 
-	public BaseWeapon()
+	public BaseModel Holder
 	{
-		Damage = 1;
-		Radius = 1f;
+		get; private set;
+	}
+
+	public BaseWeapon(float radius, int damage = 1)
+	{
+		SetDamage(damage);
+		SetRadius(radius);
+	}
+
+	public virtual void Clean()
+	{
+		SetHolder(null);
+	}
+
+	public void SetHolder(BaseModel holder)
+	{
+		Holder = holder;
 	}
 
 	public bool Use(Lives livesComponent)
@@ -41,18 +54,6 @@
 	public virtual void SetRadius(float radius)
 	{
 		Radius = radius;
-	}
-
-	protected void ApplyDamage(Lives livesComponent)
-	{
-		if(Damage == DAMAGE_KILL)
-		{
-			livesComponent.Kill();
-		}
-		else
-		{
-			livesComponent.Damage(Damage);
-		}
 	}
 
 	protected abstract bool OnUse(Lives livesComponent);
