@@ -45,7 +45,7 @@ public class WordsHolder : BaseModelComponent
 		_words.Remove(word);
 	}
 
-	public int WordsAmount(bool incCurrent = true)
+	public int GetWordsAmount(bool incCurrent = true)
 	{
 		return ((incCurrent && !string.IsNullOrEmpty(CurrentWord)) ? 1 : 0) + _words.Count;
 	}
