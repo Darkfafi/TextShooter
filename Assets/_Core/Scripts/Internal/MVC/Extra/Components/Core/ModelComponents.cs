@@ -27,6 +27,7 @@ public class ModelComponents : IComponentsHolder
 	private List<BaseModelComponent> _disabledComponents = new List<BaseModelComponent>();
 
 	private bool _isReady = false;
+	private bool _isCleaning = false;
 	private ComponentActionHandler _canPerformActionChecker;
 
 	public ModelComponents(BaseModel model, ComponentActionHandler canPerformActionChecker)
@@ -51,6 +52,10 @@ public class ModelComponents : IComponentsHolder
 
 	public void Clean()
 	{
+		if(_isCleaning)
+			return;
+
+		_isCleaning = true;
 		foreach(BaseModelComponent component in _components)
 		{
 			InternalRemoveComponent(component, true);
@@ -164,6 +169,27 @@ public class ModelComponents : IComponentsHolder
 		return null;
 	}
 
+	public bool RequireComponent<T>(out T component) where T : BaseModelComponent
+	{
+		BaseModelComponent comp;
+		bool added = RequireComponent(typeof(T), out comp);
+		component = comp as T;
+		return added;
+	}
+
+	public bool RequireComponent(Type componentType, out BaseModelComponent component)
+	{
+		component = GetComponent(componentType);
+
+		if(component == null)
+		{
+			component = AddComponent(componentType);
+			return true;
+		}
+
+		return false;
+	}
+
 	public void RemoveComponent<T>() where T : BaseModelComponent
 	{
 		RemoveComponent(typeof(T));
@@ -225,7 +251,7 @@ public class ModelComponents : IComponentsHolder
 				component.Deinitialize();
 			}
 
-			if(!selfClean)
+			if(!selfClean && !_isCleaning)
 			{
 				for(int i = _removingComponents.Count - 1; i >= 0; i--)
 				{
@@ -260,11 +286,13 @@ public interface IComponentsHolder
 {
 	T AddComponent<T>() where T : BaseModelComponent;
 	BaseModelComponent AddComponent(Type componentType);
+	T GetComponent<T>() where T : BaseModelComponent;
+	BaseModelComponent GetComponent(Type componentType);
+	bool RequireComponent<T>(out T component) where T : BaseModelComponent;
+	bool RequireComponent(Type componentType, out BaseModelComponent component);
 	void RemoveComponent<T>() where T : BaseModelComponent;
 	void RemoveComponent(Type componentType);
 	void RemoveComponent(BaseModelComponent component);
-	T GetComponent<T>() where T : BaseModelComponent;
-	BaseModelComponent GetComponent(Type componentType);
 	bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent;
 	void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent;
 	bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent;

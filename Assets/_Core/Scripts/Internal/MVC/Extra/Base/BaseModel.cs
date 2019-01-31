@@ -120,6 +120,16 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return _components.AddComponent(componentType);
 	}
 
+	public bool RequireComponent<T>(out T component) where T : BaseModelComponent
+	{
+		return _components.RequireComponent<T>(out component);
+	}
+
+	public bool RequireComponent(Type componentType, out BaseModelComponent component)
+	{
+		return _components.RequireComponent(componentType, out component);
+	}
+
 	public void RemoveComponent<T>() where T : BaseModelComponent
 	{
 		_components.RemoveComponent<T>();

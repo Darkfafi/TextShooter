@@ -1,4 +1,6 @@
-﻿public enum ModelComponentState
+﻿using System;
+
+public enum ModelComponentState
 {
 	None,
 	Initialized,
@@ -6,7 +8,7 @@
 	Removed
 }
 
-public abstract class BaseModelComponent
+public abstract class BaseModelComponent : IComponentsHolder
 {
 	public ModelComponents Components
 	{
@@ -52,14 +54,6 @@ public abstract class BaseModelComponent
 	}
 
 	private bool? _isEnabled = null;
-
-	public T GetComponent<T>() where T : BaseModelComponent
-	{
-		if(Components == null)
-			return null;
-
-		return Components.GetComponent<T>();
-	}
 
 	public void Initialize(ModelComponents parent)
 	{
@@ -149,5 +143,118 @@ public abstract class BaseModelComponent
 				}
 			}
 		}
+	}
+
+	public T AddComponent<T>() where T : BaseModelComponent
+	{
+		if(Components == null)
+			return null;
+
+		return Components.GetComponent<T>();
+	}
+
+	public BaseModelComponent AddComponent(Type componentType)
+	{
+		if(Components == null)
+			return null;
+
+		return Components.AddComponent(componentType);
+	}
+
+	public T GetComponent<T>() where T : BaseModelComponent
+	{
+		if(Components == null)
+			return null;
+
+		return Components.GetComponent<T>();
+	}
+
+	public BaseModelComponent GetComponent(Type componentType)
+	{
+		if(Components == null)
+			return null;
+
+		return Components.GetComponent(componentType);
+	}
+
+	public bool RequireComponent<T>(out T component) where T : BaseModelComponent
+	{
+		if(Components == null)
+		{
+			component = null;
+			return false;
+		}
+
+		return Components.RequireComponent<T>(out component);
+	}
+
+	public bool RequireComponent(Type componentType, out BaseModelComponent component)
+	{
+		if(Components == null)
+		{
+			component = null;
+			return false;
+		}
+
+		return Components.RequireComponent(componentType, out component);
+	}
+
+	public void RemoveComponent<T>() where T : BaseModelComponent
+	{
+		if(Components == null)
+			return;
+
+		Components.RemoveComponent<T>();
+	}
+
+	public void RemoveComponent(Type componentType)
+	{
+		if(Components == null)
+			return;
+
+		Components.RemoveComponent(componentType);
+	}
+
+	public void RemoveComponent(BaseModelComponent component)
+	{
+		if(Components == null)
+			return;
+
+		Components.RemoveComponent(component);
+	}
+
+	public bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent
+	{
+		if(Components == null)
+		{
+			isEnabled = false;
+			return false;
+		}
+
+		return Components.TryIsEnabledCheck<T>(out isEnabled);
+	}
+
+	public void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent
+	{
+		if(Components == null)
+			return;
+
+		Components.SetComponentEnabledState<T>(enabledState);
+	}
+
+	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent
+	{
+		if(Components == null)
+			return false;
+
+		return Components.HasComponent<T>(incDisabledComponents);
+	}
+
+	public bool HasComponent(Type componentType, bool incDisabledComponents = true)
+	{
+		if(Components == null)
+			return false;
+
+		return Components.HasComponent(componentType, incDisabledComponents);
 	}
 }
