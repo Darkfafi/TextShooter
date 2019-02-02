@@ -51,7 +51,7 @@
             <side>any</side>
           </spawn>
           <spawn>
-            <enemyID>suicideWalker</enemyID>
+            <enemyID>suicidePlane</enemyID>
             <side>any</side> 
             <amount>30</amount>
             <timeBetween>2</timeBetween>
