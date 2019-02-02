@@ -6,9 +6,8 @@ public class TargetingWordItemModificationView : BaseView
 	private TargetingWordItemModificationModel _targetingWordItemModificationModel;
 	private List<WordUIDisplayItemView> _itemViewsModified = new List<WordUIDisplayItemView>();
 
-	public override void SetupView(IMethodPermitter controller)
+	protected override void OnViewReady()
 	{
-		base.SetupView(controller);
 		_targetingWordItemModificationModel = MVCUtil.GetModel<TargetingWordItemModificationModel>(this);
 		_targetingWordItemModificationModel.TargetingEnabledStateChangedEvent += OnTargetingEnabledStateChangedEvent;
 		_targetingWordItemModificationModel.CharAtItemIndexTypedEvent += OnCharAtItemIndexTypedEvent;
