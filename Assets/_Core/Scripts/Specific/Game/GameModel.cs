@@ -12,7 +12,7 @@ public class GameModel : BaseModel, IGame
 		get; private set;
 	}
 
-	public GameFactories Factories
+	public FactoryHolder Factories
 	{
 		get; private set;
 	}
@@ -22,17 +22,14 @@ public class GameModel : BaseModel, IGame
 		get; private set;
 	}
 
-	public WordsList WordsList
-	{
-		get; private set;
-	}
-
 	public GameModel(float orthographicSize)
 	{
-		WordsList = new WordsList(SessionSettings.Request<WordsListSettings>().WordsListDocumentText);
 		GameCamera = new CameraModel(orthographicSize, orthographicSize);
 		TimekeeperModel = new TimekeeperModel();
-		Factories = new GameFactories(this, EnemyDatabaseParser.ParseXml(SessionSettings.Request<EnemySettings>().EnemyDatabaseString), WordsList);
+
+		// Factories
+		Factories = new FactoryHolder();
+
 		GameStateManager = new GameStateManager<GameModel>(this);
 	}
 
@@ -43,9 +40,10 @@ public class GameModel : BaseModel, IGame
 
 	protected override void OnModelDestroy()
 	{
-		GameStateManager.Clean();
-		TimekeeperModel.Destroy();
 		GameCamera.Destroy();
+		GameStateManager.Clean();
+		Factories.Clean();
+		TimekeeperModel.Destroy();
 		GameCamera = null;
 		GameStateManager = null;
 		TimekeeperModel = null;

@@ -2,7 +2,7 @@
 
 public class EnemySettings : ISettings
 {
-	public const string DEFAULT_FOLDER = "Default";
+	public const string DEFAULT_FOLDER = "Default/Balancing";
 	public const string ENEMY_DATABASE_FILE_NAME = "enemyDatabase";
 
 	public string EnemyDatabaseString

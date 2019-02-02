@@ -5,6 +5,7 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 	private TimekeeperModel _timekeeperModel;
 	private StaticDatabase<EnemyData> _enemyDatabase;
 	private WordsList _wordsList;
+	private WeaponFactory _weaponFactory;
 
 	public EnemyFactory(TimekeeperModel timekeeperModel, StaticDatabase<EnemyData> enemyDatabase, WordsList wordsList)
 	{
@@ -13,11 +14,17 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 		_enemyDatabase = enemyDatabase;
 	}
 
+	public void Setup(FactoryHolder factoryHolder)
+	{
+		_weaponFactory = factoryHolder.GetFactory<WeaponFactory>();
+	}
+
 	~EnemyFactory()
 	{
 		_wordsList = null;
 		_enemyDatabase = null;
 		_timekeeperModel = null;
+		_weaponFactory = null;
 	}
 
 	public CharacterModel Create(EnemyFactoryData data)
@@ -34,24 +41,17 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 
 		enemyModel = new CharacterModel(_timekeeperModel, enemyData.MovementSpeed, data.EnemyPosition);
 		enemyModel.Initialize(_wordsList.ListData.GetRandomWord(), _wordsList.ListData.GetRandomWords(enemyData.ExtraWordsAmount));
-		ApplyWeapon(enemyData, enemyModel.AddComponent<WeaponHolder>());
+		enemyModel.AddComponent<WeaponHolder>().SetWeapon(_weaponFactory.Create(enemyData.WeaponData));
 
 		if(data.ApplyBrain)
 		{
 			ApplyBrain(enemyData, enemyModel);
 		}
 
-		return enemyModel;
-	}
+		EnemyPassport passport = enemyModel.AddComponent<EnemyPassport>();
+		passport.SetupPassport(enemyData);
 
-	private void ApplyWeapon(EnemyData enemyData, WeaponHolder weaponHolder)
-	{
-		switch(enemyData.WeaponType)
-		{
-			case "suicide":
-				weaponHolder.SetWeapon(new SuicideBombWeapon(2f));
-				break;
-		}
+		return enemyModel;
 	}
 
 	private void ApplyBrain(EnemyData enemyData, CharacterModel enemyModel)
@@ -82,7 +82,7 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 	}
 }
 
-public struct EnemyFactoryData : IFactoryData
+public struct EnemyFactoryData
 {
 	public string EnemyID
 	{

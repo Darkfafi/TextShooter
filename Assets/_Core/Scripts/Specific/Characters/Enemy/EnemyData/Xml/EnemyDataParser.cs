@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Xml;
 
-public static class EnemyDatabaseParser
+public static class EnemyDataParser 
 {
-	public const string NODE_ENEMY_DATA = "enemyData";
 	public const string NODE_ENEMY_DATA_ID = "id";
 	public const string NODE_ENEMY_DATA_TYPE = "type";
 	public const string NODE_ENEMY_DATA_WEAPON = "weapon";
@@ -12,45 +10,23 @@ public static class EnemyDatabaseParser
 	public const string NODE_ENEMY_DATA_MOVEMENT_SPEED = "movementSpeed";
 	public const string NODE_ENEMY_DATA_EXTRA_WORDS = "extraWords";
 
-	public static StaticDatabase<EnemyData> ParseXml(string xmlString)
+	public static EnemyData ParseXml(string xmlString)
 	{
 		XmlDocument xmlDoc = new XmlDocument();
 		xmlDoc.LoadXml(xmlString);
 		return ParseXml(xmlDoc.DocumentElement);
 	}
 
-	public static StaticDatabase<EnemyData> ParseXml(XmlNode root)
-	{
-		List<EnemyData> data = new List<EnemyData>();
-
-		foreach(XmlNode node in root)
-		{
-			if(node.Name == NODE_ENEMY_DATA)
-			{
-				try
-				{
-					data.Add(ParseEnemyDataNode(node));
-				}
-				catch(Exception e)
-				{
-					UnityEngine.Debug.LogError("Could not parse EnemyDatabase XML. Error: " + e.Message);
-				}
-			}
-		}
-
-		return new StaticDatabase<EnemyData>(data.ToArray());
-	}
-
-	private static EnemyData ParseEnemyDataNode(XmlNode dataNode)
+	public static EnemyData ParseXml(XmlNode root)
 	{
 		string id = null;
 		string type = null;
-		string weapon = null;
+		WeaponData? weaponData = null;
 		string behaviour = "default";
 		int extraWords = 0;
 		float movementSpeed = 2f;
 
-		foreach(XmlNode node in dataNode)
+		foreach(XmlNode node in root)
 		{
 			switch(node.Name)
 			{
@@ -61,7 +37,7 @@ public static class EnemyDatabaseParser
 					type = node.InnerText;
 					break;
 				case NODE_ENEMY_DATA_WEAPON:
-					weapon = node.InnerText;
+					weaponData = WeaponDataParser.ParseXml(node, true);
 					break;
 				case NODE_ENEMY_DATA_BEHAVIOUR:
 					behaviour = node.InnerText;
@@ -74,13 +50,12 @@ public static class EnemyDatabaseParser
 					break;
 			}
 		}
-
-		EnemyData enemyData = new EnemyData(id, type, weapon, behaviour, movementSpeed, extraWords);
-		Validate(enemyData);
+		EnemyData enemyData = new EnemyData(id, type, weaponData.Value, behaviour, movementSpeed, extraWords);
+		Validate(enemyData, weaponData.HasValue);
 		return enemyData;
 	}
 
-	private static void Validate(EnemyData enemyData)
+	public static void Validate(EnemyData enemyData, bool hasWeaponData)
 	{
 		if(string.IsNullOrEmpty(enemyData.DataID))
 			throw new Exception("Enemy Data has no ID defined");
@@ -88,8 +63,8 @@ public static class EnemyDatabaseParser
 		if(string.IsNullOrEmpty(enemyData.EnemyType))
 			throw new Exception("Enemy Data has no EnemyType defined");
 
-		if(string.IsNullOrEmpty(enemyData.WeaponType))
-			throw new Exception("Enemy Data has no WeaponType defined");
+		if(!hasWeaponData)
+			throw new Exception("Enemy Data has no WeaponData defined");
 
 		if(string.IsNullOrEmpty(enemyData.BehaviourType))
 			throw new Exception("Enemy Data has no BehaviourType defined");

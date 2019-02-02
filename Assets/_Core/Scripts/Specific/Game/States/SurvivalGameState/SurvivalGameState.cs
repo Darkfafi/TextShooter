@@ -1,6 +1,8 @@
-﻿namespace SurvivalGame
+﻿using System;
+
+namespace SurvivalGame
 {
-	public class SurvivalGameState : BaseGameState, IGame
+	public class SurvivalGameState : BaseGameState, IGame, IFactoryCreator
 	{
 		public TurretModel TurretModel
 		{
@@ -27,11 +29,21 @@
 			get; private set;
 		}
 
+		public WordsList WordsList
+		{
+			get; private set;
+		}
+
 		private TargetingSystem _targetingSystem;
 
 		protected override void OnSetupState()
 		{
+			ParentGame.Factories.RegisterFactoryCreator(this);
+
 			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
+
+			// Settings
+			WordsList = new WordsList(SessionSettings.Request<WordsListSettings>().WordsListDocumentText);
 
 			// Input
 			CharInputModel = new CharInputModel();
@@ -61,6 +73,10 @@
 
 		protected override void OnEndState()
 		{
+			ParentGame.Factories.UnregisterFactoryCreator(this);
+
+			SurvivalGameStateManager.Clean();
+
 			// Input
 			CharInputModel.Destroy();
 			CharInputModel = null;
@@ -81,6 +97,16 @@
 			// Setup Player
 			TurretModel.Destroy();
 			TurretModel = null;
+		}
+
+		public IFactory CreateFactoryIfAble(Type factoryType)
+		{
+			if(factoryType == typeof(EnemyFactory))
+				return new EnemyFactory(ParentGame.TimekeeperModel, EnemyDatabaseParser.ParseXml(SessionSettings.Request<EnemySettings>().EnemyDatabaseString), WordsList);
+			else if(factoryType == typeof(WeaponFactory))
+				return new WeaponFactory(WeaponDatabaseParser.ParseXml(SessionSettings.Request<WeaponSettings>().WeaponDatabaseString));
+
+			return null;
 		}
 	}
 }

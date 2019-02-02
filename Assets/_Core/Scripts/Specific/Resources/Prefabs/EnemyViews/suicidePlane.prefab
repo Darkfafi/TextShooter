@@ -20,9 +20,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4902800283636494}
   - component: {fileID: 212535962765766146}
-  - component: {fileID: 114731762009195088}
+  - component: {fileID: 114222336164008878}
   m_Layer: 0
-  m_Name: EnemyView
+  m_Name: suicidePlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,7 +41,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114731762009195088
+--- !u!114 &114222336164008878
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -86,12 +86,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 661ed6d7b6add8e459f5015943770e92, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9d649602fd137124cbd2b444eda44bda, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.28, y: 1.28}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
