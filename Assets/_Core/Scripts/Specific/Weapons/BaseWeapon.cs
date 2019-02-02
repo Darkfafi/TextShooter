@@ -1,5 +1,9 @@
-﻿public abstract class BaseWeapon
+﻿using System;
+
+public abstract class BaseWeapon
 {
+	public event Action<BaseWeapon> WeaponUsedEvent;
+
 	public int Damage
 	{
 		get; private set;
@@ -40,7 +44,15 @@
 	{
 		if(CanBeUsed)
 		{
-			return OnUse(livesComponent);
+			if(OnUse(livesComponent))
+			{
+				if(WeaponUsedEvent != null)
+				{
+					WeaponUsedEvent(this);
+				}
+
+				return true;
+			}
 		}
 
 		return false;

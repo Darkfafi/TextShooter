@@ -1,5 +1,9 @@
-﻿public class WeaponHolder : BaseModelComponent
+﻿using System;
+
+public class WeaponHolder : BaseModelComponent
 {
+	public event Action<BaseWeapon> WeaponUsedEvent;
+
 	public BaseWeapon Weapon
 	{
 		get; private set;
@@ -19,6 +23,7 @@
 
 		if(preWeapon != null)
 		{
+			preWeapon.WeaponUsedEvent -= OnWeaponUsedEvent;
 			preWeapon.Clean();
 		}
 
@@ -27,6 +32,7 @@
 		if(Weapon != null)
 		{
 			Weapon.SetHolder(Parent);
+			Weapon.WeaponUsedEvent += OnWeaponUsedEvent;
 		}
 	}
 
@@ -37,9 +43,25 @@
 
 	public bool UseWeaponIfAny(Lives livesComponent)
 	{
-		if(Weapon != null)
+		if(Weapon != null && livesComponent != null)
+		{
 			return Weapon.Use(livesComponent);
+		}
 
 		return false;
+	}
+
+	private void OnWeaponUsedEvent(BaseWeapon weapon)
+	{
+		if(WeaponUsedEvent != null)
+		{
+			WeaponUsedEvent(weapon);
+		}
+	}
+
+	[ModelEditorMethod]
+	private void UseWeaponEditor(EntityModel entity)
+	{
+		UseWeaponIfAny(entity.GetComponent<Lives>());
 	}
 }
