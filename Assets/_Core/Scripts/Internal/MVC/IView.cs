@@ -4,6 +4,8 @@
 	{
 		get;
 	}
-	void SetupView(IMethodPermitter controller);
+	void PreSetupView(IMethodPermitter controller);
+	void SetupView();
 	void DestroyView();
+	void PreDestroyView();
 }
