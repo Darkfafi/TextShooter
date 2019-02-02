@@ -17,6 +17,16 @@ public static class MVCUtil
 		return GetView<T>((Controller)model.LinkingController);
 	}
 
+	public static bool HasView(Controller controller)
+	{
+		return controller.CoreView != null;
+	}
+
+	public static bool HasView(IModel model)
+	{
+		return HasView((Controller)model.LinkingController);
+	}
+
 	public static T GetView<T>(Controller controller) where T : class, IView
 	{
 		return controller.CoreView as T;
