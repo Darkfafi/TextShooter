@@ -1,5 +1,7 @@
 ﻿public class SuicideBombWeapon : BaseWeapon
 {
+	public const string ID_WEAPON = "suicide";
+
 	public override bool CanBeUsed
 	{
 		get
@@ -16,10 +18,10 @@
 
 	protected override bool OnUse(Lives livesComponent)
 	{
+		ExplosionModel.DoExplosion(Holder.GetComponent<ModelTransform>().Position, Damage, livesComponent);
+
 		if(Holder.HasComponent<Lives>())
 			Holder.GetComponent<Lives>().Kill();
-
-		livesComponent.Damage(Damage);
 
 		return true;
 	}
