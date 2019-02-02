@@ -10,6 +10,8 @@ public enum ModelComponentState
 
 public abstract class BaseModelComponent : IComponentsHolder
 {
+	public event Action<BaseModelComponent, ModelComponentState> ComponentStateChangedEvent;
+
 	public ModelComponents Components
 	{
 		get; private set;
@@ -62,7 +64,7 @@ public abstract class BaseModelComponent : IComponentsHolder
 
 		Components = parent;
 		Components.ChangedComponentEnabledStateEvent += OnChangedComponentEnabledStateEvent;
-		ComponentState = ModelComponentState.Initialized;
+		SetComponentState(ModelComponentState.Initialized);
 		Added();
 	}
 
@@ -78,8 +80,8 @@ public abstract class BaseModelComponent : IComponentsHolder
 	{
 		if(ComponentState != ModelComponentState.Initialized)
 			return;
-
-		ComponentState = ModelComponentState.Active;
+		
+		SetComponentState(ModelComponentState.Active);
 		Ready();
 
 		if(IsEnabled)
@@ -98,8 +100,8 @@ public abstract class BaseModelComponent : IComponentsHolder
 			return;
 
 		bool wasActive = ComponentState == ModelComponentState.Active;
-
-		ComponentState = ModelComponentState.Removed;
+		
+		SetComponentState(ModelComponentState.Removed);
 
 		if(IsEnabled && wasActive)
 			Disabled();
@@ -237,5 +239,17 @@ public abstract class BaseModelComponent : IComponentsHolder
 			return false;
 
 		return Components.HasComponent(componentType, incDisabledComponents);
+	}
+
+	private void SetComponentState(ModelComponentState state)
+	{
+		if(ComponentState != state)
+		{
+			ComponentState = state;
+			if(ComponentStateChangedEvent != null)
+			{
+				ComponentStateChangedEvent(this, ComponentState);
+			}
+		}
 	}
 }
