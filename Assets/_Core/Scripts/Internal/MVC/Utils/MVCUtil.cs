@@ -19,7 +19,7 @@ public static class MVCUtil
 
 	public static bool HasView(Controller controller)
 	{
-		return controller.CoreView != null;
+		return controller != null && controller.CoreView != null;
 	}
 
 	public static bool HasView(IModel model)
