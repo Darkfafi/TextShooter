@@ -5,14 +5,17 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 	public event Action<IStateMachineState<T>> StateInternallyEndedEvent;
 	public event Action<IStateMachineState<T>> StateSetEvent;
 
-	private StateStatus _currentStateStatus = new StateStatus();
-	private StateStatus _nextStateStatus = new StateStatus();
+	private IStateMachineState<T> _currentStateStatus;
+	private IStateMachineStateRequest<T> _nextStateRequest;
 
 	public Type CurrentStateType
 	{
 		get
 		{
-			return _currentStateStatus.StateType;
+			if(_currentStateStatus == null)
+				return null;
+
+			return _currentStateStatus.GetType();
 		}
 	}
 
@@ -20,7 +23,7 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 	{
 		get
 		{
-			return _currentStateStatus.IsValidState;
+			return _currentStateStatus != null;
 		}
 	}
 
@@ -36,7 +39,6 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 
 	public void Clean()
 	{
-		_nextStateStatus = new StateStatus();
 		SetToNoStateInternally(false);
 		Affected = null;
 	}
@@ -45,7 +47,7 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 	{
 		if(!force)
 		{
-			RequestNextState(new StateStatus(request));
+			RequestNextState(request);
 		}
 		else
 		{
@@ -61,21 +63,20 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 		}
 		else
 		{
-			RequestNextState(new StateStatus());
+			RequestNextState(null);
 		}
 	}
 
 	private void SetToNoStateInternally(bool fireSetStateEvent)
 	{
-		if(_currentStateStatus.IsValidState)
+		if(_currentStateStatus != null)
 		{
-			_currentStateStatus.State.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
-			_currentStateStatus.State.StateInternallyEndedEvent -= OnStateInternallyEndedEvent;
-			_currentStateStatus.State.Deactivate();
-			_currentStateStatus.StateRequest.Clean();
+			_currentStateStatus.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
+			_currentStateStatus.StateInternallyEndedEvent -= OnStateInternallyEndedEvent;
+			_currentStateStatus.Deactivate();
 		}
 
-		_currentStateStatus = default(StateStatus);
+		_currentStateStatus = null;
 
 		if(fireSetStateEvent)
 		{
@@ -86,13 +87,13 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 		}
 	}
 
-	private void RequestNextState(StateStatus stateStatus)
+	private void RequestNextState(IStateMachineStateRequest<T> stateStatus)
 	{
-		_nextStateStatus = stateStatus;
+		_nextStateRequest = stateStatus;
 		if(!TrySetNextState())
 		{
-			_currentStateStatus.State.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
-			_currentStateStatus.State.CanBeInteruptedStateChangedEvent += OnCanBeInteruptedStateChangedEvent;
+			_currentStateStatus.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
+			_currentStateStatus.CanBeInteruptedStateChangedEvent += OnCanBeInteruptedStateChangedEvent;
 		}
 	}
 
@@ -104,17 +105,14 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 		{
 			if(request.IsAllowedToCreate())
 			{
-				IStateMachineState<T> state = request.CreateStateMachineState();
-
-				StateStatus newState = new StateStatus(request, state);
-				state.StateInternallyEndedEvent += OnStateInternallyEndedEvent;
-
-				_currentStateStatus = newState;
-				_currentStateStatus.State.Activate(Affected);
+				_currentStateStatus = request.CreateStateMachineState();
+				_currentStateStatus.StateInternallyEndedEvent += OnStateInternallyEndedEvent;
+				_currentStateStatus.Activate(Affected);
+				request.Clean();
 
 				if(StateSetEvent != null)
 				{
-					StateSetEvent(_currentStateStatus.State);
+					StateSetEvent(_currentStateStatus);
 				}
 			}
 		}
@@ -126,11 +124,11 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 
 	private bool TrySetNextState()
 	{
-		if(!_currentStateStatus.IsValidState || _currentStateStatus.State.CanInteruptState)
+		if(_currentStateStatus == null || _currentStateStatus.CanInteruptState)
 		{
-			StateStatus next = _nextStateStatus;
-			_nextStateStatus = new StateStatus();
-			SetStateInternally(next.StateRequest);
+			IStateMachineStateRequest<T> req = _nextStateRequest;
+			_nextStateRequest = null;
+			SetStateInternally(req);
 			return true;
 		}
 
@@ -140,7 +138,7 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 	private void OnCanBeInteruptedStateChangedEvent(IStateMachineState<T> state, bool canBeInterupted)
 	{
 		state.CanBeInteruptedStateChangedEvent -= OnCanBeInteruptedStateChangedEvent;
-		if(state == _currentStateStatus.State)
+		if(state == _currentStateStatus)
 			TrySetNextState();
 	}
 
@@ -149,43 +147,6 @@ public class StateMachine<T> : IStateMachine<T> where T : class
 		TrySetNextState();
 		if(StateInternallyEndedEvent != null)
 			StateInternallyEndedEvent(state);
-	}
-
-	private struct StateStatus
-	{
-		public Type StateType
-		{
-			get
-			{
-				if(State == null)
-					return null;
-
-				return State.GetType();
-			}
-		}
-
-		public IStateMachineStateRequest<T> StateRequest;
-		public IStateMachineState<T> State;
-
-		public bool IsValidState
-		{
-			get
-			{
-				return StateRequest != null && State != null;
-			}
-		}
-
-		public StateStatus(IStateMachineStateRequest<T> request)
-		{
-			StateRequest = request;
-			State = null;
-		}
-
-		public StateStatus(IStateMachineStateRequest<T> request, IStateMachineState<T> state)
-		{
-			StateRequest = request;
-			State = state;
-		}
 	}
 }
 

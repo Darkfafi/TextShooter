@@ -10,14 +10,14 @@
           <progressor atValue="10" setKey="Killed_All_First_Event1" eventEndType="atValue">kills</progressor>
           <spawn>
             <enemyID>suicideWalker</enemyID>
-            <amount>7</amount>
+            <amount>1</amount>
             <timeBetween>0.5</timeBetween>
             <delayAfterSpawn>2</delayAfterSpawn>
             <side>left</side>
           </spawn>
           <spawn>
             <enemyID>suicideWalker</enemyID>
-            <amount>7</amount>
+            <amount>1</amount>
             <timeBetween>2</timeBetween>
             <side>right</side>
           </spawn>

@@ -23,10 +23,10 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private BrainState<T> _brainState;
 
-	private List<BaseBrainSwitcher<T>> _globalSwitchers = new List<BaseBrainSwitcher<T>>(); // Always active
-	private List<BaseBrainSwitcher<T>> _noStateSwitchers = new List<BaseBrainSwitcher<T>>(); // Only when no state active
-	private Dictionary<Type, List<BaseBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<BaseBrainSwitcher<T>>>(); // Only active for specific state
-	private List<BaseBrainSwitcher<T>> _activeSwitchers = new List<BaseBrainSwitcher<T>>();
+	private List<IBrainSwitcher<T>> _globalSwitchers = new List<IBrainSwitcher<T>>(); // Always active
+	private List<IBrainSwitcher<T>> _noStateSwitchers = new List<IBrainSwitcher<T>>(); // Only when no state active
+	private Dictionary<Type, List<IBrainSwitcher<T>>> _stateSwitchers = new Dictionary<Type, List<IBrainSwitcher<T>>>(); // Only active for specific state
+	private List<IBrainSwitcher<T>> _activeSwitchers = new List<IBrainSwitcher<T>>();
 
 	private Type _currentStateSwitchersType = null;
 	private TimekeeperModel _timekeeperModel;
@@ -65,23 +65,23 @@ public class Brain<T> : IBrain<T> where T : class
 		}
 	}
 
-	public void SetupNoStateSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
+	public void SetupNoStateSwitcher(IBrainSwitcher<T> switcher)
 	{
 		SetupStateSwitcher(switcher, null);
 	}
 
-	public void SetupStateSwitcher<U, V>(U switcher) where U : BaseBrainSwitcher<T> where V : class, IStateMachineState<T>
+	public void SetupStateSwitcher<V>(IBrainSwitcher<T> switcher) where V : class, IStateMachineState<T>
 	{
 		SetupStateSwitcher(switcher, typeof(V));
 	}
 
-	public void SetupStateSwitcher<U>(U switcher, Type stateType) where U : BaseBrainSwitcher<T>
+	public void SetupStateSwitcher(IBrainSwitcher<T> switcher, Type stateType)
 	{
 		if(stateType != null)
 		{
 			if(!_stateSwitchers.ContainsKey(stateType))
 			{
-				_stateSwitchers.Add(stateType, new List<BaseBrainSwitcher<T>>());
+				_stateSwitchers.Add(stateType, new List<IBrainSwitcher<T>>());
 			}
 
 			_stateSwitchers[stateType].Add(switcher);
@@ -104,7 +104,7 @@ public class Brain<T> : IBrain<T> where T : class
 		}
 	}
 
-	public void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
+	public void SetupGlobalSwitcher(IBrainSwitcher<T> switcher)
 	{
 		_globalSwitchers.Add(switcher);
 		switcher.Initialize(this);
@@ -145,7 +145,7 @@ public class Brain<T> : IBrain<T> where T : class
 		if(BrainStateMachine == null || !IsEnabled)
 			return;
 
-		List<BaseBrainSwitcher<T>> switchers = new List<BaseBrainSwitcher<T>>(_activeSwitchers);
+		List<IBrainSwitcher<T>> switchers = new List<IBrainSwitcher<T>>(_activeSwitchers);
 		List<PotentialSwitch<T>> potentialSwitches = new List<PotentialSwitch<T>>();
 
 		int rollMaxValue = 0;
@@ -267,7 +267,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void StateConditionSetStateSwitchers(Type stateType)
 	{
-		List<BaseBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
+		List<IBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
 		if(switchers != null)
 		{
@@ -287,7 +287,7 @@ public class Brain<T> : IBrain<T> where T : class
 
 	private void DeactivateStateSwitchers(Type stateType)
 	{
-		List<BaseBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
+		List<IBrainSwitcher<T>> switchers = GetStateSwitchers(stateType);
 
 		if(switchers != null)
 		{
@@ -298,7 +298,7 @@ public class Brain<T> : IBrain<T> where T : class
 		}
 	}
 
-	private void SetSwitcherActiveState(BaseBrainSwitcher<T> switcher, bool activeState)
+	private void SetSwitcherActiveState(IBrainSwitcher<T> switcher, bool activeState)
 	{
 		if(activeState)
 		{
@@ -316,15 +316,15 @@ public class Brain<T> : IBrain<T> where T : class
 		}
 	}
 
-	private List<BaseBrainSwitcher<T>> GetStateSwitchers(Type stateType)
+	private List<IBrainSwitcher<T>> GetStateSwitchers(Type stateType)
 	{
-		List<BaseBrainSwitcher<T>> switchers;
+		List<IBrainSwitcher<T>> switchers;
 
 		if(stateType != null)
 		{
 			if(!_stateSwitchers.TryGetValue(stateType, out switchers))
 			{
-				return new List<BaseBrainSwitcher<T>>();
+				return new List<IBrainSwitcher<T>>();
 			}
 		}
 		else
@@ -349,9 +349,9 @@ public interface IBrain<T> where T : class
 	}
 
 	void SetEnabledState(bool enabledState);
-	void SetupNoStateSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>;
-	void SetupStateSwitcher<U, V>(U switcher) where U : BaseBrainSwitcher<T> where V : class, IStateMachineState<T>;
-	void SetupStateSwitcher<U>(U switcher, Type stateType) where U : BaseBrainSwitcher<T>;
-	void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>;
+	void SetupNoStateSwitcher(IBrainSwitcher<T> switcher);
+	void SetupStateSwitcher<V>(IBrainSwitcher<T> switcher) where V : class, IStateMachineState<T>;
+	void SetupStateSwitcher(IBrainSwitcher<T> switcher, Type stateType);
+	void SetupGlobalSwitcher(IBrainSwitcher<T> switcher);
 }
 

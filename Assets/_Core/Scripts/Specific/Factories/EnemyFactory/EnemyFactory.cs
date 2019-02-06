@@ -45,40 +45,13 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 
 		if(data.ApplyBrain)
 		{
-			ApplyBrain(enemyData, enemyModel);
+			EnemyBrainCreator.ApplyBrain(enemyModel, enemyData, _timekeeperModel);
 		}
 
 		EnemyPassport passport = enemyModel.AddComponent<EnemyPassport>();
 		passport.SetupPassport(enemyData);
 
 		return enemyModel;
-	}
-
-	private void ApplyBrain(EnemyData enemyData, CharacterModel enemyModel)
-	{
-		ModelBrain<EntityModel> brain = enemyModel.AddComponent<EntityBrain>().Setup(_timekeeperModel);
-
-		brain.SetupNoStateSwitcher(
-			new MoveIntoRangeSwitcher(
-			new MoveInRangeSwitcherData()
-			{
-				RangeToMoveTo = 1f,
-				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
-				DistanceToTriggerSwitcher = 5f,
-				SpecifiedSpeed = enemyModel.TopDownMovement.BaseSpeed * 1.25f,
-			})
-		);
-
-		brain.SetupNoStateSwitcher(
-			new MoveIntoRangeSwitcher(
-			new MoveInRangeSwitcherData()
-			{
-				RangeToMoveTo = 4f,
-				TargetFilterRules = FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET),
-			})
-		);
-
-		brain.SetupGlobalSwitcher(new UseWeaponInRangeSwitcher(FilterRules.CreateHasAllTagsFilter(Tags.ENEMY_TARGET), 0.8f));
 	}
 }
 

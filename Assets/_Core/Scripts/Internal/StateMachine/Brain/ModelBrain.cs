@@ -65,7 +65,7 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 		_internalBrain.SetEnabledState(false);
 	}
 
-	public void SetupNoStateSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
+	public void SetupNoStateSwitcher(IBrainSwitcher<T> switcher)
 	{
 		if(_internalBrain == null)
 		{
@@ -76,7 +76,7 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 		_internalBrain.SetupNoStateSwitcher(switcher);
 	}
 
-	public void SetupStateSwitcher<U>(U switcher, Type stateType) where U : BaseBrainSwitcher<T>
+	public void SetupStateSwitcher(IBrainSwitcher<T> switcher, Type stateType)
 	{
 		if(_internalBrain == null)
 		{
@@ -87,7 +87,7 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 		_internalBrain.SetupStateSwitcher(switcher, stateType);
 	}
 
-	public void SetupGlobalSwitcher<U>(U switcher) where U : BaseBrainSwitcher<T>
+	public void SetupGlobalSwitcher(IBrainSwitcher<T> switcher)
 	{
 		if(_internalBrain == null)
 		{
@@ -98,7 +98,7 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 		_internalBrain.SetupGlobalSwitcher(switcher);
 	}
 
-	public void SetupStateSwitcher<U, V>(U switcher) where U : BaseBrainSwitcher<T> where V : class, IStateMachineState<T>
+	public void SetupStateSwitcher<V>(IBrainSwitcher<T> switcher) where V : class, IStateMachineState<T>
 	{
 		if(_internalBrain == null)
 		{
@@ -106,6 +106,6 @@ public class ModelBrain<T> : BaseModelComponent, IBrain<T> where T : BaseModel
 			return;
 		}
 
-		_internalBrain.SetupStateSwitcher<U, V>(switcher);
+		_internalBrain.SetupStateSwitcher<V>(switcher);
 	}
 }
