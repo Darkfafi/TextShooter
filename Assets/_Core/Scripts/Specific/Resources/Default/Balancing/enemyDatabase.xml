@@ -3,13 +3,11 @@
     <id>suicideWalker</id>
     <type>walker</type>
     <weapon>suicide</weapon>
-    <behaviour>default</behaviour>
   </enemyData>
   <enemyData>
     <id>suicidePlane</id>
     <type>plane</type>
     <weapon>suicide</weapon>
-    <behaviour>default</behaviour>
     <movementSpeed>3</movementSpeed>
   </enemyData>
 </enemyDatabase>
