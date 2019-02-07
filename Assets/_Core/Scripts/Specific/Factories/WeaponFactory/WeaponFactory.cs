@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class WeaponFactory : IFactory<BaseWeapon, WeaponData>
+public class WeaponFactory : IFactory<BaseWeapon, WeaponFactoryData>
 {
 	private StaticDatabase<WeaponData> _weaponDatabase;
 
@@ -14,20 +14,20 @@ public class WeaponFactory : IFactory<BaseWeapon, WeaponData>
 		_weaponDatabase = weaponDatabase;
 	}
 
-	public BaseWeapon Create(WeaponData data)
+	public BaseWeapon Create(WeaponFactoryData data)
 	{
 		WeaponData weaponData;
 		if(data.OnlyID)
 		{
-			if(!_weaponDatabase.TryGetData(data.DataID, out weaponData))
+			if(!_weaponDatabase.TryGetData(data.WeaponId, out weaponData))
 			{
-				Debug.LogError("Could not find data for weapon with ID " + data.DataID);
+				Debug.LogError("Could not find data for weapon with ID " + data.WeaponId);
 				return null;
 			}
 		}
 		else
 		{
-			weaponData = data;
+			weaponData = data.WeaponData;
 		}
 
 		switch(weaponData.DataID)
@@ -36,8 +36,41 @@ public class WeaponFactory : IFactory<BaseWeapon, WeaponData>
 				return new SuicideBombWeapon(weaponData.Radius, weaponData.Damage);
 
 			default:
-				Debug.LogError("No class to create linked to weapon ID " + data.DataID);
+				Debug.LogError("No class to create linked to weapon ID " + weaponData.DataID);
 				return null;
 		}
+	}
+}
+
+public struct WeaponFactoryData
+{
+	public bool OnlyID
+	{
+		get
+		{
+			return string.IsNullOrEmpty(WeaponId);
+		}
+	}
+
+	public string WeaponId
+	{
+		get; private set;
+	}
+
+	public WeaponData WeaponData
+	{
+		get; private set;
+	}
+
+	public WeaponFactoryData(string id)
+	{
+		WeaponId = id;
+		WeaponData = default(WeaponData);
+	}
+
+	public WeaponFactoryData(WeaponData weaponData)
+	{
+		WeaponData = weaponData;
+		WeaponId = null;
 	}
 }

@@ -11,11 +11,20 @@ public static class Verification
 	[MenuItem(VERTIFICATION_MENU_LOCATION + "/Enemies")]
 	public static void VerifyEnemyDatabase()
 	{
-		StaticDatabase<EnemyData> database = EnemyDatabaseParser.ParseXml(DatabaseContents.GetEnemyDatabaseText());
-
 		GenericVerification("Enemies", 
 			new TestStepData("EnemyViews", () =>
 			{
+				StaticDatabase<EnemyData> database;
+
+				try
+				{
+					database = EnemyDatabaseParser.ParseXml(DatabaseContents.GetEnemyDatabaseText());
+				}
+				catch(Exception e)
+				{
+					return new TestResult(false, e.Message);
+				}
+
 				string message;
 				bool success = EnemyDatabaseVertification.VertifyViews(database, out message);
 
@@ -34,7 +43,6 @@ public static class Verification
 	private static void GenericVerification(string testName, params TestStepData[] testSteps)
 	{
 		Debug.LogFormat("<color='olive'>-- Vertification {0} Start --</color>", testName);
-		string message = "Success";
 		
 		for(int i = 0; i < testSteps.Length; i++)
 		{
@@ -44,7 +52,7 @@ public static class Verification
 			TestResult testResult = testStep.StepCall();
 			if(!testResult.TestSucceeded)
 			{
-				Debug.LogErrorFormat("[{0}] Test {1} Failed! Error: " + message, i, testStep.StepName);
+				Debug.LogErrorFormat("<color='red'> [{0}] Test {1} Failed! Error: " + testResult.TestMessage + "</color>", i, testStep.StepName);
 				break;
 			}
 			Debug.LogFormat("<color="+c+ "> [{0}] Test {1} Succeeded" + (string.IsNullOrEmpty(testResult.TestMessage) ? "" : ": " + testResult.TestMessage) + "</color>", i, testStep.StepName);

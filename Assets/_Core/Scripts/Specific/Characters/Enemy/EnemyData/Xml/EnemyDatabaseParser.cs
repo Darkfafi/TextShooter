@@ -21,14 +21,7 @@ public static class EnemyDatabaseParser
 		{
 			if(node.Name == NODE_ENEMY_DATA)
 			{
-				try
-				{
-					data.Add(EnemyDataParser.ParseXml(node));
-				}
-				catch(Exception e)
-				{
-					UnityEngine.Debug.LogError("Could not parse EnemyDatabase XML. Error: " + e.Message);
-				}
+				data.Add(EnemyDataParser.ParseXml(node));
 			}
 		}
 

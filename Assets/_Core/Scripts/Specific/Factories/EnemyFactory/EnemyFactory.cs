@@ -41,7 +41,7 @@ public class EnemyFactory : IFactory<CharacterModel, EnemyFactoryData>
 
 		enemyModel = new CharacterModel(_timekeeperModel, enemyData.MovementSpeed, data.EnemyPosition);
 		enemyModel.Initialize(_wordsList.ListData.GetRandomWord(), _wordsList.ListData.GetRandomWords(enemyData.ExtraWordsAmount));
-		enemyModel.AddComponent<WeaponHolder>().SetWeapon(_weaponFactory.Create(enemyData.WeaponData));
+		enemyModel.AddComponent<WeaponHolder>().SetWeapon(_weaponFactory.Create(new WeaponFactoryData(enemyData.WeaponData)));
 
 		if(data.ApplyBrain)
 		{

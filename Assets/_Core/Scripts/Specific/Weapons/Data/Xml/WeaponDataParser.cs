@@ -54,7 +54,13 @@ public static class WeaponDataParser
 		}
 		else if(idWeaponDataAllowed)
 		{
-			weaponData = new WeaponData(root.InnerText);
+			string weaponID = root.InnerText;
+			WeaponDatabaseParser.ParseXml(DatabaseContents.GetWeaponsDatabaseText()).TryGetData(weaponID, out weaponData);
+
+			if(string.IsNullOrEmpty(weaponData.DataID))
+			{
+				throw new Exception(string.Format("Weapon of ID {0} has not been found in WeaponDatabase!", weaponID));
+			}
 		}
 		else
 		{
