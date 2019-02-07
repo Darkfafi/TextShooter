@@ -102,9 +102,9 @@ namespace SurvivalGame
 		public IFactory CreateFactoryIfAble(Type factoryType)
 		{
 			if(factoryType == typeof(EnemyFactory))
-				return new EnemyFactory(ParentGame.TimekeeperModel, EnemyDatabaseParser.ParseXml(SessionSettings.Request<EnemySettings>().EnemyDatabaseString), WordsList);
+				return new EnemyFactory(ParentGame.TimekeeperModel, EnemyDatabaseParser.ParseXml(DatabaseContents.GetEnemyDatabaseText()), WordsList);
 			else if(factoryType == typeof(WeaponFactory))
-				return new WeaponFactory(WeaponDatabaseParser.ParseXml(SessionSettings.Request<WeaponSettings>().WeaponDatabaseString));
+				return new WeaponFactory(WeaponDatabaseParser.ParseXml(DatabaseContents.GetWeaponsDatabaseText()));
 
 			return null;
 		}

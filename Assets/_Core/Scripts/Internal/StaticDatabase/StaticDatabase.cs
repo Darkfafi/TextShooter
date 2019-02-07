@@ -21,6 +21,11 @@ public class StaticDatabase<T> where T : IStaticDatabaseData
 		}
 	}
 
+	public Dictionary<string, T> GetAllDataCopy()
+	{
+		return new Dictionary<string, T>(_allData);
+	}
+
 	public bool TryGetData(Predicate<T> predicate, out T data)
 	{
 		foreach(var pair in _allData)
