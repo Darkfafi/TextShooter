@@ -51,7 +51,6 @@ public class BrainSwitcher<T, U> : IBrainSwitcher<T> where T : class where U : B
 		}
 	}
 
-	private Dictionary<string, bool> _keysToSetOnStateRequest = new Dictionary<string, bool>();
 	private Dictionary<string, bool> _conditionKeys = new Dictionary<string, bool>();
 	private PotentialSwitchCallHandler _potentialSwitchGetter;
 	private U _dataObject;
@@ -75,7 +74,7 @@ public class BrainSwitcher<T, U> : IBrainSwitcher<T> where T : class where U : B
 			return;
 		_brain = brain;
 		SwitcherStatus = BrainSwitcherStatus.Initialized;
-		_dataObject.Initialize(this);
+		_dataObject.Initialized();
 	}
 
 	public void Clean()
@@ -85,7 +84,7 @@ public class BrainSwitcher<T, U> : IBrainSwitcher<T> where T : class where U : B
 
 		Deactivate();
 		SwitcherStatus = BrainSwitcherStatus.Destroyed;
-		_dataObject.Destroy();
+		_dataObject.Destroyed();
 		_potentialSwitchGetter = null;
 		_brain = null;
 	}
@@ -127,11 +126,6 @@ public class BrainSwitcher<T, U> : IBrainSwitcher<T> where T : class where U : B
 		return true;
 	}
 
-	public Dictionary<string, bool> GetKeysToSetOnRequestDictionary()
-	{
-		return new Dictionary<string, bool>(_keysToSetOnStateRequest);
-	}
-
 	public IBrainSwitcher<T> SetConditionKey(string key, bool value = true)
 	{
 		if(!_conditionKeys.ContainsKey(key))
@@ -141,20 +135,6 @@ public class BrainSwitcher<T, U> : IBrainSwitcher<T> where T : class where U : B
 		else
 		{
 			_conditionKeys[key] = value;
-		}
-
-		return this;
-	}
-
-	public IBrainSwitcher<T> SetOnRequestKeyToSet(string key, bool value = true)
-	{
-		if(!_keysToSetOnStateRequest.ContainsKey(key))
-		{
-			_keysToSetOnStateRequest.Add(key, value);
-		}
-		else
-		{
-			_keysToSetOnStateRequest[key] = value;
 		}
 
 		return this;
@@ -181,96 +161,4 @@ public interface IBrainSwitcher<T> where T : class
 	void Clean();
 
 	IBrainSwitcher<T> SetConditionKey(string key, bool value = true);
-	IBrainSwitcher<T> SetOnRequestKeyToSet(string key, bool value = true);
-	Dictionary<string, bool> GetKeysToSetOnRequestDictionary();
-}
-
-public struct PotentialSwitch<T> where T : class
-{
-	public IStateMachineStateRequest<T> Request
-	{
-		get; private set;
-	}
-
-	public IBrainSwitcher<T> Switcher
-	{
-		get; private set;
-	}
-
-	public int PriorityLevel
-	{
-		get; private set;
-	}
-
-	public bool Force
-	{
-		get; private set;
-	}
-
-	public bool IsSet
-	{
-		get; private set;
-	}
-
-	public PotentialSwitch(IBrainSwitcher<T> switcher, IStateMachineStateRequest<T> request, int priorityLevel, bool force = false)
-	{
-		Switcher = switcher;
-		Request = request;
-		PriorityLevel = priorityLevel;
-		IsSet = true;
-		Force = force;
-	}
-
-	public void Clean()
-	{
-		if(Request != null)
-			Request.Clean();
-
-		Switcher = null;
-		Request = null;
-	}
-}
-
-public abstract class BaseSwitcherDataObject<T> where T : class
-{
-	protected IBrainSwitcher<T> _switcher;
-
-	public PotentialSwitch<T> CreatePotentialSwitchToState(IStateMachineStateRequest<T> request, int priorityLevel, bool force = false)
-	{
-		return new PotentialSwitch<T>(_switcher, request, priorityLevel, force);
-	}
-
-	public PotentialSwitch<T> CreatePotentialSwitchToNoState(int priorityLevel, bool force)
-	{
-		return new PotentialSwitch<T>(_switcher, null, priorityLevel, force);
-	}
-
-	public void Initialize(IBrainSwitcher<T> switcher)
-	{
-		_switcher = switcher;
-		Initialized();
-	}
-
-	public void Destroy()
-	{
-		Destroyed();
-		_switcher = null;
-	}
-
-	public virtual void Activated()
-	{
-	}
-	public virtual void Deactivated()
-	{
-	}
-
-	protected virtual void Initialized()
-	{
-
-	}
-
-	protected virtual void Destroyed()
-	{
-
-	}
 }

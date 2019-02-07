@@ -159,7 +159,7 @@ public class Brain<T> : IBrain<T> where T : class
 					potentialSwitch.Value.Clean();
 					continue;
 				}
-
+				
 				potentialSwitches.Add(potentialSwitch.Value);
 				rollMaxValue += potentialSwitch.Value.PriorityLevel;
 			}
@@ -202,19 +202,25 @@ public class Brain<T> : IBrain<T> where T : class
 
 		if(chosenPotentialSwitch.IsSet)
 		{
+			bool setState = false;
 			if(chosenPotentialSwitch.Request == null)
 			{
-				BrainStateMachine.RequestNoState(chosenPotentialSwitch.Force);
+				setState = BrainStateMachine.RequestNoState(chosenPotentialSwitch.Force, false);
 			}
 			else
 			{
-				BrainStateMachine.RequestState(chosenPotentialSwitch.Request, chosenPotentialSwitch.Force);
+				setState = BrainStateMachine.RequestState(chosenPotentialSwitch.Request, chosenPotentialSwitch.Force, false);
 			}
 
-			foreach(var pair in chosenPotentialSwitch.Switcher.GetKeysToSetOnRequestDictionary())
+			if(setState && chosenPotentialSwitch.KeysToSetOnSwitch != null)
 			{
-				BrainState.SetKey(pair.Key, pair.Value);
+				foreach(var pair in chosenPotentialSwitch.KeysToSetOnSwitch)
+				{
+					BrainState.SetKey(pair.Key, pair.Value);
+				}
 			}
+
+			chosenPotentialSwitch.Clean();
 		}
 	}
 

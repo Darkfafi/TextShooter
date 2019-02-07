@@ -15,7 +15,7 @@
 		TargetsFilter = EntityFilter<EntityModel>.Create(r);
 	}
 
-	protected override void Destroyed()
+	public override void Destroyed()
 	{
 		TargetsFilter.Clean();
 		TargetsFilter = null;
