@@ -5,7 +5,7 @@ public enum TagFilterType
 {
 	HasAnyTag,
 	HasAllTags,
-	HasNoneOfTag,
+	HasNoneOfTags,
 }
 
 public struct FilterRules
@@ -152,7 +152,7 @@ public struct FilterRules
 	{
 		List<string> myTags = new List<string>(tags);
 		myTags.Add(tag);
-		return new FilterRules(myTags.ToArray(), TagFilterType.HasNoneOfTag);
+		return new FilterRules(myTags.ToArray(), TagFilterType.HasNoneOfTags);
 	}
 
 	/// <summary>
@@ -189,7 +189,7 @@ public struct FilterRules
 				case TagFilterType.HasAllTags:
 					allTagsToCheck.Add(_filterTags[i].Tag);
 					break;
-				case TagFilterType.HasNoneOfTag:
+				case TagFilterType.HasNoneOfTags:
 					noneTagsToCheck.Add(_filterTags[i].Tag);
 					break;
 			}
