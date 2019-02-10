@@ -91,15 +91,7 @@ public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 			return false;
 		}
 
-		if(_disabledComponents.Contains(component))
-		{
-			isEnabled = false;
-		}
-		else
-		{
-			isEnabled = true;
-		}
-
+		isEnabled = !_disabledComponents.Contains(component);
 		return true;
 	}
 

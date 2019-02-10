@@ -35,7 +35,6 @@ public static class Verification
 
 			})
 		);
-
 	}
 
 	// Background Vertification Seciton
