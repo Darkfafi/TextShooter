@@ -68,7 +68,6 @@ public class WordUIDisplayItemView : EntityView
 		_wordUIDisplayItemModel.NewWordDisplayingEvent -= OnNewWordDisplayingEvent;
 		_wordUIDisplayItemModel = null;
 		_gameCamera = null;
-		_wordTextDisplay = null;
 	}
 
 	protected override void Update()
@@ -106,6 +105,7 @@ public class WordUIDisplayItemView : EntityView
 		}
 		else
 		{
+			_wordTextDisplay.text = "";
 			HideAnimationAnimation(() => { base.ViewDestruction(); });
 		}
 	}

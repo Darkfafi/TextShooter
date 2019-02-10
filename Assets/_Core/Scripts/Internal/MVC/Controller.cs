@@ -13,8 +13,11 @@ public class Controller : IAbstractController
 	{
 		CoreModel = model;
 		CoreView = view;
+
+		CoreView.PreSetupView(this);
 		CoreModel.SetupModel(this);
-		CoreView.SetupView(this);
+		CoreView.SetupView();
+
 		if(ControllerSetupEvent != null)
 		{
 			ControllerSetupEvent(this);
@@ -49,6 +52,11 @@ public class Controller : IAbstractController
 
 	public virtual void Destroy()
 	{
+		if(CoreView != null)
+		{
+			CoreView.PreDestroyView();
+		}
+
 		if(CoreModel != null)
 		{
 			CoreModel.Destroy();

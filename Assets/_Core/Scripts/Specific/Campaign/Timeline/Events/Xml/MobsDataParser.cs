@@ -14,7 +14,7 @@ public class MobsDataParser : BaseTimelineEventDataParser
 		{
 			if(node.Name == TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN)
 			{
-				string enemyType = null;
+				string enemyID = null;
 				int amount = 1;
 				int delayAfterSpawn = 0;
 				float timeBetween = 0.35f;
@@ -24,8 +24,8 @@ public class MobsDataParser : BaseTimelineEventDataParser
 				{
 					switch(spawnNode.Name)
 					{
-						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_TYPE:
-							enemyType = spawnNode.InnerText;
+						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_ID:
+							enemyID = spawnNode.InnerText;
 							break;
 						case TimelineSpecificGlobals.NODE_MOBS_EVENT_DATA_SPAWN_ENEMY_AMOUNT:
 							int.TryParse(spawnNode.InnerText, out amount);
@@ -42,12 +42,12 @@ public class MobsDataParser : BaseTimelineEventDataParser
 					}
 				}
 
-				if(enemyType == null)
+				if(enemyID == null)
 					throw new Exception("No Enemy Type was defined for the spawn instruction");
 
 				spawnInstructions.Add(new MobsTimelineEventData.SpawnData()
 				{
-					EnemyType = enemyType,
+					EnemyID = enemyID,
 					Amount = amount,
 					DelayAfterSpawnInSeconds = delayAfterSpawn,
 					TimeBetweenInSeconds = timeBetween,

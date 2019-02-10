@@ -178,9 +178,14 @@ public class MobsTimelineEvent : BaseTimelineEvent<MobsTimelineEventData, GameMo
 		{
 			if(_current < _mobsSpawnData.Amount)
 			{
-				EnemyModel enemy = EnemyFactory.CreateEnemy(_game.TimekeeperModel, _mobsSpawnData.EnemyType);
-				enemy.ModelTransform.Position = _game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide);
+				CharacterModel enemy = _game.Factories.GetFactory<EnemyFactory>().Create(
+					new EnemyFactoryData(
+						_mobsSpawnData.EnemyID,
+						_game.GameCamera.GetOutOfMaxOrthographicLocation(_mobsSpawnData.SpawnSide)
+					)
+				);
 				enemy.ModelTags.AddTag(_eventSpawnId);
+				enemy.ModelTags.AddTag(Tags.TARGETABLE);
 				_current++;
 
 				if(_current >= _mobsSpawnData.Amount)
@@ -201,7 +206,7 @@ public class MobsTimelineEventData : BaseTimelineEventData
 	public struct SpawnData
 	{
 		public CameraUtils.Side SpawnSide;
-		public string EnemyType;
+		public string EnemyID;
 		public int Amount;
 		public int DelayAfterSpawnInSeconds;
 		public float TimeBetweenInSeconds;

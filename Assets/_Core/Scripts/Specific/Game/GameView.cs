@@ -11,25 +11,32 @@ public class GameView : MonoBaseView
 	private CameraView _cameraView;
 
 	private TimekeeperView _timekeeperView;
+	private GameModel _gameModel;
 
 	protected void Awake()
 	{
 		_timekeeperView = new GameObject("<TimeKeeperView>").AddComponent<TimekeeperView>();
 	}
 
+	protected void OnDestroy()
+	{
+		_gameModel.Destroy();
+		_gameModel = null;
+	}
+
 	protected void Start()
 	{
-		GameModel gm = new GameModel(_cameraView.Camera.orthographicSize);
+		_gameModel = new GameModel(_cameraView.Camera.orthographicSize);
 
 		// Setup Camera
-		Controller.Link(gm.GameCamera, _cameraView);
+		Controller.Link(_gameModel.GameCamera, _cameraView);
 
 		// Setup TimKkeeper
-		Controller.Link(gm.TimekeeperModel, _timekeeperView);
+		Controller.Link(_gameModel.TimekeeperModel, _timekeeperView);
 
 		// Setup GameModel
-		gm.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
+		_gameModel.GameStateManager.SetupStateView<SurvivalGameState>(_survivalGameStateView);
 
-		Controller.Link(gm, this);
+		Controller.Link(_gameModel, this);
 	}
 }

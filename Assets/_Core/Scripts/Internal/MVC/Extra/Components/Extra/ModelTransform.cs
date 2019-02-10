@@ -2,9 +2,27 @@
 
 public class ModelTransform : BaseModelComponent
 {
-	public Vector3 Position = Vector3.zero;
-	public Vector3 Rotation = Vector3.zero;
-	public Vector3 Scale = Vector3.one;
+	public Vector3 Position
+	{
+		get; private set;
+	}
+
+	public Vector3 Rotation
+	{
+		get; private set;
+	}
+
+	public Vector3 Scale
+	{
+		get; private set;
+	}
+
+	public ModelTransform()
+	{
+		Position = Vector3.zero;
+		Rotation = Vector3.zero;
+		Scale = Vector3.one;
+	}
 
 	public void TranslatePosition(float x, float y, float z)
 	{
@@ -41,33 +59,64 @@ public class ModelTransform : BaseModelComponent
 		SetPos(p);
 	}
 
+	public void SetRot(Vector3 rotation)
+	{
+		Rotation = rotation;
+	}
+
 	public void TranslateRotation(float x, float y, float z)
 	{
 		Vector3 r = Rotation;
 		r.x += x;
 		r.y += y;
 		r.z += z;
-		Rotation = r;
+		SetRot(r);
 	}
 
 	public void SetRotX(float x)
 	{
 		Vector3 r = Rotation;
 		r.x = x;
-		Rotation = r;
+		SetRot(r);
 	}
 
 	public void SetRotY(float y)
 	{
 		Vector3 r = Rotation;
 		r.y = y;
-		Rotation = r;
+		SetRot(r);
 	}
 
 	public void SetRotZ(float z)
 	{
 		Vector3 r = Rotation;
 		r.z = z;
-		Rotation = r;
+		SetRot(r);
+	}
+
+	public void SetScale(Vector3 scale)
+	{
+		Scale = scale;
+	}
+
+	public void SetScaleX(float x)
+	{
+		Vector3 s = Scale;
+		s.x = x;
+		SetScale(s);
+	}
+
+	public void SetScaleY(float y)
+	{
+		Vector3 s = Scale;
+		s.y = y;
+		SetScale(s);
+	}
+
+	public void SetScaleZ(float z)
+	{
+		Vector3 s = Scale;
+		s.z = z;
+		SetScale(s);
 	}
 }

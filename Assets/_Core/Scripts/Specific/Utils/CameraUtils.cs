@@ -16,7 +16,27 @@ public static class CameraUtils
 
 	public static Vector2 GetOutOfMaxOrthographicLocation(this CameraModel camera, Side side, float marginOutsideCamera = 1f)
 	{
-		float distY = camera.MaxOrtographicSize + marginOutsideCamera;
+		return GetOutOfMaxOrthographicLocation(camera, camera.ModelTransform.Position, side, marginOutsideCamera);
+	}
+
+	public static Vector2 GetOutOfMaxOrthographicLocation(this CameraModel camera, Vector2 centerLocation, Side side, float marginOutsideCamera = 1f)
+	{
+		return GetOutOfGivenOrthographicLocation(camera.MaxOrtographicSize, centerLocation, side, marginOutsideCamera);
+	}
+
+	public static Vector2 GetOutOfOrthographicLocation(this CameraModel camera, Side side, float marginOutsideCamera = 1f)
+	{
+		return GetOutOfOrthographicLocation(camera, camera.ModelTransform.Position, side, marginOutsideCamera);
+	}
+
+	public static Vector2 GetOutOfOrthographicLocation(this CameraModel camera, Vector2 centerLocation, Side side, float marginOutsideCamera = 1f)
+	{
+		return GetOutOfGivenOrthographicLocation(camera.OrthographicSize, centerLocation, side, marginOutsideCamera);
+	}
+
+	private static Vector2 GetOutOfGivenOrthographicLocation(float orthographic, Vector2 centerLocation, Side side, float marginOutsideCamera)
+	{
+		float distY = orthographic + marginOutsideCamera;
 		float distX = distY * Screen.width / Screen.height;
 
 		bool fullX;
@@ -40,7 +60,35 @@ public static class CameraUtils
 		x = (Mathf.Lerp(0, distX, x)) * xMult;
 		y = (Mathf.Lerp(0, distY, y)) * yMult;
 
-		return new Vector2(x, y);
+		return centerLocation + new Vector2(x, y);
+	}
+
+	public static bool IsOutsideOfOrthographic(this CameraModel camera, Vector3 targetLocation, float marginOutsideCamera = 0f)
+	{
+		return IsOutsideOfOrthographic(camera, camera.ModelTransform.Position, targetLocation, marginOutsideCamera);
+	}
+
+	public static bool IsOutsideOfOrthographic(this CameraModel camera, Vector2 centerLocation, Vector3 targetLocation, float marginOutsideCamera = 0f)
+	{
+		return IsOutsideOfGivenOrthographic(centerLocation, targetLocation, camera.OrthographicSize, marginOutsideCamera);
+	}
+
+	public static bool IsOutsideOfMaxOrthographic(this CameraModel camera, Vector3 targetLocation, float marginOutsideCamera = 0f)
+	{
+		return IsOutsideOfMaxOrthographic(camera, camera.ModelTransform.Position, targetLocation, marginOutsideCamera);
+	}
+
+	public static bool IsOutsideOfMaxOrthographic(this CameraModel camera, Vector2 centerLocation, Vector3 targetLocation, float marginOutsideCamera = 0f)
+	{
+		return IsOutsideOfGivenOrthographic(centerLocation, targetLocation, camera.MaxOrtographicSize, marginOutsideCamera);
+	}
+
+	private static bool IsOutsideOfGivenOrthographic(Vector2 centerLocation, Vector3 targetLocation, float orthographic, float marginOutsideCamera)
+	{
+		float distY = orthographic + marginOutsideCamera;
+		float distX = distY * Screen.width / Screen.height;
+		Rect camRect = new Rect(centerLocation.x - distX, centerLocation.y - distY, distX * 2, distY * 2);
+		return (targetLocation.x < camRect.xMin || targetLocation.x > camRect.xMax || targetLocation.y < camRect.yMin || targetLocation.y > camRect.yMax);
 	}
 
 	public static Side ParseToCameraSide(string cameraSideString, Side defaultValue)

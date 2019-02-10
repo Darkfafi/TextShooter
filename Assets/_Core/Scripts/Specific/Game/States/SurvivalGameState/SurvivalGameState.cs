@@ -1,6 +1,8 @@
-﻿namespace SurvivalGame
+﻿using System;
+
+namespace SurvivalGame
 {
-	public class SurvivalGameState : BaseGameState, IGame
+	public class SurvivalGameState : BaseGameState, IGame, IFactoryCreator
 	{
 		public TurretModel TurretModel
 		{
@@ -27,19 +29,36 @@
 			get; private set;
 		}
 
+		public WordsList WordsList
+		{
+			get; private set;
+		}
+
+		private TargetingSystem _targetingSystem;
+
 		protected override void OnSetupState()
 		{
+			ParentGame.Factories.RegisterFactoryCreator(this);
+
 			SurvivalGameStateManager = new GameStateManager<SurvivalGameState>(this);
 
-			// Setup UI
-			WordsDisplayerModel = new WordsDisplayerModel(Game.TimekeeperModel);
-			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(WordsDisplayerModel);
+			// Settings
+			WordsList = new WordsList(SessionSettings.Request<WordsListSettings>().WordsListDocumentText);
 
 			// Input
 			CharInputModel = new CharInputModel();
 
+			// Setup Global Mechanics
+
+			// -- Game -- \\
+			_targetingSystem = new TargetingSystem(CharInputModel, ParentGame.GameCamera, ParentGame.TimekeeperModel);
+
+			// -- UI -- \\
+			WordsDisplayerModel = new WordsDisplayerModel(ParentGame.TimekeeperModel);
+			TargetingWordItemModificationModel = new TargetingWordItemModificationModel(_targetingSystem.Targeting, WordsDisplayerModel);
+
 			// Setup Player
-			TurretModel = new TurretModel(Game.TimekeeperModel, CharInputModel);
+			TurretModel = new TurretModel(ParentGame.TimekeeperModel);
 		}
 
 		public void StartGame()
@@ -54,7 +73,40 @@
 
 		protected override void OnEndState()
 		{
+			ParentGame.Factories.UnregisterFactoryCreator(this);
 
+			SurvivalGameStateManager.Clean();
+
+			// Input
+			CharInputModel.Destroy();
+			CharInputModel = null;
+
+			// Setup Global Mechanics
+
+			// -- Game -- \\
+			_targetingSystem.Clean();
+			_targetingSystem = null;
+
+			// -- UI -- \\
+			WordsDisplayerModel.Destroy();
+			WordsDisplayerModel = null;
+
+			TargetingWordItemModificationModel.Destroy();
+			TargetingWordItemModificationModel = null;
+
+			// Setup Player
+			TurretModel.Destroy();
+			TurretModel = null;
+		}
+
+		public IFactory CreateFactoryIfAble(Type factoryType)
+		{
+			if(factoryType == typeof(EnemyFactory))
+				return new EnemyFactory(ParentGame.TimekeeperModel, EnemyDatabaseParser.ParseXml(DatabaseContents.GetEnemyDatabaseText()), WordsList);
+			else if(factoryType == typeof(WeaponFactory))
+				return new WeaponFactory(WeaponDatabaseParser.ParseXml(DatabaseContents.GetWeaponsDatabaseText()));
+
+			return null;
 		}
 	}
 }

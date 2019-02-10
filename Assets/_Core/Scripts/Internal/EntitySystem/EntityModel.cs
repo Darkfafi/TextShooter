@@ -1,10 +1,26 @@
-﻿public class EntityModel : BaseModel
+﻿using System;
+using UnityEngine;
+
+public class EntityModel : BaseModel
 {
 	public EntityModel()
 	{
-		ModelTransform = AddComponent<ModelTransform>();
-		ModelTags = AddComponent<ModelTags>();
-		EntityTracker.Instance.Register(this);
+		Initialize(Vector3.zero, Vector3.zero, Vector3.one);
+	}
+
+	public EntityModel(Vector3 position)
+	{
+		Initialize(position, Vector3.zero, Vector3.one);
+	}
+
+	public EntityModel(Vector3 position, Vector3 rotation)
+	{
+		Initialize(position, rotation, Vector3.one);
+	}
+
+	public EntityModel(Vector3 position, Vector3 rotation, Vector3 scale)
+	{
+		Initialize(position, rotation, scale);
 	}
 
 	public ModelTags ModelTags
@@ -17,10 +33,48 @@
 		get; private set;
 	}
 
+	protected override bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType, BaseModelComponent componentInstance)
+	{
+		if(componentType == typeof(ModelTransform))
+		{
+			if(action == ModelComponents.ModelComponentsAction.RemoveComponent)
+			{
+				return IsDestroyed;
+			}
+
+			if(action == ModelComponents.ModelComponentsAction.AddComponent)
+			{
+				return ModelTransform == null;
+			}
+		}
+
+		if(componentType == typeof(ModelTags))
+		{
+			if(action == ModelComponents.ModelComponentsAction.RemoveComponent)
+			{
+				return componentInstance != ModelTags || IsDestroyed;
+			}
+		}
+
+		return true;
+	}
+
 	protected override void OnModelDestroy()
 	{
 		base.OnModelDestroy();
 		ModelTags = null;
 		ModelTransform = null;
+	}
+
+	private void Initialize(Vector3 position, Vector3 rotation, Vector3 scale)
+	{
+		ModelTransform = AddComponent<ModelTransform>();
+		ModelTags = AddComponent<ModelTags>();
+
+		ModelTransform.SetPos(position);
+		ModelTransform.SetRot(rotation);
+		ModelTransform.SetScale(scale);
+
+		EntityTracker.Instance.Register(this);
 	}
 }

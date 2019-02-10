@@ -16,7 +16,7 @@ public class EntityView : MonoBaseView
 	protected override void OnViewReady()
 	{
 		ViewDeltaTransform = new ModelTransform();
-		ViewDeltaTransform.Scale = Vector3.zero;
+		ViewDeltaTransform.SetScale(Vector3.zero);
 
 		SelfModel = MVCUtil.GetModel<EntityModel>(this);
 		UpdateTransformComponent();

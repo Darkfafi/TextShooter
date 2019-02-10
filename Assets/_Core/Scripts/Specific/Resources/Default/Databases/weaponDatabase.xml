@@ -1,0 +1,7 @@
+<weaponDatabase>
+	<weaponData>
+		<id>suicide</id>
+		<damage>kill</damage>
+		<radius>2</radius>
+	</weaponData>
+</weaponDatabase>

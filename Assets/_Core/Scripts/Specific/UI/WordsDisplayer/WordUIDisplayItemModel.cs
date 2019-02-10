@@ -20,7 +20,15 @@ public class WordUIDisplayItemModel : EntityModel
 		_timekeeper = timekeeper;
 
 		_wordsHolder = entityModel.GetComponent<WordsHolder>();
-		SetCurrentlyDisplayingWord(_wordsHolder.CurrentWord);
+
+		if(!string.IsNullOrEmpty(_wordsHolder.CurrentWord))
+		{
+			SetCurrentlyDisplayingWord(_wordsHolder.CurrentWord);
+		}
+		else
+		{
+			SetCurrentlyDisplayingWord("");
+		}
 
 		_wordsHolder.WordCycledEvent += OnWordCycledEvent;
 		_timekeeper.ListenToFrameTick(OnUpdate);

@@ -1,13 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-public class TurretModel : EntityModel
+public class TurretModel : EntityModel, ITargetingUser
 {
 	public delegate void NewOldTargetHandler(EntityModel newTarget, EntityModel previousTarget);
-	public event NewOldTargetHandler TargetSetEvent;
-	public event Action<IFireWordGun> FireWordGunChangedEvent;
-	public event Action<float> RangeChangedEvent;
-	public event Action<float> CooldownChangedEvent;
+	public event Action<BaseWeapon> WeaponChangedEvent;
+	public event Action<float> RadiusChangedEvent;
 	public event Action<bool> GunActiveStateChangedEvent;
 	public event Action GunFiredEvent;
 
@@ -15,26 +13,26 @@ public class TurretModel : EntityModel
 	{
 		get
 		{
-			if(TargetSystem == null)
+			if(Targeting == null)
 				return null;
 
-			return TargetSystem.TargetsFilter.GetFirst(
+			return Targeting.TargetsFilter.GetFirst(
 				(e) => 
 				{
-					if(!TargetSystem.IsTargetCompleted(e))
+					if(!Targeting.IsTargetCompleted(e))
 						return false;
 
 					return true;
-				}, (a, b) =>
-				{
-					float distA = (a.ModelTransform.Position - ModelTransform.Position).magnitude;
-					float distB = (b.ModelTransform.Position - ModelTransform.Position).magnitude;
-					return (int)(distA - distB);
-				});
+				}, this.SortOnClosestTo());
 		}
 	}
 
-	public TargetSystem TargetSystem
+	public Lives Lives
+	{
+		get; private set;
+	}
+
+	public Targeting Targeting
 	{
 		get; private set;
 	}
@@ -44,42 +42,55 @@ public class TurretModel : EntityModel
 		get; private set;
 	}
 
-	public float Range
+	public float Radius
 	{
 		get
 		{
-			return _fireWordGun.Range;
-		}
-	}
-
-	public float Cooldown
-	{
-		get
-		{
-			return _fireWordGun.Cooldown;
+			return (_weaponHolder == null || !_weaponHolder.HasWeapon) ? 0f : _weaponHolder.Weapon.Radius;
 		}
 	}
 
 	public bool IsGunActive
 	{
-		get; private set;
+		get
+		{
+			return _weaponHolder != null && _weaponHolder.HasWeapon && _weaponHolder.IsEnabled;
+		}
+	}
+
+	public bool AddTargetingUserTagOnCreation
+	{
+		get
+		{
+			return true;
+		}
+	}
+
+	public Vector3 TargetingUserPosition
+	{
+		get
+		{
+			return ModelTransform.Position;
+		}
 	}
 
 	private TimekeeperModel _timekeeper;
+	private float _rotationTillResultTile = 0f;
+	private WeaponHolder _weaponHolder;
 
-	private BaseFireWordGun _fireWordGun;
-
-	public TurretModel(TimekeeperModel timekeeper, CharInputModel charInputModel)
+	public TurretModel(TimekeeperModel timekeeper)
 	{
 		_timekeeper = timekeeper;
 		_timekeeper.ListenToFrameTick(Update);
+		_weaponHolder = AddComponent<WeaponHolder>();
 
-		TargetSystem = AddComponent<TargetSystem>();
-		TargetSystem.SetupTargetSystem(charInputModel, FilterRules.CreateHasAnyTagsFilter(Tags.ENEMY));
+		ModelTags.AddTag(Tags.ENEMY_TARGET);
 
-		ModelTags.AddTag(Tags.DISPLAY_TARGETING);
+		Lives = AddComponent<Lives>();
+		Lives.SetLivesAmount(3);
+		Lives.DeathEvent += OnDeathEvent;
 
-		SetFireWordGun(new InstantFireWordGun(0.25f, 5f, timekeeper));
+		SetWeapon(new InstantHitGun(0.25f, timekeeper, 10f));
 		SetGunActiveState(true);
 	}
 
@@ -90,9 +101,16 @@ public class TurretModel : EntityModel
 		_timekeeper.UnlistenFromFrameTick(Update);
 		_timekeeper = null;
 
-		_fireWordGun = null;
+		_weaponHolder = null;
 
-		TargetSystem = null;
+		Lives.DeathEvent -= OnDeathEvent;
+		Lives = null;
+		Targeting = null;
+	}
+
+	private void OnDeathEvent(Lives livesComponent)
+	{
+		Destroy();
 	}
 
 	private void Update(float deltaTime, float timeScale)
@@ -101,17 +119,18 @@ public class TurretModel : EntityModel
 
 		if(CurrentTarget != null && !CurrentTarget.IsDestroyed && IsGunActive)
 		{
-			if(Vector2.Distance(ModelTransform.Position, CurrentTarget.ModelTransform.Position) < Range)
+			if(Vector2.Distance(ModelTransform.Position, CurrentTarget.ModelTransform.Position) < Radius)
 			{
 				float x = CurrentTarget.ModelTransform.Position.x - ModelTransform.Position.x;
 				float y = CurrentTarget.ModelTransform.Position.y - ModelTransform.Position.y;
 
 				angleToTarget = (Mathf.Atan2(y, x) * Mathf.Rad2Deg) - 90f;
-
+				_rotationTillResultTile += deltaTime * timeScale;
 				if(Mathf.Abs(Mathf.DeltaAngle(angleToTarget, TurretNeckRotation)) < 10f)
 				{
-					WordsHp currentTargetWordsHp = CurrentTarget.GetComponent<WordsHp>();
-					if(_fireWordGun.Fire(currentTargetWordsHp, currentTargetWordsHp.CurrentTargetWord))
+					_rotationTillResultTile = 0f;
+					Lives currentTargetLives = CurrentTarget.GetComponent<Lives>();
+					if(_weaponHolder.UseWeaponIfAny(currentTargetLives))
 					{
 						if(GunFiredEvent != null)
 						{
@@ -122,59 +141,55 @@ public class TurretModel : EntityModel
 			}
 		}
 
-		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f);
+		TurretNeckRotation = Mathf.LerpAngle(TurretNeckRotation, angleToTarget, deltaTime * timeScale * 7.4f * (1f + _rotationTillResultTile));
 	}
 
 	// Setters and Getters
 
-	public void SetFireWordGun(BaseFireWordGun fireWordGun)
+	public void SetWeapon(BaseWeapon weapon)
 	{
-		if(fireWordGun != null)
+		if(_weaponHolder.Weapon != weapon)
 		{
-			_fireWordGun = fireWordGun;
-			if(FireWordGunChangedEvent != null)
+			_weaponHolder.SetWeapon(weapon);
+
+			if(WeaponChangedEvent != null)
 			{
-				FireWordGunChangedEvent(_fireWordGun);
+				WeaponChangedEvent(weapon);
 			}
 		}
 	}
 
 	public void SetGunActiveState(bool activeState)
 	{
-		if(IsGunActive == activeState)
+		if(_weaponHolder != null && activeState != IsGunActive)
+		{
+			_weaponHolder.SetEnabledState(activeState);
+
+			if(GunActiveStateChangedEvent != null)
+			{
+				GunActiveStateChangedEvent(IsGunActive);
+			}
+		}
+	}
+
+	public void SetRadius(float newRadius)
+	{
+		if(!_weaponHolder.HasWeapon)
 			return;
 
-		IsGunActive = activeState;
-
-		if(GunActiveStateChangedEvent != null)
+		float preRange = Radius;
+		_weaponHolder.Weapon.SetRadius(newRadius);
+		if(preRange != Radius)
 		{
-			GunActiveStateChangedEvent(IsGunActive);
-		}
-	}
-
-	public void SetRange(float newRange)
-	{
-		float preRange = Range;
-		_fireWordGun.SetRange(newRange);
-		if(preRange != Range)
-		{
-			if(RangeChangedEvent != null)
+			if(RadiusChangedEvent != null)
 			{
-				RangeChangedEvent(Range);
+				RadiusChangedEvent(Radius);
 			}
 		}
 	}
 
-	public void SetCooldown(float cooldown)
+	public void SetCurrentTargeting(Targeting targeting)
 	{
-		float preCooldown = Cooldown;
-		_fireWordGun.SetCooldown(cooldown);
-		if(preCooldown != Cooldown)
-		{
-			if(CooldownChangedEvent != null)
-			{
-				CooldownChangedEvent(Cooldown);
-			}
-		}
+		Targeting = targeting;
 	}
 }

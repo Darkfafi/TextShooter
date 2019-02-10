@@ -22,6 +22,14 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 		}
 	}
 
+	public virtual void PreDestroyView()
+	{
+		if(_baseView == null)
+			return;
+
+		_baseView.PreDestroyView();
+	}
+
 	public virtual void DestroyView()
 	{
 		if(LinkingController == null)
@@ -41,12 +49,18 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 		_baseView = null;
 	}
 
-	public virtual void SetupView(IMethodPermitter controller)
+	public virtual void PreSetupView(IMethodPermitter controller)
 	{
 		if(LinkingController != null)
 			return;
 
-		_baseView.SetupView(controller);
+		_baseView.PreSetupView(controller);
+		OnPreViewReady();
+	}
+
+	public virtual void SetupView()
+	{
+		_baseView.SetupView();
 		OnViewReady();
 	}
 
@@ -60,6 +74,9 @@ public abstract class MonoBaseView : MonoBehaviour, IView
 		DestroyView();
 	}
 
+	protected virtual void OnPreViewReady()
+	{
+	}
 	protected virtual void OnViewReady()
 	{
 	}
@@ -80,6 +97,20 @@ public class BaseView : IView
 		get; private set;
 	}
 
+	public virtual void PreDestroyView()
+	{
+
+	}
+
+	public virtual void PreSetupView(IMethodPermitter controller)
+	{
+		if(LinkingController != null)
+			return;
+
+		LinkingController = controller;
+		OnPreViewReady();
+	}
+
 	public virtual void DestroyView()
 	{
 		if(LinkingController == null)
@@ -97,15 +128,14 @@ public class BaseView : IView
 		LinkingController = null;
 	}
 
-	public virtual void SetupView(IMethodPermitter controller)
+	public virtual void SetupView()
 	{
-		if(LinkingController != null)
-			return;
-
-		LinkingController = controller;
 		OnViewReady();
 	}
 
+	protected virtual void OnPreViewReady()
+	{
+	}
 	protected virtual void OnViewReady()
 	{
 	}

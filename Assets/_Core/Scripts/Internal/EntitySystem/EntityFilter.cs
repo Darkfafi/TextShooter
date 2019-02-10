@@ -83,6 +83,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 		EntityTracker.Instance.EntityRemovedTagEvent += OnEntityRemovedTagEvent;
 		EntityTracker.Instance.EntityAddedComponentEvent += OnEntityAddedComponentEvent;
 		EntityTracker.Instance.EntityRemovedComponentEvent += OnEntityRemovedComponentEvent;
+		EntityTracker.Instance.EntityChangedEnabledStateOfComponentEvent += OnEntityChangedEnabledStateOfComponentEvent;
 		EntityTracker.Instance.TrackedEvent += OnTrackedEvent;
 		EntityTracker.Instance.UntrackedEvent += OnEntityUntrackedEvent;
 		FillWithAlreadyExistingMatches();
@@ -97,6 +98,7 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 			EntityTracker.Instance.EntityRemovedTagEvent -= OnEntityRemovedTagEvent;
 			EntityTracker.Instance.EntityAddedComponentEvent -= OnEntityAddedComponentEvent;
 			EntityTracker.Instance.EntityRemovedComponentEvent -= OnEntityRemovedComponentEvent;
+			EntityTracker.Instance.EntityChangedEnabledStateOfComponentEvent -= OnEntityChangedEnabledStateOfComponentEvent;
 			EntityTracker.Instance.TrackedEvent -= OnTrackedEvent;
 			EntityTracker.Instance.UntrackedEvent -= OnEntityUntrackedEvent;
 			base.Clean();
@@ -133,6 +135,11 @@ public class EntityFilter<T> : ModelHolder<T> where T : EntityModel
 	}
 
 	private void OnEntityRemovedTagEvent(EntityModel entity, string tag)
+	{
+		TrackLogics(entity);
+	}
+
+	private void OnEntityChangedEnabledStateOfComponentEvent(EntityModel entity, BaseModelComponent component, bool enabledState)
 	{
 		TrackLogics(entity);
 	}

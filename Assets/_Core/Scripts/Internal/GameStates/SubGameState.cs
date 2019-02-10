@@ -4,14 +4,14 @@
 	{
 		get
 		{
-			ISubGameState subState = Game as ISubGameState;
+			ISubGameState subState = ParentGame as ISubGameState;
 
 			if(subState != null)
 			{
 				return (U)subState.MasterGame;
 			}
 
-			return Game == null ? null : Game.Game;
+			return ParentGame == null ? null : ParentGame.ParentGame;
 		}
 	}
 

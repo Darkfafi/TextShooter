@@ -72,10 +72,17 @@ public class SearchWindow : EditorWindow
 		if(index.ToString().IndexOf(_searchString) >= 0)
 			return true;
 
-		if(obj.ToString().ToLower().IndexOf(_searchString.ToLower()) >= 0)
-			return true;
+		string[] parts = _searchString.Split(' ');
 
-		return false;
+		for(int i = 0; i < parts.Length; i++)
+		{
+			if(!obj.ToString().ToLower().Contains(parts[i].ToLower()))
+			{
+				return false;
+			}
+		}
+
+		return true;
 		
 	}
 

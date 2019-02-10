@@ -1,0 +1,13 @@
+<enemyDatabase>
+  <enemyData>
+    <id>suicideWalker</id>
+    <type>walker</type>
+    <weapon>suicide</weapon>
+  </enemyData>
+  <enemyData>
+    <id>suicidePlane</id>
+    <type>plane</type>
+    <weapon>suicide</weapon>
+    <movementSpeed>3</movementSpeed>
+  </enemyData>
+</enemyDatabase>

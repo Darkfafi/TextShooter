@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 
 public delegate void ModelTagHandler(BaseModel model, string tag);
 
@@ -101,16 +99,4 @@ public class ModelTags : BaseModelComponent
 
 		return true;
 	}
-}
-
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public class TagsHolderAttribute : Attribute
-{
-
-}
-
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-public class TagFieldAttribute : Attribute
-{
-
 }

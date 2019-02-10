@@ -3,11 +3,12 @@
 /// <summary>
 /// The design is to have the model contain no Unity specifications. It serves as a data object for its respective view.
 /// </summary>
-public abstract class BaseModel : IModel, IComponentsHolder
+public abstract class BaseModel : IModel, IComponentsHolder, IComponentsEnableModifier
 {
 	public event Action<BaseModel> DestroyEvent;
 	public event Action<BaseModel, BaseModelComponent> AddedComponentToModelEvent;
 	public event Action<BaseModel, BaseModelComponent> RemovedComponentFromModelEvent;
+	public event Action<BaseModel, BaseModelComponent, bool> ChangedComponentEnabledStateFromModelEvent;
 	public event Action<BaseModel> ModelReadyEvent;
 
 	public bool IsDestroyed
@@ -31,9 +32,10 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	public BaseModel()
 	{
 		MethodPermitter = new MethodPermitter();
-		_components = new ModelComponents(this);
+		_components = new ModelComponents(this, ComponentActionValidation);
 		_components.AddedComponentEvent += OnAddedComponentEvent;
 		_components.RemovedComponentEvent += OnRemovedComponentEvent;
+		_components.ChangedComponentEnabledStateEvent += OnChangedComponentEnabledStateEvent;
 
 	}
 
@@ -62,6 +64,7 @@ public abstract class BaseModel : IModel, IComponentsHolder
 
 		_components.AddedComponentEvent -= OnAddedComponentEvent;
 		_components.RemovedComponentEvent -= OnRemovedComponentEvent;
+		_components.ChangedComponentEnabledStateEvent -= OnChangedComponentEnabledStateEvent;
 
 		_components.Clean();
 		_components = null;
@@ -92,6 +95,21 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	{
 	}
 
+	protected virtual bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType, BaseModelComponent componentInstance)
+	{
+		return true;
+	}
+
+	public bool TryIsEnabledCheck<T>(out bool isEnabled) where T : BaseModelComponent
+	{
+		return _components.TryIsEnabledCheck<T>(out isEnabled);
+	}
+
+	public void SetComponentEnabledState<T>(bool enabledState) where T : BaseModelComponent
+	{
+		_components.SetComponentEnabledState<T>(enabledState);
+	}
+
 	public T AddComponent<T>() where T : BaseModelComponent
 	{
 		return _components.AddComponent<T>();
@@ -100,6 +118,16 @@ public abstract class BaseModel : IModel, IComponentsHolder
 	public BaseModelComponent AddComponent(Type componentType)
 	{
 		return _components.AddComponent(componentType);
+	}
+
+	public bool RequireComponent<T>(out T component) where T : BaseModelComponent
+	{
+		return _components.RequireComponent<T>(out component);
+	}
+
+	public bool RequireComponent(Type componentType, out BaseModelComponent component)
+	{
+		return _components.RequireComponent(componentType, out component);
 	}
 
 	public void RemoveComponent<T>() where T : BaseModelComponent
@@ -127,14 +155,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		return _components.GetComponent(componentType);
 	}
 
-	public bool HasComponent<T>() where T : BaseModelComponent
+	public bool HasComponent<T>(bool incDisabledComponents = true) where T : BaseModelComponent
 	{
-		return _components.HasComponent<T>();
+		return _components.HasComponent<T>(incDisabledComponents);
 	}
 
-	public bool HasComponent(Type componentType)
+	public bool HasComponent(Type componentType, bool incDisabledComponents = true)
 	{
-		return _components.HasComponent(componentType);
+		return _components.HasComponent(componentType, incDisabledComponents);
 	}
 
 	private void OnAddedComponentEvent(BaseModelComponent component)
@@ -150,6 +178,14 @@ public abstract class BaseModel : IModel, IComponentsHolder
 		if(RemovedComponentFromModelEvent != null)
 		{
 			RemovedComponentFromModelEvent(this, component);
+		}
+	}
+
+	private void OnChangedComponentEnabledStateEvent(BaseModelComponent component, bool enabledState)
+	{
+		if(ChangedComponentEnabledStateFromModelEvent != null)
+		{
+			ChangedComponentEnabledStateFromModelEvent(this, component, enabledState);
 		}
 	}
 }

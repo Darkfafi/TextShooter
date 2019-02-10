@@ -5,7 +5,7 @@
 		get; private set;
 	}
 
-	public T Game
+	public T ParentGame
 	{
 		get; private set;
 	}
@@ -18,7 +18,7 @@
 	public void SetupState(T game, GameStateManager<T> gameStateManager)
 	{
 		MethodPermitter = new MethodPermitter();
-		Game = game;
+		ParentGame = game;
 		GameStateManager = gameStateManager;
 		OnSetupState();
 	}

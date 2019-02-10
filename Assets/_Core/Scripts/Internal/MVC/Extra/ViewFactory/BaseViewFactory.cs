@@ -49,7 +49,7 @@ public abstract class BaseViewFactory<M, V> where M : EntityModel where V : clas
 
 	public V CreateViewForModel(M model)
 	{
-		if(IsModelValidForViewCreation(model))
+		if(!MVCUtil.HasView(model) && IsModelValidForViewCreation(model))
 		{
 			V view = ConstructViewForModel(model);
 			Controller.Link(model, view);

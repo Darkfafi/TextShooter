@@ -1,10 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : EntityModel where V : EntityView
 {
-	[SerializeField]
-	private V _entityViewPrefab;
-
 	[SerializeField]
 	private bool _initializeAsAutomatic = true;
 
@@ -12,7 +10,7 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 
 	protected void Awake()
 	{
-		_factory = new InnerMonoViewFactory(_entityViewPrefab, _initializeAsAutomatic, CreateFilterRulesForFactory());
+		_factory = new InnerMonoViewFactory(GetViewPrefabForModel, _initializeAsAutomatic, CreateFilterRulesForFactory());
 		_factory.CreatedViewForModelEvent += OnCreatedViewForModelEvent;
 	}
 
@@ -22,6 +20,8 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 		_factory.CreatedViewForModelEvent -= OnCreatedViewForModelEvent;
 		_factory = null;
 	}
+
+	protected abstract V GetViewPrefabForModel(M model);
 
 	protected virtual void OnViewConstructedForModel(M model, V view)
 	{
@@ -40,22 +40,22 @@ public abstract class BaseMonoViewFactory<M, V> : MonoBehaviour where M : Entity
 
 	private class InnerMonoViewFactory : BaseViewFactory<M, V>
 	{
-		private V _prefab;
+		private Func<M ,V> _prefabGetter;
 
-		public InnerMonoViewFactory(V prefab, bool automaticState, FilterRules filterRules) : base(automaticState, filterRules)
+		public InnerMonoViewFactory(Func<M, V> prefabGetter, bool automaticState, FilterRules filterRules) : base(automaticState, filterRules)
 		{
-			_prefab = prefab;
+			_prefabGetter = prefabGetter;
 		}
 
 		~InnerMonoViewFactory()
 		{
-			_prefab = null;
+			_prefabGetter = null;
 		}
 
 		protected override V ConstructViewForModel(M model)
 		{
-			if(_prefab != null)
-				return Instantiate(_prefab);
+			if(_prefabGetter != null)
+				return Instantiate(_prefabGetter(model));
 
 			return null;
 		}
