@@ -48,7 +48,7 @@ public struct WeaponFactoryData
 	{
 		get
 		{
-			return string.IsNullOrEmpty(WeaponId);
+			return !string.IsNullOrEmpty(WeaponId);
 		}
 	}
 
