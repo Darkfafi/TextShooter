@@ -95,7 +95,7 @@ public abstract class BaseModel : IModel, IComponentsHolder, IComponentsEnableMo
 	{
 	}
 
-	protected virtual bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType)
+	protected virtual bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType, BaseModelComponent componentInstance)
 	{
 		return true;
 	}

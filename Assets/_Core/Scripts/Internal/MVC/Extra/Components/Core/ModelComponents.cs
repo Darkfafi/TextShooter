@@ -11,7 +11,7 @@ public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 		DisableComponent
 	}
 
-	public delegate bool ComponentActionHandler(ModelComponentsAction action, Type componentType);
+	public delegate bool ComponentActionHandler(ModelComponentsAction action, Type componentType, BaseModelComponent componentInstance);
 
 	public event Action<BaseModelComponent> AddedComponentEvent;
 	public event Action<BaseModelComponent> RemovedComponentEvent;
@@ -114,9 +114,9 @@ public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 			return;
 
 		if(enabledState)
-			if(!_canPerformActionChecker(ModelComponentsAction.EnableComponent, component.GetType()))
+			if(!_canPerformActionChecker(ModelComponentsAction.EnableComponent, component.GetType(), component))
 				return;
-		else if(!_canPerformActionChecker(ModelComponentsAction.DisableComponent, component.GetType()))
+		else if(!_canPerformActionChecker(ModelComponentsAction.DisableComponent, component.GetType(), component))
 				return;
 
 		if(_disabledComponents.Contains(component) && !enabledState)
@@ -143,7 +143,7 @@ public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 
 	public BaseModelComponent AddComponent(Type componentType)
 	{
-		if(!_canPerformActionChecker(ModelComponentsAction.AddComponent, componentType))
+		if(!_canPerformActionChecker(ModelComponentsAction.AddComponent, componentType, null))
 			return null;
 
 		BaseModelComponent c = Activator.CreateInstance(componentType) as BaseModelComponent;
@@ -237,7 +237,7 @@ public class ModelComponents : IComponentsHolder, IComponentsEnableModifier
 
 	private void InternalRemoveComponent(BaseModelComponent component, bool selfClean = false)
 	{
-		if(component != null && _canPerformActionChecker(ModelComponentsAction.RemoveComponent, component.GetType()))
+		if(component != null && _canPerformActionChecker(ModelComponentsAction.RemoveComponent, component.GetType(), component))
 		{
 			if(!_removingComponents.Contains(component))
 			{

@@ -33,7 +33,7 @@ public class EntityModel : BaseModel
 		get; private set;
 	}
 
-	protected override bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType)
+	protected override bool ComponentActionValidation(ModelComponents.ModelComponentsAction action, Type componentType, BaseModelComponent componentInstance)
 	{
 		if(componentType == typeof(ModelTransform))
 		{
@@ -52,12 +52,7 @@ public class EntityModel : BaseModel
 		{
 			if(action == ModelComponents.ModelComponentsAction.RemoveComponent)
 			{
-				return IsDestroyed;
-			}
-
-			if(action == ModelComponents.ModelComponentsAction.AddComponent)
-			{
-				return ModelTags == null;
+				return componentInstance != ModelTags || IsDestroyed;
 			}
 		}
 
