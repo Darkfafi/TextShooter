@@ -17,7 +17,10 @@ public class GridNavigation : MonoBehaviour
 
 	[Header("Zooming")]
 	[SerializeField]
-	private float MinZoom = 50;
+	private float MinZoom = 50f;
+
+	[SerializeField]
+	private float MaxZoomMaxValue = 300f;
 
 	[SerializeField]
 	private float _scrollSpeed = 10f;
@@ -89,6 +92,7 @@ public class GridNavigation : MonoBehaviour
 		float h = Screen.height / _gridDrawer.Height;
 		float ratio = w / h;
 		float ratio2 = h / w;
+
 		if(ratio2 > ratio)
 		{
 			MaxZoom = (_gridDrawer.Height / 2);
@@ -98,6 +102,8 @@ public class GridNavigation : MonoBehaviour
 			MaxZoom = (_gridDrawer.Height / 2);
 			MaxZoom /= ratio;
 		}
+
+		MaxZoom = Mathf.Min(MaxZoomMaxValue, MaxZoom);
 
 		RefreshBounds();
 	}
