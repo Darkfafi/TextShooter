@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 582169758}
   - component: {fileID: 582169757}
   - component: {fileID: 582169756}
+  - component: {fileID: 582169760}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -194,6 +195,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &582169760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 582169755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc65eb2a85d36a4b9b4da0f2d15df0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _navigationSpeed: 0.235
+  _dragReleaseSpeedMultiplier: 0.25
+  _velocityReduction: 0.15
+  MinZoom: 50
+  _scrollSpeed: 10
+  _scrollOrthographicThreshold: 250
+  _gridDrawer: {fileID: 1204822284}
 --- !u!1 &595200204
 GameObject:
   m_ObjectHideFlags: 0
@@ -352,13 +371,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _lineColor: {r: 0.30980393, g: 0.6156863, b: 0.6509804, a: 0.784}
-  _lineThickness: 0.3
+  _lineThickness: 1.5
   _specialLinePer: 5
   _specialLineColor: {r: 0.30980393, g: 0.6156863, b: 0.6509804, a: 1}
   _specialLineThicknessScaler: 2
   _sizeX: 360
   _sizeY: 150
-  _spacing: 10
+  _spacing: 30
 --- !u!4 &1204822285
 Transform:
   m_ObjectHideFlags: 0

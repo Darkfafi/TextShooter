@@ -2,6 +2,22 @@
 
 public class GridDrawer : MonoBehaviour
 {
+	public float Width
+	{
+		get
+		{
+			return _sizeX * _spacing;
+		} 
+	}
+
+	public float Height
+	{
+		get
+		{
+			return _sizeY * _spacing;
+		}
+	}
+
 	[Header("Options")]
 	[SerializeField]
 	private Color _lineColor;
@@ -35,13 +51,15 @@ public class GridDrawer : MonoBehaviour
 
 		for(int x = 0; x < _sizeY; x++)
 		{
-			CreateLine(true, x, _sizeY, _sizeX * _spacing);
+			CreateLine(true, x, _sizeY, Width);
 		}
 
 		for(int y = 0; y < _sizeX; y++)
 		{
-			CreateLine(false, y, _sizeX, _sizeY * _spacing);
+			CreateLine(false, y, _sizeX, Height);
 		}
+
+		gameObject.name = gameObject.name + string.Format("({0})", _sizeX * _sizeY);
 	}
 
 	private void CreateLine(bool horizontal, int index, int maxSize, float lineSize)
