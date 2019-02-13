@@ -1,0 +1,16 @@
+{
+	"Requirements": [
+		{
+			"Name": "title",
+			"ValueType": "string",
+			"ValueOptions": "",
+			"Description": "The name which will represent the campaign."
+		},
+		{
+			"Name": "description",
+			"ValueType": "string",
+			"ValueOptions": "",
+			"Description": "A short story on the content / context of the campaign."
+		}
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"ProgressorTypes": [
+		{
+		  	"Type": "kills",
+			"ValueType": "",
+			"ValueOptions": "",
+			"Description": "Progression over the amount of kills made. Goal is the total amount the event will spawn."
+		},
+		{
+		  	"Type": "time",
+			"ValueType": "string",
+			"ValueOptions": "",
+			"Description": "Progression over time, optional value=`val` overrides the goal value given by the event, value=`+val` sums additional time to the goal time given by the event."
+		}
+	]
+}

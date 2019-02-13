@@ -1,0 +1,62 @@
+{
+	"EventTypes": [{
+		"Type": "mobs",
+		"Progressors": [{
+			"Name": "kills",
+			"Type": "kills",
+			"Description": "Goal value is all the enemies which will be spawned by the event."
+		},
+		{
+			"Name": "time",
+			"Type": "time",
+			"Description": "Goal value is, by default, the duration of time it takes to spawn all the enemies on the screen."
+		}],
+		"EndingTypes": [
+			{
+				"Name": "default",
+				"Description": "End without removing spawned enemies."
+			},
+			{
+				"Name": "destroy",
+				"Description": "Destroys all enemies created immediately when the event ends."
+			}
+		],
+		"DataNodes": [
+			{
+				"Name": "spawn",
+				"SectionNodes": [
+					{
+						"Name": "enemyType",
+						"ValueType": "enum",
+						"ValueChoices": "ENEMY_TYPES",
+						"Description": "The enemy type to spawn in the given spawn instruction."
+					},
+					{
+						"Name": "amount",
+						"ValueType": "int",
+						"ValueChoices": "1-999",
+						"Description": "The amount of enemies to spawn of the given type in the given spawn instruction."
+					},
+					{
+						"Name": "timeBetween",
+						"ValueType": "float",
+						"ValueChoices": "0-120",
+						"Description": "The amount of time (in seconds as float) to wait in between each enemy spawn of the given enemy amount"
+					},
+					{
+						"Name": "delayAfterSpawn",
+						"ValueType": "int",
+						"ValueChoices": "0-120",
+						"Description": "The amount of time to wait (in seconds as integer) to execute the next spawn node in the event. (Multiple spawn nodes can run simultaniously)"
+					},
+					{
+						"Name": "delayAfterSpawn",
+						"ValueType": "enum",
+						"ValueChoices": "any, top, right, bottom, left",
+						"Description": "From which side to spawn the enemies (default `any`, options `any`, `top`, `right`, `bottom`, `left`)"
+					}
+				]
+			}
+		]
+	}]
+}
