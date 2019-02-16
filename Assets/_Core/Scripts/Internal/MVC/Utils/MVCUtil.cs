@@ -47,6 +47,16 @@ public static class MVCUtil
 		return controller.CoreModel as T;
 	}
 
+	public static bool HasModel(Controller controller)
+	{
+		return controller != null && controller.CoreModel != null;
+	}
+
+	public static bool HasModel(IView view)
+	{
+		return HasModel((Controller)view.LinkingController);
+	}
+
 	private class MVCUtilViewWaitProcess<T> where T : class, IView
 	{
 		private Action<T> _callback;

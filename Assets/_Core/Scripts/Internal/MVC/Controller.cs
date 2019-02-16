@@ -9,6 +9,24 @@ public class Controller : IAbstractController
 		return new Controller(model, view);
 	}
 
+	public static bool TryLink(IModel model, IView view)
+	{
+		Controller c;
+		return TryLink(model, view, out c);
+	}
+
+	public static bool TryLink(IModel model, IView view, out Controller controller)
+	{
+		if(MVCUtil.HasView(model))
+		{
+			controller = model.LinkingController as Controller;
+			return false;
+		}
+
+		controller = Link(model, view);
+		return true;
+	}
+
 	private Controller(IModel model, IView view)
 	{
 		CoreModel = model;
