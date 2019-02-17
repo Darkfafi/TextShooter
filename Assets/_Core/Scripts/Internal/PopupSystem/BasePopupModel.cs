@@ -94,6 +94,11 @@ public abstract class BasePopupModel : BaseModel
 
 	}
 
+	protected virtual void OnStateChanged(PopupModelState newState, PopupModelState oldState)
+	{
+
+	}
+
 	protected virtual void Clean()
 	{
 		Destroy();
@@ -104,7 +109,11 @@ public abstract class BasePopupModel : BaseModel
 		if(_popupState == newState)
 			return false;
 
+		PopupModelState oldState = _popupState;
+
 		_popupState = newState;
+
+		OnStateChanged(_popupState, oldState);
 
 		if(PopupStateChangedEvent != null)
 		{
