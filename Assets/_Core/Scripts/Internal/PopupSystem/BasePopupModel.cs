@@ -110,3 +110,9 @@ public abstract class BasePopupModel : BaseModel
 		return true;
 	}
 }
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+public class PopupIDAttribute : Attribute
+{
+
+}

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class TestPopupModel : BasePopupModel
+﻿public class TestPopupModel : BasePopupModel
 {
+	[PopupID]
+	public const string POPUP_ID = "TestPopup";
+
 	public override string PopupModelID
 	{
 		get
 		{
-			return "TestPopup";
+			return POPUP_ID;
 		}
 	}
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class MonoPopupManagerView : MonoBaseView
 {
-	public const string MONO_POPUP_VIEW_PREFABS_LOCATION = "MonoPopupViews";
+	public const string MONO_POPUP_VIEW_PREFAB_RESOURCE_LOCATION = "MonoPopupViews";
 
 	[Header("Requirements")]
 	[SerializeField]
@@ -17,6 +17,11 @@ public class MonoPopupManagerView : MonoBaseView
 	private Transform _focussedPopupHolder;
 
 	private PopupManagerModel _popupManagerModel;
+
+	public static MonoBaseView GetPopupViewPrefab(string popupID)
+	{
+		return ResourceLocator.Locate<MonoBaseView>(popupID, MONO_POPUP_VIEW_PREFAB_RESOURCE_LOCATION);
+	}
 
 	protected override void OnViewReady()
 	{
@@ -39,7 +44,7 @@ public class MonoPopupManagerView : MonoBaseView
 
 	private void CreateViewForPopup(BasePopupModel popup)
 	{
-		MonoBaseView popupViewPrefab = ResourceLocator.Locate<MonoBaseView>(popup.PopupModelID, MONO_POPUP_VIEW_PREFABS_LOCATION);
+		MonoBaseView popupViewPrefab = GetPopupViewPrefab(popup.PopupModelID);
 		MonoBaseView popupViewInstance = Instantiate(popupViewPrefab);
 		Controller.Link(popup, popupViewInstance);
 	}
@@ -63,8 +68,6 @@ public class MonoPopupManagerView : MonoBaseView
 
 	private void OnPopupUnfocussedEvent(BasePopupModel popup)
 	{
-		MonoBaseView popupView = MVCUtil.GetView<MonoBaseView>(popup);
-
 		MVCUtil.GetView<MonoBaseView>(popup, (view) =>
 		{
 			if(view == null)
