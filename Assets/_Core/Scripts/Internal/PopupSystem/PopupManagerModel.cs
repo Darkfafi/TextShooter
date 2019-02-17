@@ -34,6 +34,12 @@ public class PopupManagerModel : BaseModel
 
 	public void RequestPopup(BasePopupModel popupModel, bool stack = false)
 	{
+		if(popupModel.PopupState != BasePopupModel.PopupModelState.InRequest)
+		{
+			UnityEngine.Debug.LogError("Trying to Request an already used popup. Request denied.");
+			return;
+		}
+
 		_requestedPopups.Insert(stack ? 0 : _requestedPopups.Count, popupModel);
 		if(_openPopups.Count == 0 || stack)
 		{
