@@ -68,6 +68,10 @@ public abstract class BasePopupModel : BaseModel
 
 	public void Close()
 	{
+		if(PopupState == PopupModelState.Closed)
+			return;
+
+		Unfocus();
 		if(SetPopupState(PopupModelState.Closed))
 		{
 			OnClose();

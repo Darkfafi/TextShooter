@@ -30,14 +30,23 @@ public class PopupManagerModel : BaseModel
 	}
 
 	private List<BasePopupModel> _openPopups = new List<BasePopupModel>();
-	private Queue<BasePopupModel> _requestedPopups = new Queue<BasePopupModel>();
+	private List<BasePopupModel> _requestedPopups = new List<BasePopupModel>();
 
 	public void RequestPopup(BasePopupModel popupModel, bool stack = false)
 	{
-		_requestedPopups.Enqueue(popupModel);
+		_requestedPopups.Insert(stack ? 0 : _requestedPopups.Count, popupModel);
 		if(_openPopups.Count == 0 || stack)
 		{
 			OpenNextRequest();
+		}
+	}
+
+	public void CloseAll()
+	{
+		_requestedPopups.Clear();
+		while(CurrentlyFocussedPopup != null)
+		{
+			CurrentlyFocussedPopup.Close();
 		}
 	}
 
@@ -46,7 +55,8 @@ public class PopupManagerModel : BaseModel
 		if(_requestedPopups.Count == 0)
 			return;
 
-		BasePopupModel nextPopup = _requestedPopups.Dequeue();
+		BasePopupModel nextPopup = _requestedPopups[0];
+		_requestedPopups.Remove(nextPopup);
 		nextPopup.PopupStateChangedEvent += OnPopupStateChangedEvent;
 		_openPopups.Add(nextPopup);
 		nextPopup.Open();
@@ -66,12 +76,13 @@ public class PopupManagerModel : BaseModel
 			popupToFocus = _openPopups[_openPopups.Count - 1];
 		}
 
-		if(popupToFocus != null)
+		if(popupToFocus != CurrentlyFocussedPopup)
 		{
 			if(CurrentlyFocussedPopup != null)
 				CurrentlyFocussedPopup.Unfocus();
 
-			popupToFocus.Focus();
+			if(popupToFocus != null)
+				popupToFocus.Focus();
 		}
 	}
 
