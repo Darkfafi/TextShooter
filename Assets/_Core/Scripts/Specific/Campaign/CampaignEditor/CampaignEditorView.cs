@@ -31,7 +31,13 @@ public class CampaignEditorView : MonoBaseView
 	{
 		if(Input.GetKeyDown(KeyCode.Space))
 		{
-			_campaignEditorModel.PopupManagerModel.RequestPopup(new TestPopupModel("Cool Test Text #" + _counter), true);
+			_campaignEditorModel.PopupManagerModel.RequestPopup(new TestPopupModel("Single Test Text #" + _counter), false);
+			_counter++;
+		}
+
+		if(Input.GetKeyDown(KeyCode.A))
+		{
+			_campaignEditorModel.PopupManagerModel.RequestPopup(new TestPopupModel("Stack Test Text #" + _counter), true);
 			_counter++;
 		}
 	}
