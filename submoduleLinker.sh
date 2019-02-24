@@ -9,12 +9,11 @@ if [ -n "$projectSubmodulesPath" ];
 	else
 		projectSubmodulesPath="$line";
 		echo "";
-		echo "Preparing $projectSubmodulesPath as target submodules root folder.";
+		echo "Setting up $projectSubmodulesPath as target submodules root folder.";
 		rm -rf "$projectSubmodulesPath";
-		mkdir "$projectSubmodulesPath";
-		echo "Successfully setup $projectSubmodulesPath";
+		mkdir "$projectSubmodulesPath" && touch "$projectSubmodulesPath/.gitignore" && echo "*" >> "$projectSubmodulesPath/.gitignore";
 		echo "";
 		sleep 1s;
 fi
 done <submoduleLinker.config
-sleep 2s
+read -p "Press enter to continue"
