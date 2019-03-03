@@ -68,7 +68,7 @@ public abstract class BasePopupModel : BaseModel
 
 	public void Close()
 	{
-		if(PopupState == PopupModelState.Closed)
+		if(PopupState == PopupModelState.Closed || !CanEnterState(PopupModelState.Closed))
 			return;
 
 		Unfocus();
@@ -99,6 +99,11 @@ public abstract class BasePopupModel : BaseModel
 
 	}
 
+	protected virtual bool CanEnterState(PopupModelState state)
+	{
+		return true;
+	}
+
 	protected virtual void Clean()
 	{
 		Destroy();
@@ -106,7 +111,7 @@ public abstract class BasePopupModel : BaseModel
 
 	private bool SetPopupState(PopupModelState newState)
 	{
-		if(_popupState == newState)
+		if(_popupState == newState || !CanEnterState(newState))
 			return false;
 
 		PopupModelState oldState = _popupState;

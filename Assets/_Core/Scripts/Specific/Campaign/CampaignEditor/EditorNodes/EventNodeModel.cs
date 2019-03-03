@@ -1,11 +1,14 @@
 ﻿using GameEditor.Data;
 using Rules.Timeline;
 using UnityEngine;
+using RDP.SaveLoadSystem;
 
 namespace GameEditor
 {
-	public class EventNodeModel : BaseModel
+	public class EventNodeModel : BaseModel, ISaveableLoad
 	{
+		public const string STORAGE_CURRENT_EVENT_MODEL_DATA_KEY = "CurrentEventModelDataKey";
+
 		public EventNodeModelData CurrentEventModelData
 		{
 			get; private set;
@@ -62,6 +65,21 @@ namespace GameEditor
 		protected override void OnModelDestroy()
 		{
 			_timelineRules = null;
+		}
+
+		public void Save(IStorageSaver saver)
+		{
+			saver.SaveStruct(STORAGE_CURRENT_EVENT_MODEL_DATA_KEY, CurrentEventModelData);
+		}
+
+		public void Load(IStorageLoader loader)
+		{
+			CurrentEventModelData = loader.LoadStruct<EventNodeModelData>(STORAGE_CURRENT_EVENT_MODEL_DATA_KEY);
+		}
+
+		public void LoadingCompleted()
+		{
+
 		}
 	}
 }

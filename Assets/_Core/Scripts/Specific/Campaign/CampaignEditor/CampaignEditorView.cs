@@ -1,44 +1,42 @@
 ﻿using UnityEngine;
 
-public class CampaignEditorView : MonoBaseView
+namespace GameEditor
 {
-	[SerializeField]
-	private MonoPopupManagerView _popupManagerView;
-
-	private CampaignEditorModel _campaignEditorModel;
-
-	private int _counter = 0;
-
-	protected void OnDestroy()
+	public class CampaignEditorView : MonoBaseView
 	{
-		_campaignEditorModel.Destroy();
-		_campaignEditorModel = null;
-	}
+		[SerializeField]
+		private MonoPopupManagerView _popupManagerView;
 
-	protected void Start()
-	{
-		_campaignEditorModel = new CampaignEditorModel();
+		[SerializeField]
+		private CampaignFilesManagerView _campaignFilesManagerView;
 
-		// Setup Popup Manager
-		Controller.Link(_campaignEditorModel.PopupManagerModel, _popupManagerView);
+		private CampaignEditorModel _campaignEditorModel;
 
-
-		// Setup Campaign Editor
-		Controller.Link(_campaignEditorModel, this);
-	}
-
-	protected void Update()
-	{
-		if(Input.GetKeyDown(KeyCode.Space))
+		protected void OnDestroy()
 		{
-			_campaignEditorModel.PopupManagerModel.RequestPopup(new TestPopupModel("Single Test Text #" + _counter), false);
-			_counter++;
+			_campaignEditorModel.CampaignEditorLoadedEvent -= OnCampaignEditorLoadedEvent;
+			_campaignEditorModel.Destroy();
+			_campaignEditorModel = null;
 		}
 
-		if(Input.GetKeyDown(KeyCode.A))
+		protected void Start()
 		{
-			_campaignEditorModel.PopupManagerModel.RequestPopup(new TestPopupModel("Stack Test Text #" + _counter), true);
-			_counter++;
+			_campaignEditorModel = new CampaignEditorModel();
+			_campaignEditorModel.CampaignEditorLoadedEvent += OnCampaignEditorLoadedEvent;
+
+			// Setup Campaign Editor
+			Controller.Link(_campaignEditorModel, this);
+		}
+
+		private void OnCampaignEditorLoadedEvent()
+		{
+			_campaignEditorModel.CampaignEditorLoadedEvent -= OnCampaignEditorLoadedEvent;
+
+			// Setup Popup Manager
+			Controller.Link(_campaignEditorModel.PopupManagerModel, _popupManagerView);
+
+			// Setup Campaign Files Manager
+			Controller.Link(_campaignEditorModel.CampaignFilesManagerModel, _campaignFilesManagerView);
 		}
 	}
 }
