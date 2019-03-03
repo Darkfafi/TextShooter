@@ -1,12 +1,9 @@
 ﻿using RDP.SaveLoadSystem;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace GameEditor
 {
-	public class CampaignEditorFile : ISaveable
+	public class CampaignEditorFile : IStorageCapsule
 	{
 		// Save / Load Keys
 		public const string STORAGE_EVENT_NODES_SLOTS_KEY = "EventNodesSlotsKey";
@@ -16,6 +13,11 @@ namespace GameEditor
 		// Consts
 		public const string DEFAULT_CAMPAIGN_NAME = "Default";
 		public const string DEFAULT_CAMPAIGN_DESCRIPTION = "An exciting and challenging campaign to play!";
+
+		public string ID
+		{
+			get; private set;
+		}
 
 		public string CampaignName
 		{
@@ -29,18 +31,26 @@ namespace GameEditor
 
 		public List<EventNodesSlotModel> _eventNodesSlots = new List<EventNodesSlotModel>();
 
-		public CampaignEditorFile(string name = DEFAULT_CAMPAIGN_NAME, string description = DEFAULT_CAMPAIGN_DESCRIPTION)
+		public static CampaignEditorFile CreateNew()
 		{
-			CampaignName = name;
-			CampaignDescription = description;
-			LoadingCompleted();
+			return new CampaignEditorFile(System.Guid.NewGuid().ToString("N"));
 		}
 
-		public CampaignEditorFile(IStorageLoader loader)
+		public CampaignEditorFile(string storageID)
 		{
-			CampaignName = loader.LoadValue<string>(STORAGE_CAMPAIGN_NAME_KEY);
-			CampaignDescription = loader.LoadValue<string>(STORAGE_CAMPAIGN_DESCRIPTION_KEY);
-			loader.LoadRefs<EventNodesSlotModel>(STORAGE_EVENT_NODES_SLOTS_KEY, (instances) => _eventNodesSlots.AddRange(instances));
+			ID = storageID;
+			CampaignName = DEFAULT_CAMPAIGN_NAME;
+			CampaignDescription = DEFAULT_CAMPAIGN_DESCRIPTION;
+		}
+
+		public void Unload()
+		{
+			for(int i = 0; i < _eventNodesSlots.Count; i++)
+			{
+				_eventNodesSlots[i].Destroy();
+			}
+
+			_eventNodesSlots.Clear();
 		}
 
 		public void Save(IStorageSaver saver)
@@ -50,10 +60,16 @@ namespace GameEditor
 			saver.SaveRefs(STORAGE_EVENT_NODES_SLOTS_KEY, _eventNodesSlots.ToArray(), false);
 		}
 
+		public void Load(IStorageLoader loader)
+		{
+			CampaignName = loader.LoadValue<string>(STORAGE_CAMPAIGN_NAME_KEY);
+			CampaignDescription = loader.LoadValue<string>(STORAGE_CAMPAIGN_DESCRIPTION_KEY);
+			loader.LoadRefs<EventNodesSlotModel>(STORAGE_EVENT_NODES_SLOTS_KEY, (instances) => _eventNodesSlots.AddRange(instances));
+		}
+
 		public void LoadingCompleted()
 		{
-			if(_eventNodesSlots.Count == 0)
-				_eventNodesSlots.Add(new EventNodesSlotModel());
+
 		}
 	}
 }

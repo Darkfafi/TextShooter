@@ -15,27 +15,49 @@ namespace GameEditor
 			}
 		}
 
+		public ICampaignFilesHolder CampaignFilesHolder
+		{
+			get; private set;
+		}
+
 		public bool CanClose
 		{
 			get; private set;
 		}
 
-		private ICampaignFilesHolder _campaignFilesHolder;
-
 		public EditorMenuPopupModel(ICampaignFilesHolder filesHolder, bool canClose)
 		{
 			CanClose = canClose;
-			_campaignFilesHolder = filesHolder;
+			CampaignFilesHolder = filesHolder;
 		}
 
 		public void NewCampaignEditorFile()
 		{
-			_campaignFilesHolder.LoadAsCurrentFile(new CampaignEditorFile());
+			CampaignFilesHolder.LoadAsCurrentFile(CampaignEditorFile.CreateNew(), true);
+			ForceClose();
 		}
 
 		public void ExitEditorScreen()
 		{
 			Debug.Log("Exit Editor!");
+			ForceClose();
+		}
+
+		public void LoadFile(CampaignEditorFile fileToLoad)
+		{
+			CampaignFilesHolder.LoadAsCurrentFile(fileToLoad, false);
+			ForceClose();
+		}
+
+		public void RemoveFile(CampaignEditorFile fileToRemove)
+		{
+			CampaignFilesHolder.RemoveFile(fileToRemove);
+		}
+
+		private void ForceClose()
+		{
+			CanClose = true;
+			Close();
 		}
 
 		protected override bool CanEnterState(PopupModelState state)

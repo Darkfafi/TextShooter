@@ -4,6 +4,14 @@ using UnityEngine.UI;
 
 public abstract class BasePopupView : MonoBaseView
 {
+	protected Button OptionalCloseButton
+	{
+		get
+		{
+			return _optionalCloseButton;
+		}
+	}
+
 	[SerializeField]
 	private Button _optionalCloseButton;
 
