@@ -41,6 +41,10 @@ namespace Vertification
 							popupIDsWithoutView.Add(popupID);
 							message = string.Format("Popup with ID {0} has no View inside Resources/{1}", popupID, MonoPopupManagerView.MONO_POPUP_VIEW_PREFAB_RESOURCE_LOCATION);
 						}
+						else
+						{
+							Debug.Log(string.Format("<color='green'>Popup {0} validated</color>", popupID));
+						}
 					}
 				}
 			}
