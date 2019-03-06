@@ -75,7 +75,7 @@ namespace GameEditor
 				}
 
 				_editorStorage.UpdateStorage(_campaignEditorFiles.ToArray());
-				_editorStorage.Save(CurrentCampaignFile.ID, true);
+				_editorStorage.Save(true, CurrentCampaignFile.ID);
 			}
 
 			Refresh();
