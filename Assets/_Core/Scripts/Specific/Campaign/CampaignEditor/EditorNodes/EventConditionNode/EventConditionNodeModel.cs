@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RDP.SaveLoadSystem;
 
 namespace GameEditor
@@ -22,6 +23,8 @@ namespace GameEditor
 		}
 
 		private List<ConditionItemModel> _conditionItemModels = new List<ConditionItemModel>();
+		private PopupManagerModel _popupManagerModel;
+		private CampaignEditorKeys _campaignEditorKeys;
 
 		public EventConditionNodeModel()
 		{
@@ -52,12 +55,53 @@ namespace GameEditor
 			return null;
 		}
 
+		public string[] GetCurrentlyUsingKeys()
+		{
+			string[] returnValue = new string[_conditionItemModels.Count];
+			for(int i = _conditionItemModels.Count - 1; i >= 0; i--)
+			{
+				returnValue[i] = _conditionItemModels[i].ConditionKey;
+			}
+			return returnValue;
+		}
+
+		public void Init(PopupManagerModel popupManagerModel, CampaignEditorKeys campaignEditorKeys)
+		{
+			if(_popupManagerModel != null)
+				return;
+
+			_popupManagerModel = popupManagerModel;
+			_campaignEditorKeys = campaignEditorKeys;
+		}
+
 		public bool HasConditionWithKey(string key)
 		{
 			return GetConditionWithKey(key) != null;
 		}
 
-		public ConditionItemModel AddCondition(string key, bool value = true)
+		public void RequestAddConditionPopup()
+		{
+			string[] currentlyDisplayingKeys = _campaignEditorKeys.GetKeysExcluding(GetCurrentlyUsingKeys());
+			_popupManagerModel.RequestPopup(new SelectionPopupModel("Select Key", 
+				(index) => 
+				{
+					if(index != SelectionPopupModel.ON_NO_SELECTION_INDEX)
+					{
+						OnKeySelected(currentlyDisplayingKeys[index]);
+					}
+				}
+			, currentlyDisplayingKeys));
+		}
+
+		private void OnKeySelected(string key)
+		{
+			if(_campaignEditorKeys.HasKey(key))
+			{
+				AddCondition(key);
+			}
+		}
+
+		private ConditionItemModel AddCondition(string key, bool value = true)
 		{
 			if(!HasConditionWithKey(key))
 			{
@@ -69,7 +113,7 @@ namespace GameEditor
 			return null;
 		}
 
-		public void RemoveCondition(string key)
+		private void RemoveCondition(string key)
 		{
 			ConditionItemModel item = GetConditionWithKey(key);
 			if(item != null)
@@ -95,6 +139,9 @@ namespace GameEditor
 			}
 
 			_conditionItemModels.Clear();
+
+			_popupManagerModel = null;
+			_campaignEditorKeys = null;
 		}
 	}
 }

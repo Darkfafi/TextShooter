@@ -43,8 +43,7 @@ namespace GameEditor
 
 		private void OnAddConditionButtonPressed()
 		{
-#warning TODO: Open Condition Item Creation Popup (with make key / select key (open search popup) functionality)
-			//_eventConditionModel. Open Condition Creation popup and 
+			_eventConditionModel.RequestAddConditionPopup();
 		}
 
 		private void CreateConditionView(ConditionItemModel model)

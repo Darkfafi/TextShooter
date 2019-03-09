@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using RDP.SaveLoadSystem;
-using System;
 
 namespace GameEditor
 {
@@ -23,6 +22,8 @@ namespace GameEditor
 		}
 
 		private List<EventConditionNodeModel> _conditionalEventNodes;
+		private PopupManagerModel _popupManagerModel;
+		private CampaignEditorKeys _campaignEditorKeys;
 
 		public EventNodesSlotModel()
 		{
@@ -43,13 +44,16 @@ namespace GameEditor
 
 			DefaultNodeModel.Destroy();
 			DefaultNodeModel = null;
+
+			_popupManagerModel = null;
+			_campaignEditorKeys = null;
 		}
 
 		public EventNodesSlotModel(IStorageLoader loader)
 		{
 			_conditionalEventNodes = new List<EventConditionNodeModel>();
 			loader.LoadRef<EventNodeModel>(STORAGE_DEFAULT_NODE_KEY, (i) => DefaultNodeModel = i);
-			loader.LoadRefs<EventConditionNodeModel>(STORAGE_CONDITIONAL_NODES_KEY, (i) => _conditionalEventNodes = new List<EventConditionNodeModel>(i));
+			loader.LoadRefs<EventConditionNodeModel>(STORAGE_CONDITIONAL_NODES_KEY, (refs) => _conditionalEventNodes = new List<EventConditionNodeModel>(refs));
 		}
 
 		public void Save(IStorageSaver saver)
@@ -63,9 +67,24 @@ namespace GameEditor
 
 		}
 
+		public void Init(PopupManagerModel popupManagerModel, CampaignEditorKeys campaignEditorKeys)
+		{
+			if(_popupManagerModel != null)
+				return;
+
+			_popupManagerModel = popupManagerModel;
+			_campaignEditorKeys = campaignEditorKeys;
+
+			for(int i = 0; i < _conditionalEventNodes.Count; i++)
+			{
+				_conditionalEventNodes[i].Init(_popupManagerModel, _campaignEditorKeys);
+			}
+		}
+
 		public EventConditionNodeModel AddConditionalEventNode()
 		{
 			EventConditionNodeModel model = new EventConditionNodeModel();
+			model.Init(_popupManagerModel, _campaignEditorKeys);
 			_conditionalEventNodes.Add(model);
 			return model;
 		}

@@ -1,6 +1,6 @@
 ﻿using RDP.SaveLoadSystem;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace GameEditor
 {
@@ -10,6 +10,7 @@ namespace GameEditor
 		public const string STORAGE_EVENT_NODES_SLOTS_KEY = "EventNodesSlotsKey";
 		public const string STORAGE_CAMPAIGN_NAME_KEY = "CampaignNameKey";
 		public const string STORAGE_CAMPAIGN_DESCRIPTION_KEY = "CampaignDescriptionKey";
+		public const string STORAGE_CAMPAIGN_KEYS_KEY = "CampaignKeysKey";
 
 		// Consts
 		public const string DEFAULT_CAMPAIGN_NAME = "Default";
@@ -23,6 +24,7 @@ namespace GameEditor
 		public string CampaignName;
 		public string CampaignDescription;
 		public List<EventNodesSlotModel> EventNodesSlots = new List<EventNodesSlotModel>();
+		public CampaignEditorKeys CampaignEditorKeys = new CampaignEditorKeys();
 
 		public static CampaignEditorFile CreateNew()
 		{
@@ -51,18 +53,23 @@ namespace GameEditor
 			saver.SaveValue(STORAGE_CAMPAIGN_NAME_KEY, CampaignName);
 			saver.SaveValue(STORAGE_CAMPAIGN_DESCRIPTION_KEY, CampaignDescription);
 			saver.SaveRefs(STORAGE_EVENT_NODES_SLOTS_KEY, EventNodesSlots.ToArray(), false);
+			saver.SaveRef(STORAGE_CAMPAIGN_KEYS_KEY, CampaignEditorKeys);
 		}
 
 		public void Load(IStorageLoader loader)
 		{
 			CampaignName = loader.LoadValue<string>(STORAGE_CAMPAIGN_NAME_KEY);
 			CampaignDescription = loader.LoadValue<string>(STORAGE_CAMPAIGN_DESCRIPTION_KEY);
+			loader.LoadRef<CampaignEditorKeys>(STORAGE_CAMPAIGN_KEYS_KEY, (i) => CampaignEditorKeys = i);
 			loader.LoadRefs<EventNodesSlotModel>(STORAGE_EVENT_NODES_SLOTS_KEY, (instances) => EventNodesSlots.AddRange(instances));
 		}
 
 		public void LoadingCompleted()
 		{
-
+			if(CampaignEditorKeys == null)
+			{
+				CampaignEditorKeys = new CampaignEditorKeys();
+			}
 		}
 	}
 }

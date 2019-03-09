@@ -21,7 +21,7 @@
 		{
 			PopupManagerModel = new PopupManagerModel();
 			CampaignFilesManager = new CampaignFilesManager();
-			EventsEditorModel = new EventsEditorModel(CampaignFilesManager);
+			EventsEditorModel = new EventsEditorModel(CampaignFilesManager, PopupManagerModel);
 		}
 
 		protected override void OnModelReady()

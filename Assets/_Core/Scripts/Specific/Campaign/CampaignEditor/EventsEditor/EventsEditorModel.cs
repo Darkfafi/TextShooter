@@ -21,15 +21,21 @@ namespace GameEditor
 		}
 
 		private CampaignFilesManager _campaignFilesManager;
+		private PopupManagerModel _popupManagerModel;
 
-		public EventsEditorModel(CampaignFilesManager campaignFilesManager)
+		public EventsEditorModel(CampaignFilesManager campaignFilesManager, PopupManagerModel popupManagerModel)
 		{
 			_campaignFilesManager = campaignFilesManager;
+			_popupManagerModel = popupManagerModel;
 		}
 
 		public EventNodesSlotModel AddEventNodesSlot()
 		{
+			if(CurrentCampaignEditorFile == null)
+				throw new Exception("Can't add event without a CampaignEditorFile being loaded");
+
 			EventNodesSlotModel model = new EventNodesSlotModel();
+			model.Init(_popupManagerModel, CurrentCampaignEditorFile.CampaignEditorKeys);
 			EventNodeSlots.Add(model);
 			return model;
 		}
@@ -53,6 +59,14 @@ namespace GameEditor
 		private void OnNewCurrentFileLoadedEvent(CampaignEditorFile currentFile)
 		{
 			CurrentCampaignEditorFile = currentFile;
+
+			if(CurrentCampaignEditorFile != null)
+			{
+				for(int i = 0, c = EventNodeSlots.Count; i < c; i++)
+				{
+					EventNodeSlots[i].Init(_popupManagerModel, CurrentCampaignEditorFile.CampaignEditorKeys);
+				}
+			}
 
 			if(CurrentCampaignEditorFileChangedEvent != null)
 			{
