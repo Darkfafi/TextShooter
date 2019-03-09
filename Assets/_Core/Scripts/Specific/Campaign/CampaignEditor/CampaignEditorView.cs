@@ -7,6 +7,9 @@ namespace GameEditor
 		[SerializeField]
 		private MonoPopupManagerView _popupManagerView;
 
+		[SerializeField]
+		private EventsEditorView _eventsEditorView;
+
 		private CampaignEditorModel _campaignEditorModel;
 
 		protected void OnDestroy()
@@ -21,6 +24,9 @@ namespace GameEditor
 
 			// Setup Popup Manager
 			Controller.Link(_campaignEditorModel.PopupManagerModel, _popupManagerView);
+
+			// Setup Event Nodes Editor
+			Controller.Link(_campaignEditorModel.EventsEditorModel, _eventsEditorView);
 
 			// Setup Campaign Editor
 			Controller.Link(_campaignEditorModel, this);

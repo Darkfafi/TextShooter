@@ -12,10 +12,16 @@
 			get; private set;
 		}
 
+		public EventsEditorModel EventsEditorModel
+		{
+			get; private set;
+		}
+
 		public CampaignEditorModel()
 		{
 			PopupManagerModel = new PopupManagerModel();
 			CampaignFilesManager = new CampaignFilesManager();
+			EventsEditorModel = new EventsEditorModel(CampaignFilesManager);
 		}
 
 		protected override void OnModelReady()
@@ -25,6 +31,9 @@
 
 		protected override void OnModelDestroy()
 		{
+			EventsEditorModel.Destroy();
+			EventsEditorModel = null;
+
 			PopupManagerModel.Destroy();
 			PopupManagerModel = null;
 

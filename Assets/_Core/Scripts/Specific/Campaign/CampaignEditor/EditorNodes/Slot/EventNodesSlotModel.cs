@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using RDP.SaveLoadSystem;
 using System;
 
@@ -16,71 +14,60 @@ namespace GameEditor
 			get; private set;
 		}
 
-		public List<ConditionalEventNodeHolder> ConditionalEventNodes
+		public EventConditionNodeModel[] ConditionalEventNodes
 		{
-			get; private set;
+			get
+			{
+				return _conditionalEventNodes.ToArray();
+			}
 		}
+
+		private List<EventConditionNodeModel> _conditionalEventNodes;
 
 		public EventNodesSlotModel()
 		{
-			ConditionalEventNodes = new List<ConditionalEventNodeHolder>();
+			_conditionalEventNodes = new List<EventConditionNodeModel>();
+			DefaultNodeModel = new EventNodeModel();
 			LoadingCompleted();
+		}
+
+		protected override void OnModelDestroy()
+		{
+			for(int i = 0; i < _conditionalEventNodes.Count; i++)
+			{
+				_conditionalEventNodes[i].Destroy();
+			}
+
+			_conditionalEventNodes.Clear();
+			_conditionalEventNodes = null;
+
+			DefaultNodeModel.Destroy();
+			DefaultNodeModel = null;
 		}
 
 		public EventNodesSlotModel(IStorageLoader loader)
 		{
-			ConditionalEventNodes = new List<ConditionalEventNodeHolder>();
+			_conditionalEventNodes = new List<EventConditionNodeModel>();
 			loader.LoadRef<EventNodeModel>(STORAGE_DEFAULT_NODE_KEY, (i) => DefaultNodeModel = i);
-			loader.LoadRefs<ConditionalEventNodeHolder>(STORAGE_CONDITIONAL_NODES_KEY, (i) => ConditionalEventNodes.AddRange(i));
+			loader.LoadRefs<EventConditionNodeModel>(STORAGE_CONDITIONAL_NODES_KEY, (i) => _conditionalEventNodes = new List<EventConditionNodeModel>(i));
 		}
 
 		public void Save(IStorageSaver saver)
 		{
 			saver.SaveRef(STORAGE_DEFAULT_NODE_KEY, DefaultNodeModel);
-			saver.SaveRefs(STORAGE_CONDITIONAL_NODES_KEY, ConditionalEventNodes.ToArray());
+			saver.SaveRefs(STORAGE_CONDITIONAL_NODES_KEY, _conditionalEventNodes.ToArray());
 		}
 
 		public void LoadingCompleted()
 		{
-			if(ConditionalEventNodes.Count == 0)
-				ConditionalEventNodes.Add(new ConditionalEventNodeHolder("lol"));
-		}
-	}
-
-	public class ConditionalEventNodeHolder : ISaveableLoad
-	{
-		public const string STORAGE_CONDITIONS_KEY = "ConditionsKey";
-		public const string STORAGE_NODE_KEY = "NodeKey";
-
-		public Dictionary<string, bool> KeyConditions = new Dictionary<string, bool>();
-		public EventNodeModel ConditionNodeModel;
-
-		public ConditionalEventNodeHolder()
-		{
 
 		}
 
-		public ConditionalEventNodeHolder(string key)
+		public EventConditionNodeModel AddConditionalEventNode()
 		{
-			KeyConditions.Add(key, true);
-		}
-
-		public void Save(IStorageSaver saver)
-		{
-			saver.SaveRef(STORAGE_NODE_KEY, ConditionNodeModel);
-			saver.SaveDict(STORAGE_CONDITIONS_KEY, KeyConditions);
-		}
-
-		public void Load(IStorageLoader loader)
-		{
-			loader.LoadRef<EventNodeModel>(STORAGE_NODE_KEY, (i) => ConditionNodeModel = i);
-			loader.LoadDict(STORAGE_CONDITIONS_KEY, out KeyConditions);
-		}
-
-		public void LoadingCompleted()
-		{
-			if(KeyConditions == null)
-				KeyConditions = new Dictionary<string, bool>();
+			EventConditionNodeModel model = new EventConditionNodeModel();
+			_conditionalEventNodes.Add(model);
+			return model;
 		}
 	}
 }

@@ -67,12 +67,12 @@ namespace GameEditor
 			_timelineRules = null;
 		}
 
-		public void Save(IStorageSaver saver)
+		public virtual void Save(IStorageSaver saver)
 		{
 			saver.SaveStruct(STORAGE_CURRENT_EVENT_MODEL_DATA_KEY, CurrentEventModelData);
 		}
 
-		public void Load(IStorageLoader loader)
+		public virtual void Load(IStorageLoader loader)
 		{
 			CurrentEventModelData = loader.LoadStruct<EventNodeModelData>(STORAGE_CURRENT_EVENT_MODEL_DATA_KEY);
 		}

@@ -7,6 +7,8 @@ namespace GameEditor
 {
 	public class CampaignFilesManager : ICampaignFilesHolder
 	{
+		public event Action<CampaignEditorFile> NewCurrentFileLoadedEvent;
+
 		public CampaignEditorFile[] CampaignFiles
 		{
 			get
@@ -92,6 +94,11 @@ namespace GameEditor
 			CurrentCampaignFile = file;
 
 			_editorStorage.Load(CurrentCampaignFile.ID);
+
+			if(NewCurrentFileLoadedEvent != null)
+			{
+				NewCurrentFileLoadedEvent(CurrentCampaignFile);
+			}
 		}
 
 		public void RemoveFile(CampaignEditorFile file)

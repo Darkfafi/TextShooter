@@ -1,5 +1,6 @@
 ﻿using RDP.SaveLoadSystem;
 using System.Collections.Generic;
+using System;
 
 namespace GameEditor
 {
@@ -19,21 +20,13 @@ namespace GameEditor
 			get; private set;
 		}
 
-		public string CampaignName
-		{
-			get; private set;
-		}
-
-		public string CampaignDescription
-		{
-			get; private set;
-		}
-
-		public List<EventNodesSlotModel> _eventNodesSlots = new List<EventNodesSlotModel>();
+		public string CampaignName;
+		public string CampaignDescription;
+		public List<EventNodesSlotModel> EventNodesSlots = new List<EventNodesSlotModel>();
 
 		public static CampaignEditorFile CreateNew()
 		{
-			return new CampaignEditorFile(System.Guid.NewGuid().ToString("N"));
+			return new CampaignEditorFile(Guid.NewGuid().ToString("N"));
 		}
 
 		public CampaignEditorFile(string storageID)
@@ -45,26 +38,26 @@ namespace GameEditor
 
 		public void Unload()
 		{
-			for(int i = 0; i < _eventNodesSlots.Count; i++)
+			for(int i = 0; i < EventNodesSlots.Count; i++)
 			{
-				_eventNodesSlots[i].Destroy();
+				EventNodesSlots[i].Destroy();
 			}
 
-			_eventNodesSlots.Clear();
+			EventNodesSlots.Clear();
 		}
 
 		public void Save(IStorageSaver saver)
 		{
 			saver.SaveValue(STORAGE_CAMPAIGN_NAME_KEY, CampaignName);
 			saver.SaveValue(STORAGE_CAMPAIGN_DESCRIPTION_KEY, CampaignDescription);
-			saver.SaveRefs(STORAGE_EVENT_NODES_SLOTS_KEY, _eventNodesSlots.ToArray(), false);
+			saver.SaveRefs(STORAGE_EVENT_NODES_SLOTS_KEY, EventNodesSlots.ToArray(), false);
 		}
 
 		public void Load(IStorageLoader loader)
 		{
 			CampaignName = loader.LoadValue<string>(STORAGE_CAMPAIGN_NAME_KEY);
 			CampaignDescription = loader.LoadValue<string>(STORAGE_CAMPAIGN_DESCRIPTION_KEY);
-			loader.LoadRefs<EventNodesSlotModel>(STORAGE_EVENT_NODES_SLOTS_KEY, (instances) => _eventNodesSlots.AddRange(instances));
+			loader.LoadRefs<EventNodesSlotModel>(STORAGE_EVENT_NODES_SLOTS_KEY, (instances) => EventNodesSlots.AddRange(instances));
 		}
 
 		public void LoadingCompleted()
