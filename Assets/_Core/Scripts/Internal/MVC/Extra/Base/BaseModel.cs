@@ -49,7 +49,8 @@ public abstract class BaseModel : IModel, IComponentsHolder, IComponentsEnableMo
 		if(!_internalDestroyCalled)
 		{
 			_internalDestroyCalled = true;
-			LinkingController.Destroy();
+			if(LinkingController != null)
+				LinkingController.Destroy();
 			return;
 		}
 
