@@ -72,6 +72,7 @@ namespace GameEditor
 
 			_popupManagerModel = popupManagerModel;
 			_campaignEditorKeys = campaignEditorKeys;
+			_campaignEditorKeys.KeyRemovedEvent += OnKeyRemovedEvent;
 		}
 
 		public bool HasConditionWithKey(string key)
@@ -91,6 +92,29 @@ namespace GameEditor
 					}
 				}
 			, currentlyDisplayingKeys));
+		}
+
+		public void LoadingCompleted()
+		{
+
+		}
+
+		protected override void OnModelDestroy()
+		{
+			EventNodeModel.Destroy();
+			EventNodeModel = null;
+
+			for(int i = 0; i < _conditionItemModels.Count; i++)
+			{
+				_conditionItemModels[i].Destroy();
+			}
+
+			_conditionItemModels.Clear();
+
+			_popupManagerModel = null;
+
+			_campaignEditorKeys.KeyRemovedEvent -= OnKeyRemovedEvent;
+			_campaignEditorKeys = null;
 		}
 
 		private void OnKeySelected(string key)
@@ -123,25 +147,9 @@ namespace GameEditor
 			}
 		}
 
-		public void LoadingCompleted()
+		private void OnKeyRemovedEvent(string key)
 		{
-
-		}
-
-		protected override void OnModelDestroy()
-		{
-			EventNodeModel.Destroy();
-			EventNodeModel = null;
-
-			for(int i = 0; i < _conditionItemModels.Count; i++)
-			{
-				_conditionItemModels[i].Destroy();
-			}
-
-			_conditionItemModels.Clear();
-
-			_popupManagerModel = null;
-			_campaignEditorKeys = null;
+			RemoveCondition(key);
 		}
 	}
 }
